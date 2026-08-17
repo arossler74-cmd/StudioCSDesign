@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/organic-1c190d27-a712-40b2-9e45-dae7992b5b52/styles.css">
+<script src="_ds/organic-1c190d27-a712-40b2-9e45-dae7992b5b52/_ds_bundle.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<script>
+  (function () {
+    function apply(el) {
+      var u = el.getAttribute('data-img');
+      if (u && u.indexOf('{{') === -1 && el.getAttribute('src') !== u) el.setAttribute('src', u);
+    }
+    new MutationObserver(function (recs) {
+      for (var i = 0; i < recs.length; i++) {
+        var r = recs[i];
+        if (r.type === 'attributes') apply(r.target);
+        else r.addedNodes.forEach(function (n) {
+          if (n.nodeType !== 1) return;
+          if (n.hasAttribute && n.hasAttribute('data-img')) apply(n);
+          if (n.querySelectorAll) n.querySelectorAll('[data-img]').forEach(apply);
+        });
+      }
+    }).observe(document.documentElement, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-img'] });
+  })();
+  document.addEventListener('error', function (e) {
+    var el = e.target;
+    if (el && el.tagName === 'IMG' && /%7B%7B|\{\{/.test(el.getAttribute('src') || '')) {
+      el.removeAttribute('src');
+      e.stopImmediatePropagation();
+    }
+  }, true);
+</script>
+<style>
+  :root { --font-heading: 'Cormorant Garamond', serif; --font-body: 'Jost', sans-serif; font-variant-numeric: lining-nums tabular-nums; }
+  .btn, .tag { white-space: nowrap; }
+  html, body { margin: 0; padding: 0; background: var(--color-bg, #f5ead8); font-family: 'Jost', sans-serif; }
+  h1, h2, h3 { font-weight: 300; letter-spacing: -0.015em; }
+  .btn, .input, .tag, label, select, textarea, input { font-family: 'Jost', sans-serif; }
+  a { color: var(--color-accent-700); text-decoration: none; }
+  a:hover { color: var(--color-accent-800); }
+  @keyframes csFade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  @keyframes csSpin { to { transform: rotate(360deg); } }
+  @keyframes csDrift {
+    0%   { transform: scale(1.08) translate3d(0, 0, 0); }
+    50%  { transform: scale(1.14) translate3d(-1.6%, -1.1%, 0); }
+    100% { transform: scale(1.08) translate3d(0, 0, 0); }
+  }
+  /* response on pointer-down, not release */
+  .btn { transition: transform .16s cubic-bezier(.22,1,.36,1), background-color .18s ease, color .18s ease; }
+  .btn:active { transform: scale(.972); }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    .cs-chrome { backdrop-filter: none !important; background: var(--color-bg) !important; }
+  }
+</style>
+</helmet>
+
+<div style="min-height: 100vh; background: var(--color-bg); color: var(--color-text); font-family: var(--font-body); font-size: 16px;">
+
+  <sc-if value="{{ booting }}" hint-placeholder-val="{{ true }}">
+    <div style="min-height: 100vh; display: grid; place-items: center;">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 18px;">
+        <div style="width: 34px; height: 34px; border-radius: 999px; border: 3px solid var(--color-accent-200); border-top-color: var(--color-accent); animation: csSpin .8s linear infinite;"></div>
+        <div style="font-family: var(--font-heading); font-size: 20px; color: var(--color-accent-800);">Cybelle Sampaio Studio</div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ============ client share view ============ -->
+  <sc-if value="{{ showShare }}">
+    <div style="max-width: 1100px; margin: 0 auto; padding: 56px 32px 96px; animation: csFade .4s ease both;">
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 40px;">
+        <div style="width: 34px; height: 34px; border-radius: 999px; background: var(--color-accent);"></div>
+        <div style="font-weight: 600;">Cybelle Sampaio Studio</div>
+      </div>
+      <div style="margin-bottom: 40px;">
+        <div style="font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--color-accent-700); margin-bottom: 10px;">For {{ shareClient }}</div>
+        <h1 style="font-family: var(--font-heading); font-size: 52px; margin: 0 0 8px; color: var(--color-accent-900);">{{ shareProject }}</h1>
+        <p style="margin: 0; max-width: 62ch; color: var(--color-neutral-700); text-wrap: pretty;">Have a look and tell us what you think. A thumbs up keeps the piece in the layout; a thumbs down sends it back to us with your note.</p>
+      </div>
+
+      <sc-if value="{{ shareHasDoc }}">
+        <div style="margin-bottom: 44px;">
+          <a class="btn btn-secondary" href="{{ shareDocHref }}" target="_blank">Open the full presentation</a>
+        </div>
+      </sc-if>
+
+      <div style="display: flex; flex-direction: column; gap: 36px;">
+        <sc-for list="{{ shareRooms }}" as="room" hint-placeholder-count="2">
+          <div>
+            <h2 style="font-family: var(--font-heading); font-size: 30px; margin: 0 0 18px; color: var(--color-accent-900);">{{ room.name }}</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 18px;">
+              <sc-for list="{{ room.items }}" as="it" hint-placeholder-count="4">
+                <div class="card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+                  <div style="aspect-ratio: 1 / 1; background: var(--color-neutral-100);">
+                    <img src="assets/piece-placeholder.png" data-img="{{ it.image }}" alt="" style="width: 100%; height: 100%; object-fit: cover;">
+                  </div>
+                  <div style="padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 10px; flex: 1;">
+                    <div>
+                      <div style="font-weight: 600; font-size: 14.5px; line-height: 1.3;">{{ it.name }}</div>
+                      <div style="font-size: 12.5px; color: var(--color-neutral-600);">{{ it.meta }}</div>
+                    </div>
+                    <div style="flex: 1;"></div>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                      <button type="button" onClick="{{ it.up }}" class="btn btn-ghost" style="border: 1px solid {{ it.upRing }}; background: {{ it.upBg }}; padding: 6px 14px;">Yes</button>
+                      <button type="button" onClick="{{ it.down }}" class="btn btn-ghost" style="border: 1px solid {{ it.downRing }}; background: {{ it.downBg }}; padding: 6px 14px;">No</button>
+                    </div>
+                    <input class="input" value="{{ it.comment }}" onChange="{{ it.setComment }}" placeholder="Add a note" style="padding: 7px 12px; font-size: 13px;">
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="margin-top: 40px; display: flex; align-items: center; gap: 16px;">
+        <button type="button" onClick="{{ shareSubmit }}" class="btn btn-primary">{{ shareSaveLabel }}</button>
+        <span style="font-size: 13.5px; color: var(--color-neutral-600);">{{ shareCount }}</span>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ============ login ============ -->
+  <sc-if value="{{ showLogin }}">
+    <div style="min-height: 100vh; display: grid; grid-template-columns: minmax(480px, 0.92fr) 1.08fr;">
+      <div style="padding: 56px 68px 48px; display: flex; flex-direction: column; gap: 40px; position: relative;">
+        <img src="assets/cybelle-logo-hires.png" alt="Cybelle Sampaio Studio" style="width: 186px; display: block;">
+        <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 28px; max-width: 430px;">
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <h1 style="font-family: var(--font-heading); font-size: 44px; line-height: 1.04; letter-spacing: -0.024em; margin: 2px 0 0; color: var(--color-accent-900);">{{ greeting }}</h1>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 14px; max-width: 430px;">
+          <button type="button" onClick="{{ google }}" class="btn btn-secondary" style="justify-content: center; align-items: center; gap: 12px; height: 48px;">
+            <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true" style="flex: none;">
+              <path fill="#4285F4" d="M45.1 24.5c0-1.6-.1-3.2-.4-4.7H24v8.9h11.8c-.5 2.7-2 5.1-4.4 6.7v5.5h7.1c4.2-3.8 6.6-9.5 6.6-16.4z"></path>
+              <path fill="#34A853" d="M24 46c5.9 0 10.9-2 14.5-5.3l-7.1-5.5c-2 1.3-4.5 2.1-7.4 2.1-5.7 0-10.5-3.8-12.2-9H4.5v5.7C8.1 41.2 15.5 46 24 46z"></path>
+              <path fill="#FBBC05" d="M11.8 28.3c-.4-1.3-.7-2.7-.7-4.3s.3-3 .7-4.3v-5.7H4.5C2.9 17.1 2 20.4 2 24s.9 6.9 2.5 10l7.3-5.7z"></path>
+              <path fill="#EA4335" d="M24 10.7c3.2 0 6.1 1.1 8.4 3.3l6.3-6.3C34.9 4.1 29.9 2 24 2 15.5 2 8.1 6.8 4.5 13.9l7.3 5.7c1.7-5.1 6.5-8.9 12.2-8.9z"></path>
+            </svg>Continue with Google</button>
+          <div style="display: flex; align-items: center; gap: 12px; color: var(--color-neutral-500); font-size: 13px;">
+            <div style="flex: 1; height: 1px; background: var(--color-neutral-300);"></div>or<div style="flex: 1; height: 1px; background: var(--color-neutral-300);"></div>
+          </div>
+          <sc-if value="{{ signup }}">
+            <div class="field"><label for="csname">Name</label><input id="csname" class="input" value="{{ fName }}" onChange="{{ setName }}" placeholder="Your name"></div>
+          </sc-if>
+          <div class="field"><label for="csmail">Email</label><input id="csmail" class="input" type="email" value="{{ fEmail }}" onChange="{{ setEmail }}" placeholder="you@email.com"></div>
+          <div class="field"><label for="cspw">Password</label><input id="cspw" class="input" type="password" value="{{ fPw }}" onChange="{{ setPw }}" onKeyDown="{{ onKey }}" placeholder="••••••••"></div>
+          <sc-if value="{{ authError }}">
+            <div style="background: var(--color-accent-100); color: var(--color-accent-800); padding: 10px 14px; border-radius: var(--radius-md); font-size: 14px;">{{ authError }}</div>
+          </sc-if>
+          <button type="button" onClick="{{ submit }}" class="btn btn-primary" style="justify-content: center; height: 48px;">{{ submitLabel }}</button>
+          <div style="display: flex; justify-content: space-between; font-size: 14px;">
+            <button type="button" onClick="{{ toggleSignup }}" class="btn btn-ghost" style="padding: 4px 0;">{{ toggleLabel }}</button>
+            <button type="button" onClick="{{ forgot }}" class="btn btn-ghost" style="padding: 4px 0;">Forgot password</button>
+          </div>
+        </div>
+        </div>
+      </div>
+
+      <div style="position: relative; overflow: hidden; background: var(--color-neutral-200);">
+        <video src="assets/hero-studio.mp4" poster="assets/studio-sign.jpg" autoPlay="{{ true }}" muted="{{ true }}" loop="{{ true }}" playsInline="{{ true }}" preload="auto" aria-hidden="true" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 37% 50%;"></video>
+        <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(32,30,29,.50) 0%, rgba(32,30,29,.12) 32%, rgba(32,30,29,0) 58%);"></div>
+        <div style="position: absolute; left: 0; right: 0; bottom: 46px; display: flex; justify-content: center; padding: 0 40px;">
+          <div style="font-family: var(--font-heading); font-weight: 300; font-size: 40px; line-height: 1.12; letter-spacing: -0.015em; color: #fff; max-width: 17ch; text-align: center; text-wrap: pretty; text-shadow: 0 1px 24px rgba(28,26,24,.45);">A home that lives the way you do</div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ============ app ============ -->
+  <sc-if value="{{ showApp }}">
+    <div>
+      <div class="cs-chrome" style="position: sticky; top: 0; z-index: 40; background: rgba(245,234,216,.82); backdrop-filter: saturate(1.4) blur(16px); border-bottom: 1px solid var(--color-neutral-200);">
+        <div style="max-width: 1280px; margin: 0 auto; padding: 14px 32px; display: flex; align-items: center; gap: 20px;">
+          <button type="button" onClick="{{ goDash }}" class="btn btn-ghost" style="gap: 10px; padding: 4px 8px;">
+            <span style="width: 26px; height: 26px; border-radius: 999px; background: var(--color-accent); display: inline-block;"></span>
+            <span style="font-weight: 600;">Cybelle Sampaio Studio</span>
+          </button>
+          <div style="flex: 1;"></div>
+          <button type="button" onClick="{{ goDash }}" class="btn btn-ghost" style="white-space: nowrap; flex: none;">Projects</button>
+          <button type="button" onClick="{{ goCatalog }}" class="btn btn-ghost" style="white-space: nowrap; flex: none;">Catalog</button>
+          <sc-if value="{{ isAdmin }}">
+            <button type="button" onClick="{{ goTeam }}" class="btn btn-ghost" style="white-space: nowrap; flex: none;">Team</button>
+          </sc-if>
+          <div style="display: flex; align-items: center; gap: 10px; padding-left: 16px; border-left: 1px solid var(--color-neutral-300); flex: none;">
+            <div style="width: 32px; height: 32px; border-radius: 999px; background: var(--color-accent-2); color: #fff; display: grid; place-items: center; font-size: 13px; font-weight: 500; flex: none;">{{ initials }}</div>
+            <div style="line-height: 1.25; min-width: 0;">
+              <div style="font-size: 13.5px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px;">{{ userName }}</div>
+              <div style="font-size: 11px; color: var(--color-neutral-600); text-transform: uppercase; letter-spacing: .08em; white-space: nowrap;">{{ userRole }}</div>
+            </div>
+            <button type="button" onClick="{{ out }}" class="btn btn-ghost" style="font-size: 13px; white-space: nowrap; flex: none;">Sign out</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- dashboard -->
+      <sc-if value="{{ showDash }}">
+        <div style="max-width: 1280px; margin: 0 auto; padding: 48px 32px 96px; animation: csFade .4s ease both;">
+          <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 36px;">
+            <div>
+              <h1 style="font-family: var(--font-heading); font-size: 44px; margin: 0 0 6px; color: var(--color-accent-900);">Projects</h1>
+              <p style="margin: 0; color: var(--color-neutral-700);">{{ projCount }}</p>
+              <sc-if value="{{ loadError }}" hint-placeholder-val="{{ false }}">
+                <p style="margin: 6px 0 0; font-size: 13.5px; color: var(--color-accent-800);">{{ loadError }}</p>
+              </sc-if>
+            </div>
+            <button type="button" onClick="{{ newProject }}" class="btn btn-primary">New project</button>
+          </div>
+
+          <sc-if value="{{ needsSeed }}" hint-placeholder-val="{{ false }}">
+            <div class="card elev-md" style="padding: 26px 28px; margin-bottom: 32px; display: flex; align-items: center; gap: 24px; flex-wrap: wrap;">
+              <div style="flex: 1; min-width: 280px;">
+                <div style="font-family: var(--font-heading); font-size: 24px; color: var(--color-accent-900);">Set up this workspace</div>
+                <div style="font-size: 14px; color: var(--color-neutral-700); margin-top: 4px; max-width: 62ch; text-wrap: pretty;">{{ seedNote }}</div>
+              </div>
+              <button type="button" onClick="{{ runSeed }}" class="btn btn-primary">{{ seedLabel }}</button>
+            </div>
+          </sc-if>
+
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 36px;">
+            <sc-for list="{{ summary }}" as="c" hint-placeholder-count="4">
+              <div class="card" style="padding: 20px 22px; display: flex; flex-direction: column; gap: 10px; border-left: 4px solid {{ c.color }};">
+                <div style="font-size: 11.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-600);">{{ c.label }}</div>
+                <div style="display: flex; align-items: baseline; gap: 8px;">
+                  <span style="font-family: var(--font-heading); font-size: 34px; line-height: 1; color: var(--color-accent-900);">{{ c.count }}</span>
+                  <span style="font-size: 13px; color: var(--color-neutral-600);">{{ c.unit }}</span>
+                </div>
+                <div style="font-size: 12.5px; color: var(--color-neutral-600);">{{ c.names }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px;">
+            <sc-for list="{{ projects }}" as="p" hint-placeholder-count="3">
+              <div class="card elev-sm" style="padding: 0; overflow: hidden; cursor: pointer; transition: transform .28s cubic-bezier(.22,1,.36,1), box-shadow .28s ease;" style-hover="transform: translateY(-3px); box-shadow: var(--shadow-lg);" onClick="{{ p.open }}">
+                <div style="aspect-ratio: 4 / 3; background: var(--color-accent-100); position: relative; overflow: hidden;">
+                  <img src="assets/piece-placeholder.png" data-img="{{ p.cover }}" alt="" style="width: 100%; height: 100%; object-fit: cover; filter: saturate(.82) contrast(.95);">
+                  <div style="position: absolute; top: 12px; left: 12px;"><span class="tag tag-accent">{{ p.status }}</span></div>
+                  <sc-if value="{{ p.hasPending }}" hint-placeholder-val="{{ false }}">
+                    <div style="position: absolute; top: 12px; right: 12px;"><span class="tag tag-accent-2">{{ p.pendingLabel }}</span></div>
+                  </sc-if>
+                </div>
+                <div style="padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 12px;">
+                  <div>
+                    <div style="font-family: var(--font-heading); font-size: 22px; color: var(--color-accent-900);">{{ p.name }}</div>
+                    <div style="font-size: 13.5px; color: var(--color-neutral-600);">{{ p.sub }}</div>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 9px;">
+                    <span style="width: 9px; height: 9px; border-radius: 999px; background: {{ p.phaseColor }};"></span>
+                    <span style="font-size: 13.5px; font-weight: 600; color: var(--color-neutral-800);">{{ p.phaseLabel }}</span>
+                    <span style="font-size: 12.5px; color: var(--color-neutral-500);">{{ p.phaseStep }}</span>
+                  </div>
+                  <div style="display: flex; gap: 8px;">
+                    <sc-for list="{{ p.pips }}" as="ph" hint-placeholder-count="3">
+                      <div style="flex: 1;">
+                        <div style="font-size: 10.5px; text-transform: uppercase; letter-spacing: .07em; color: var(--color-neutral-600); margin-bottom: 5px;">{{ ph.short }}</div>
+                        <div style="height: 6px; border-radius: 999px; background: var(--color-neutral-200); overflow: hidden;">
+                          <div style="height: 100%; border-radius: 999px; background: {{ ph.color }}; width: {{ ph.pct }};"></div>
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <div style="font-size: 12.5px; color: var(--color-neutral-500);">{{ p.edited }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- catalog -->
+      <sc-if value="{{ showCatalog }}">
+        <div style="max-width: 1280px; margin: 0 auto; padding: 48px 32px 96px; animation: csFade .4s ease both;">
+          <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 28px;">
+            <div>
+              <h1 style="font-family: var(--font-heading); font-size: 44px; margin: 0 0 6px; color: var(--color-accent-900);">Catalog</h1>
+              <p style="margin: 0; color: var(--color-neutral-700);">{{ catCount }}</p>
+            </div>
+            <sc-if value="{{ canEditCatalog }}">
+              <button type="button" onClick="{{ newPiece }}" class="btn btn-primary">Add piece</button>
+            </sc-if>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 28px;">
+            <input class="input" value="{{ q }}" onChange="{{ setQ }}" placeholder="Search name, retailer, tag…">
+            <select class="input" value="{{ fRoom }}" onChange="{{ setFRoom }}">
+              <option value="">All rooms</option>
+              <sc-for list="{{ roomOptions }}" as="o" hint-placeholder-count="6"><option value="{{ o }}">{{ o }}</option></sc-for>
+            </select>
+            <select class="input" value="{{ fType }}" onChange="{{ setFType }}">
+              <option value="">All types</option>
+              <sc-for list="{{ typeOptions }}" as="o" hint-placeholder-count="6"><option value="{{ o }}">{{ o }}</option></sc-for>
+            </select>
+            <select class="input" value="{{ fStore }}" onChange="{{ setFStore }}">
+              <option value="">All retailers</option>
+              <sc-for list="{{ storeOptions }}" as="o" hint-placeholder-count="4"><option value="{{ o }}">{{ o }}</option></sc-for>
+            </select>
+            <select class="input" value="{{ sort }}" onChange="{{ setSort }}">
+              <option value="recent">Newest first</option>
+              <option value="name">Name A–Z</option>
+              <option value="store">Retailer</option>
+              <option value="type">Type</option>
+              <option value="price">Price</option>
+            </select>
+          </div>
+
+          <sc-if value="{{ editing }}">
+            <div class="card elev-md" style="padding: 26px 28px; margin-bottom: 28px;">
+              <div style="font-family: var(--font-heading); font-size: 22px; color: var(--color-accent-900); margin-bottom: 18px;">{{ editTitle }}</div>
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;">
+                <div class="field" style="grid-column: span 2;"><label>Name</label><input class="input" value="{{ e_name }}" onChange="{{ set_name }}"></div>
+                <div class="field"><label>Retailer</label><input class="input" value="{{ e_retailer }}" onChange="{{ set_retailer }}"></div>
+                <div class="field"><label>Type</label>
+                  <select class="input" value="{{ e_type }}" onChange="{{ set_type }}">
+                    <sc-for list="{{ typeOptions }}" as="o" hint-placeholder-count="6"><option value="{{ o }}">{{ o }}</option></sc-for>
+                  </select>
+                </div>
+                <div class="field"><label>Room</label>
+                  <select class="input" value="{{ e_room }}" onChange="{{ set_room }}">
+                    <sc-for list="{{ roomOptions }}" as="o" hint-placeholder-count="6"><option value="{{ o }}">{{ o }}</option></sc-for>
+                  </select>
+                </div>
+                <div class="field"><label>Retail price (USD)</label><input class="input" value="{{ e_price }}" onChange="{{ set_price }}" placeholder="0.00"></div>
+                <div class="field" style="grid-column: span 3;"><label>Product URL</label>
+                  <div style="display: flex; gap: 10px;">
+                    <input class="input" value="{{ e_url }}" onChange="{{ set_url }}" placeholder="https://" style="flex: 1;">
+                    <button type="button" onClick="{{ fetchDetails }}" class="btn btn-secondary">{{ fetchLabel }}</button>
+                  </div>
+                </div>
+                <div class="field"><label>Dimensions</label><input class="input" value="{{ e_dimensions }}" onChange="{{ set_dimensions }}"></div>
+                <div class="field"><label>Finish / material</label><input class="input" value="{{ e_finish }}" onChange="{{ set_finish }}"></div>
+                <div class="field"><label>Color</label><input class="input" value="{{ e_color }}" onChange="{{ set_color }}"></div>
+                <div class="field" style="grid-column: span 2;"><label>Notes</label><input class="input" value="{{ e_notes }}" onChange="{{ set_notes }}"></div>
+                <div class="field"><label>Tags (comma separated)</label><input class="input" value="{{ e_tags }}" onChange="{{ set_tags }}"></div>
+                <div class="field" style="grid-column: span 3;"><label>Photo</label>
+                  <div style="display: flex; align-items: center; gap: 14px;">
+                    <div style="width: 76px; height: 76px; border-radius: var(--radius-md); overflow: hidden; background: var(--color-neutral-100); flex: none;">
+                      <img src="assets/piece-placeholder.png" data-img="{{ e_image }}" alt="" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    <input class="input" type="file" accept="image/*" onChange="{{ pickImage }}" style="padding: 8px 12px;">
+                  </div>
+                </div>
+              </div>
+              <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button type="button" onClick="{{ savePiece }}" class="btn btn-primary">Save piece</button>
+                <button type="button" onClick="{{ cancelPiece }}" class="btn btn-ghost">Cancel</button>
+                <div style="flex: 1;"></div>
+                <sc-if value="{{ canDelete }}">
+                  <button type="button" onClick="{{ deletePiece }}" class="btn btn-ghost">Delete</button>
+                </sc-if>
+              </div>
+            </div>
+          </sc-if>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(215px, 1fr)); gap: 20px;">
+            <sc-for list="{{ catalog }}" as="c" hint-placeholder-count="8">
+              <div class="card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+                <div style="aspect-ratio: 1 / 1; background: var(--color-neutral-100); position: relative;">
+                  <img src="assets/piece-placeholder.png" data-img="{{ c.image }}" alt="" style="width: 100%; height: 100%; object-fit: cover;">
+                  <div style="position: absolute; left: 10px; top: 10px;"><span class="tag tag-neutral" style="font-size: 10.5px;">{{ c.type }}</span></div>
+                </div>
+                <div style="padding: 13px 15px 15px; display: flex; flex-direction: column; gap: 7px; flex: 1;">
+                  <div style="font-weight: 600; font-size: 14px; line-height: 1.3;">{{ c.name }}</div>
+                  <div style="font-size: 12.5px; color: var(--color-neutral-600);">{{ c.retailer }} · {{ c.room }}</div>
+                  <div style="font-size: 12.5px; color: var(--color-neutral-500);">{{ c.spec }}</div>
+                  <div style="flex: 1;"></div>
+                  <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                    <span style="font-weight: 600; font-size: 13.5px; color: var(--color-accent-800);">{{ c.price }}</span>
+                    <sc-if value="{{ canEditCatalog }}">
+                      <button type="button" onClick="{{ c.edit }}" class="btn btn-ghost" style="font-size: 12.5px; padding: 4px 10px;">Edit</button>
+                    </sc-if>
+                  </div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- project -->
+      <sc-if value="{{ showProj }}">
+        <div style="max-width: 1280px; margin: 0 auto; padding: 40px 32px 96px; animation: csFade .4s ease both;">
+          <button type="button" onClick="{{ goDash }}" class="btn btn-ghost" style="padding: 4px 0; margin-bottom: 18px;">← Projects</button>
+          <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap; margin-bottom: 32px;">
+            <div>
+              <h1 style="font-family: var(--font-heading); font-size: 46px; margin: 0 0 6px; color: var(--color-accent-900);">{{ projName }}</h1>
+              <div style="color: var(--color-neutral-700);">{{ projSub }}</div>
+            </div>
+            <span class="tag tag-outline">{{ projEdited }}</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 36px;">
+            <sc-for list="{{ phases }}" as="f" hint-placeholder-count="4">
+              <div class="card" style="padding: 22px; display: flex; flex-direction: column; gap: 14px; border: 2px solid {{ f.ring }}; cursor: pointer; transition: transform .28s cubic-bezier(.22,1,.36,1);" style-hover="transform: translateY(-2px);" onClick="{{ f.select }}">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+                  <div style="width: 32px; height: 32px; border-radius: 999px; background: {{ f.dot }}; color: #fff; display: grid; place-items: center; font-family: var(--font-heading); font-size: 14px;">{{ f.n }}</div>
+                  <span class="tag tag-neutral">{{ f.statusLabel }}</span>
+                </div>
+                <div>
+                  <div style="font-family: var(--font-heading); font-size: 22px; color: var(--color-accent-900);">{{ f.title }}</div>
+                  <div style="font-size: 13px; color: var(--color-neutral-600); margin-top: 2px;">{{ f.tagline }}</div>
+                </div>
+                <div style="height: 8px; border-radius: 999px; background: var(--color-neutral-200); overflow: hidden;">
+                  <div style="height: 100%; border-radius: 999px; background: {{ f.dot }}; width: {{ f.pct }}; transition: width .5s cubic-bezier(.22,1,.36,1);"></div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="display: flex; gap: 8px; border-bottom: 1px solid var(--color-neutral-200); margin-bottom: 32px; flex-wrap: wrap;">
+            <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="5">
+              <button type="button" onClick="{{ t.go }}" class="btn btn-ghost" style="border-radius: 0; border-bottom: 2px solid {{ t.ring }}; padding: 10px 16px; font-weight: {{ t.weight }};">{{ t.label }}</button>
+            </sc-for>
+          </div>
+
+          <!-- discovery -->
+          <sc-if value="{{ tabDiscovery }}">
+            <div style="animation: csFade .35s ease both;">
+              <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 24px;">
+                <div>
+                  <h2 style="font-family: var(--font-heading); font-size: 32px; margin: 0; color: var(--color-accent-900);">Discovery</h2>
+                  <div style="color: var(--color-neutral-600); font-size: 14px;">{{ answeredLabel }}</div>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                  <button type="button" onClick="{{ saveAnswers }}" class="btn btn-primary">{{ saveLabel }}</button>
+                </div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 20px;">
+                <sc-for list="{{ sections }}" as="s" hint-placeholder-count="4">
+                  <div class="card" style="padding: 26px 28px;">
+                    <div style="display: flex; align-items: baseline; gap: 12px; margin-bottom: 18px;">
+                      <span style="font-family: var(--font-heading); color: var(--color-accent); font-size: 15px;">{{ s.n }}</span>
+                      <h3 style="font-family: var(--font-heading); font-size: 22px; margin: 0; color: var(--color-accent-900);">{{ s.title }}</h3>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 20px;">
+                      <sc-for list="{{ s.questions }}" as="q" hint-placeholder-count="3">
+                        <div style="display: flex; flex-direction: column; gap: 9px;">
+                          <label style="font-size: 14.5px; font-weight: 600; color: var(--color-neutral-800);">{{ q.label }}</label>
+                          <sc-if value="{{ q.isText }}" hint-placeholder-val="{{ true }}">
+                            <textarea class="input" rows="3" value="{{ q.value }}" onChange="{{ q.setValue }}" placeholder="Client's answer" style="resize: vertical; font-family: var(--font-body); border-radius: var(--radius-md);"></textarea>
+                          </sc-if>
+                          <sc-if value="{{ q.isPick }}" hint-placeholder-val="{{ false }}">
+                            <div style="display: flex; flex-wrap: wrap; gap: 9px;">
+                              <sc-for list="{{ q.choices }}" as="o" hint-placeholder-count="4">
+                                <button type="button" onClick="{{ o.pick }}" class="btn btn-ghost" style="border: 1px solid {{ o.ring }}; background: {{ o.bg }}; color: {{ o.fg }}; padding: 7px 16px; font-size: 13.5px;">{{ o.label }}</button>
+                              </sc-for>
+                            </div>
+                          </sc-if>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- concept / design docs -->
+          <sc-if value="{{ tabDoc }}">
+            <div style="animation: csFade .35s ease both;">
+              <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 24px;">
+                <div>
+                  <h2 style="font-family: var(--font-heading); font-size: 32px; margin: 0; color: var(--color-accent-900);">{{ docTitle }}</h2>
+                  <div style="color: var(--color-neutral-600); font-size: 14px;">{{ docSub }}</div>
+                </div>
+                <sc-if value="{{ hasDoc }}">
+                  <a class="btn btn-primary" href="{{ docHref }}" target="_top">Open document</a>
+                </sc-if>
+              </div>
+              <sc-if value="{{ hasDoc }}">
+                <div style="border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--color-neutral-200); background: #fff; box-shadow: var(--shadow-md);">
+                  <iframe src="{{ docHref }}" title="document" style="width: 100%; height: 720px; border: 0; display: block;"></iframe>
+                </div>
+              </sc-if>
+              <sc-if value="{{ noDoc }}">
+                <div class="card" style="padding: 40px; text-align: center; color: var(--color-neutral-600);">
+                  <div style="font-family: var(--font-heading); font-size: 22px; color: var(--color-accent-900); margin-bottom: 8px;">No document linked yet</div>
+                  <div style="font-size: 14px;">This phase has no deliverable. Link a project file to see it here.</div>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <!-- selection -->
+          <sc-if value="{{ tabSelection }}">
+            <div style="animation: csFade .35s ease both;">
+              <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 24px;">
+                <div>
+                  <h2 style="font-family: var(--font-heading); font-size: 32px; margin: 0; color: var(--color-accent-900);">Selection</h2>
+                  <div style="color: var(--color-neutral-600); font-size: 14px;">Pieces come from the shared catalog — editing a piece there updates it everywhere.</div>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                  <button type="button" onClick="{{ addRoom }}" class="btn btn-secondary">Add room</button>
+                </div>
+              </div>
+
+              <sc-if value="{{ picking }}">
+                <div class="card elev-md" style="padding: 22px 24px; margin-bottom: 26px;">
+                  <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 16px;">
+                    <div style="font-family: var(--font-heading); font-size: 20px; color: var(--color-accent-900);">{{ pickTitle }}</div>
+                    <div style="flex: 1;"></div>
+                    <input class="input" value="{{ pickQ }}" onChange="{{ setPickQ }}" placeholder="Search the catalog" style="max-width: 320px;">
+                    <button type="button" onClick="{{ closePick }}" class="btn btn-ghost">Close</button>
+                  </div>
+                  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; max-height: 380px; overflow: auto;">
+                    <sc-for list="{{ pickList }}" as="c" hint-placeholder-count="6">
+                      <div onClick="{{ c.add }}" style="cursor: pointer; border-radius: var(--radius-md); overflow: hidden; background: var(--color-neutral-100); transition: transform .2s cubic-bezier(.22,1,.36,1);" style-hover="transform: translateY(-2px);">
+                        <div style="aspect-ratio: 1 / 1;"><img src="assets/piece-placeholder.png" data-img="{{ c.image }}" alt="" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                        <div style="padding: 9px 11px 11px;">
+                          <div style="font-size: 12.5px; font-weight: 600; line-height: 1.25;">{{ c.name }}</div>
+                          <div style="font-size: 11.5px; color: var(--color-neutral-600);">{{ c.retailer }}</div>
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-if>
+
+              <div style="display: flex; flex-direction: column; gap: 30px;">
+                <sc-for list="{{ rooms }}" as="room" hint-placeholder-count="2">
+                  <div class="card" style="padding: 24px 26px;">
+                    <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 18px;">
+                      <input class="input" value="{{ room.name }}" onChange="{{ room.rename }}" style="font-family: var(--font-heading); font-size: 22px; max-width: 380px; border: 0; background: transparent; padding: 2px 0;">
+                      <div style="flex: 1;"></div>
+                      <span style="font-size: 13px; color: var(--color-neutral-600);">{{ room.total }}</span>
+                      <button type="button" onClick="{{ room.removeRoom }}" class="btn btn-ghost" style="font-size: 13px;">Remove room</button>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                      <div style="font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-accent-700);">In the layout</div>
+                      <button type="button" onClick="{{ room.addSelected }}" class="btn btn-ghost" style="font-size: 13px; padding: 3px 10px;">+ Add from catalog</button>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; margin-bottom: 24px;">
+                      <sc-for list="{{ room.selected }}" as="it" hint-placeholder-count="4">
+                        <div style="border-radius: var(--radius-md); overflow: hidden; background: var(--color-neutral-100); display: flex; flex-direction: column;">
+                          <div style="aspect-ratio: 1 / 1; position: relative;">
+                            <img src="assets/piece-placeholder.png" data-img="{{ it.image }}" alt="" style="width: 100%; height: 100%; object-fit: cover;">
+                            <sc-if value="{{ it.verdict }}" hint-placeholder-val="{{ false }}">
+                              <div style="position: absolute; top: 8px; right: 8px; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; background: {{ it.verdictBg }}; color: #fff;">{{ it.verdict }}</div>
+                            </sc-if>
+                          </div>
+                          <div style="padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 6px; flex: 1;">
+                            <div style="font-size: 12.5px; font-weight: 600; line-height: 1.25;">{{ it.name }}</div>
+                            <div style="font-size: 11.5px; color: var(--color-neutral-600);">{{ it.retailer }}</div>
+                            <sc-if value="{{ showPrice }}" hint-placeholder-val="{{ false }}">
+                              <div style="font-size: 12px; font-weight: 600; color: var(--color-accent-800);">{{ it.price }}</div>
+                            </sc-if>
+                            <div style="flex: 1;"></div>
+                            <div style="display: flex; gap: 6px;">
+                              <button type="button" onClick="{{ it.toAlt }}" class="btn btn-ghost" style="font-size: 11.5px; padding: 3px 9px;">To alternatives</button>
+                              <button type="button" onClick="{{ it.remove }}" class="btn btn-ghost" style="font-size: 11.5px; padding: 3px 9px;">×</button>
+                            </div>
+                          </div>
+                        </div>
+                      </sc-for>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                      <div style="font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-600);">Alternatives</div>
+                      <button type="button" onClick="{{ room.addAlt }}" class="btn btn-ghost" style="font-size: 13px; padding: 3px 10px;">+ Add from catalog</button>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px;">
+                      <sc-for list="{{ room.alternatives }}" as="it" hint-placeholder-count="5">
+                        <div style="border-radius: var(--radius-md); overflow: hidden; background: var(--color-neutral-100); display: flex; flex-direction: column; opacity: .92;">
+                          <div style="aspect-ratio: 1 / 1;"><img src="assets/piece-placeholder.png" data-img="{{ it.image }}" alt="" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                          <div style="padding: 9px 11px 11px; display: flex; flex-direction: column; gap: 5px; flex: 1;">
+                            <div style="font-size: 12px; font-weight: 600; line-height: 1.25;">{{ it.name }}</div>
+                            <div style="font-size: 11px; color: var(--color-neutral-600);">{{ it.retailer }}</div>
+                            <div style="flex: 1;"></div>
+                            <div style="display: flex; gap: 6px;">
+                              <button type="button" onClick="{{ it.use }}" class="btn btn-ghost" style="font-size: 11.5px; padding: 3px 9px;">Use it</button>
+                              <button type="button" onClick="{{ it.remove }}" class="btn btn-ghost" style="font-size: 11.5px; padding: 3px 9px;">×</button>
+                            </div>
+                          </div>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- feedback -->
+          <sc-if value="{{ tabFeedback }}">
+            <div style="animation: csFade .35s ease both;">
+              <h2 style="font-family: var(--font-heading); font-size: 32px; margin: 0 0 6px; color: var(--color-accent-900);">Review queue</h2>
+              <p style="margin: 0 0 24px; color: var(--color-neutral-600); font-size: 14px;">{{ reviewSub }}</p>
+              <div style="display: flex; flex-direction: column; gap: 12px;">
+                <sc-for list="{{ reviews }}" as="r" hint-placeholder-count="3">
+                  <div class="card" style="padding: 16px 20px; display: flex; align-items: center; gap: 16px; opacity: {{ r.dim }};">
+                    <div style="width: 54px; height: 54px; border-radius: var(--radius-md); overflow: hidden; background: var(--color-neutral-100); flex: none;">
+                      <img src="assets/piece-placeholder.png" data-img="{{ r.image }}" alt="" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    <div style="flex: 1; min-width: 0;">
+                      <div style="font-weight: 600; font-size: 14.5px;">{{ r.name }}</div>
+                      <div style="font-size: 13px; color: var(--color-neutral-600);">{{ r.line }}</div>
+                      <sc-if value="{{ r.comment }}" hint-placeholder-val="{{ false }}">
+                        <div style="font-size: 13.5px; margin-top: 5px; color: var(--color-neutral-800); font-style: italic;">“{{ r.comment }}”</div>
+                      </sc-if>
+                    </div>
+                    <div style="padding: 5px 13px; border-radius: 999px; font-size: 12px; font-weight: 600; color: #fff; background: {{ r.badgeBg }};">{{ r.badge }}</div>
+                    <sc-if value="{{ r.open }}" hint-placeholder-val="{{ true }}">
+                      <button type="button" onClick="{{ r.resolve }}" class="btn btn-ghost" style="font-size: 13px;">Mark handled</button>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+              <sc-if value="{{ noReviews }}">
+                <div class="card" style="padding: 40px; text-align: center; color: var(--color-neutral-600);">
+                  <div style="font-family: var(--font-heading); font-size: 22px; color: var(--color-accent-900); margin-bottom: 8px;">Nothing from the client yet</div>
+                  <div style="font-size: 14px;">Share a link from the Sharing tab and their thumbs and notes land here.</div>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <!-- sharing -->
+          <sc-if value="{{ tabSharing }}">
+            <div style="animation: csFade .35s ease both; max-width: 900px;">
+              <h2 style="font-family: var(--font-heading); font-size: 32px; margin: 0 0 6px; color: var(--color-accent-900);">Client links</h2>
+              <p style="margin: 0 0 28px; color: var(--color-neutral-600); font-size: 14px;">Each link is stamped with the client's name — no login needed, and everything they say comes back signed.</p>
+              <div class="card" style="padding: 22px 24px; margin-bottom: 26px;">
+                <div style="display: grid; grid-template-columns: 1.4fr 1fr auto; gap: 14px; align-items: end;">
+                  <div class="field"><label>Client name</label><input class="input" value="{{ shareName }}" onChange="{{ setShareName }}" placeholder="Maya Vander"></div>
+                  <div class="field"><label>Shows</label>
+                    <select class="input" value="{{ sharePhase }}" onChange="{{ setSharePhase }}">
+                      <option value="concept">Concept only</option>
+                      <option value="design">Concept + Design</option>
+                    </select>
+                  </div>
+                  <button type="button" onClick="{{ makeShare }}" class="btn btn-primary">Create link</button>
+                </div>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 12px;">
+                <sc-for list="{{ shares }}" as="s" hint-placeholder-count="1">
+                  <div class="card" style="padding: 16px 20px; display: flex; align-items: center; gap: 16px;">
+                    <div style="flex: 1; min-width: 0;">
+                      <div style="font-weight: 600;">{{ s.clientName }}</div>
+                      <div style="font-size: 12.5px; color: var(--color-neutral-600); word-break: break-all;">{{ s.url }}</div>
+                    </div>
+                    <span class="tag tag-outline">{{ s.scope }}</span>
+                    <button type="button" onClick="{{ s.copy }}" class="btn btn-secondary" style="font-size: 13px;">{{ s.copyLabel }}</button>
+                    <button type="button" onClick="{{ s.revoke }}" class="btn btn-ghost" style="font-size: 13px;">Revoke</button>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <!-- team -->
+      <sc-if value="{{ showTeam }}">
+        <div style="max-width: 1000px; margin: 0 auto; padding: 48px 32px 96px; animation: csFade .4s ease both;">
+          <h1 style="font-family: var(--font-heading); font-size: 44px; margin: 0 0 6px; color: var(--color-accent-900);">Team</h1>
+          <p style="margin: 0 0 32px; color: var(--color-neutral-700); max-width: 62ch;">Admins manage projects, people and the catalog. Designers edit the projects they belong to. Clients normally use a share link instead of an account.</p>
+          <div class="card" style="padding: 24px 26px; margin-bottom: 28px;">
+            <div style="font-family: var(--font-heading); font-size: 20px; color: var(--color-accent-900); margin-bottom: 16px;">Invite someone</div>
+            <div style="display: grid; grid-template-columns: 1.4fr 1fr auto; gap: 14px; align-items: end;">
+              <div class="field"><label for="csinv">Email</label><input id="csinv" class="input" type="email" value="{{ invEmail }}" onChange="{{ setInvEmail }}" placeholder="name@email.com"></div>
+              <div class="field"><label for="csrole">Role</label>
+                <select id="csrole" class="input" value="{{ invRole }}" onChange="{{ setInvRole }}">
+                  <option value="admin">Admin</option>
+                  <option value="designer">Designer</option>
+                  <option value="client">Client</option>
+                </select>
+              </div>
+              <button type="button" onClick="{{ invite }}" class="btn btn-primary">Send invite</button>
+            </div>
+            <sc-if value="{{ inviteMsg }}">
+              <div style="margin-top: 14px; font-size: 14px; color: var(--color-accent-2-800);">{{ inviteMsg }}</div>
+            </sc-if>
+          </div>
+          <table class="table">
+            <thead><tr><th>Person</th><th>Role</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+              <sc-for list="{{ users }}" as="u" hint-placeholder-count="3">
+                <tr>
+                  <td>
+                    <div style="font-weight: 600;">{{ u.name }}</div>
+                    <div style="font-size: 12.5px; color: var(--color-neutral-600);">{{ u.email }}</div>
+                  </td>
+                  <td>
+                    <select class="input" value="{{ u.role }}" onChange="{{ u.setRole }}" disabled="{{ u.locked }}" style="padding: 6px 12px; min-width: 140px;">
+                      <option value="admin">Admin</option>
+                      <option value="designer">Designer</option>
+                      <option value="client">Client</option>
+                    </select>
+                  </td>
+                  <td><span class="tag tag-outline">{{ u.status }}</span></td>
+                  <td style="text-align: right;">
+                    <sc-if value="{{ u.removable }}" hint-placeholder-val="{{ false }}">
+                      <button type="button" onClick="{{ u.remove }}" class="btn btn-ghost" style="font-size: 13px;">Remove</button>
+                    </sc-if>
+                  </td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 1280, &quot;height&quot;: 880}}">
+const PHASES = [
+  { key: 'discovery', n: '1', title: 'Discovery', short: 'Discovery', tagline: 'Questionnaire, visit and measure', when: 'Week 1' },
+  { key: 'concept', n: '2', title: 'Concept', short: 'Concept', tagline: 'Mood board, palette, materials', when: 'Weeks 2–4' },
+  { key: 'design', n: '3', title: 'Design & sourcing', short: 'Design', tagline: 'Plans, renderings, sourcing list', when: 'Weeks 4–6' },
+  { key: 'styling', n: '4', title: 'Styling & reveal', short: 'Styling', tagline: 'Delivery, placement, final styling', when: 'By arrangement' },
+];
+const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review': 'In review', 'done': 'Done' };
+const TABS = [
+  { key: 'discovery', label: 'Discovery' }, { key: 'concept', label: 'Concept' }, { key: 'design', label: 'Design & sourcing' },
+  { key: 'styling', label: 'Styling & reveal' },
+  { key: 'selection', label: 'Selection' }, { key: 'feedback', label: 'Feedback' }, { key: 'sharing', label: 'Sharing' },
+];
+const PLACEHOLDER = 'assets/piece-placeholder.png';
+
+class Component extends DCLogic {
+  state = { booting: true, api: null, mode: 'local', user: null, view: 'dash', projects: [], proj: null, catalog: [],
+    tab: 'discovery', answers: {}, saved: '', users: [], sections: null,
+    fEmail: '', fPw: '', fName: '', signup: false, authError: '',
+    invEmail: '', invRole: 'designer', inviteMsg: '',
+    q: '', fRoom: '', fType: '', fStore: '', sort: 'recent', form: null, fetching: false,
+    pick: null, pickQ: '', shareName: '', sharePhase: 'concept', copied: '',
+    share: null, shareState: {}, shareSaved: '', seeding: false, seedMsg: '', inbox: [], loadError: '' };
+
+  async componentDidMount() {
+    const api = await import('./platform-data.js');
+    const mode = await api.init();
+    this.setState({ api, mode });
+    const token = (location.hash.match(/share=([a-z0-9]+)/i) || [])[1];
+    if (token) {
+      const found = await api.findByShare(token);
+      if (found) {
+        let catalog = [];
+        try { catalog = await api.listCatalog(); } catch (e) { /* public visitors cannot read the catalog */ }
+        return this.setState({ share: found, catalog, booting: false });
+      }
+    }
+    api.onAuth((user) => this.hydrate(user));
+    setTimeout(() => this.state.booting && this.setState({ booting: false }), 2500);
+  }
+
+  async hydrate(user) {
+    const api = this.state.api;
+    if (!user) return this.setState({ user: null, booting: false });
+    try { localStorage.setItem('cs-last-user', user.name || user.email || ''); } catch (e) {}
+    const settle = (p, fallback) => p.catch((e) => { console.warn(e); this._loadErr = e; return fallback; });
+    const [projects, sections, catalog] = await Promise.all([
+      settle(api.listProjects(user), []),
+      settle(api.getQuestionnaire(), null),
+      settle(api.listCatalog(), []),
+    ]);
+    const users = user.role === 'admin' ? await settle(api.listUsers(), []) : [];
+    this.setState({ user, projects, sections, catalog, users, booting: false, view: 'dash', fPw: '',
+      authError: '', loadError: this._loadErr ? 'Some data could not be read — check that the Firestore rules are published.' : '' });
+  }
+
+  async refresh() {
+    const { api, user } = this.state;
+    const [projects, catalog] = await Promise.all([api.listProjects(user), api.listCatalog()]);
+    this.setState({ projects, catalog });
+  }
+
+  ago(iso) {
+    if (!iso) return 'never edited';
+    const d = (Date.now() - new Date(iso).getTime()) / 1000;
+    if (d < 3600) return 'edited ' + Math.max(1, Math.round(d / 60)) + ' min ago';
+    if (d < 86400) return 'edited ' + Math.round(d / 3600) + ' h ago';
+    if (d < 86400 * 30) return 'edited ' + Math.round(d / 86400) + ' days ago';
+    return 'edited ' + new Date(iso).toLocaleDateString('en-US');
+  }
+
+  color(k) {
+    return { discovery: 'var(--color-accent-2)', concept: 'var(--color-accent)', design: 'var(--color-accent-700)', styling: 'var(--color-accent-2-700)' }[k] || 'var(--color-accent)';
+  }
+
+  // furthest phase that has any progress — that is where the project actually is
+  currentPhase(p) {
+    const ph = p.phases || {};
+    let cur = PHASES[0];
+    PHASES.forEach((f) => { const d = ph[f.key] || {}; if ((d.progress || 0) > 0 || d.status === 'done' || d.status === 'in-progress') cur = f; });
+    return cur;
+  }
+  money(v) { return (v === null || v === undefined || v === '') ? '—' : '$' + Number(v).toLocaleString('en-US'); }
+  cat(id) { return (this.state.catalog || []).find((c) => c.id === id) || null; }
+
+  openProject(p) {
+    this.setState({ proj: p, view: 'proj', tab: 'discovery', answers: p.answers || {}, saved: '', pick: null, inbox: [] });
+    this.state.api.shareReviews(p).then((inbox) => this.setState({ inbox })).catch(() => {});
+  }
+
+  async persist(patch) {
+    const p = { ...this.state.proj, ...patch };
+    await this.state.api.saveProject(p);
+    this.setState({ proj: p });
+    this.refresh();
+  }
+
+  rooms() { return (this.state.proj && this.state.proj.rooms) || []; }
+
+  async setRooms(rooms) {
+    await this.persist({ rooms });
+    try { await this.state.api.refreshShares(this.state.proj); } catch (e) {}
+  }
+
+  renderVals() {
+    const s = this.state, api = s.api, u = s.user;
+    const admin = !!u && u.role === 'admin';
+    const v = { booting: s.booting, showShare: !s.booting && !!s.share, showLogin: !s.booting && !s.share && !u, showApp: !s.booting && !s.share && !!u, isAdmin: admin };
+
+    if (v.showShare) return Object.assign(v, this.shareVals());
+    if (v.showLogin) return Object.assign(v, this.loginVals());
+
+    Object.assign(v, {
+      userName: u.name || u.email,
+      userRole: ({ admin: 'Admin', designer: 'Designer', client: 'Client' }[u.role] || u.role),
+      initials: String(u.name || u.email).trim().split(/\s+/).slice(0, 2).map((x) => x[0].toUpperCase()).join(''),
+      out: async () => { await api.signOut(); this.setState({ user: null, proj: null, view: 'dash', fPw: '' }); },
+      goDash: () => this.setState({ view: 'dash', proj: null }),
+      goCatalog: () => this.setState({ view: 'catalog', form: null }),
+      goTeam: async () => { this.setState({ view: 'team' }); this.setState({ users: await api.listUsers() }); },
+      showDash: s.view === 'dash', showProj: s.view === 'proj' && !!s.proj,
+      showCatalog: s.view === 'catalog', showTeam: s.view === 'team' && admin,
+    });
+
+    if (v.showDash) {
+      v.projCount = (s.projects || []).length === 1 ? '1 active project' : (s.projects || []).length + ' projects';
+      v.summary = PHASES.map((f) => {
+        const inPhase = (s.projects || []).filter((p) => this.currentPhase(p).key === f.key);
+        return {
+          label: f.title, color: this.color(f.key), count: inPhase.length,
+          unit: inPhase.length === 1 ? 'project' : 'projects',
+          names: inPhase.length ? inPhase.map((p) => p.name).join(', ') : f.when,
+        };
+      });
+      v.projects = (s.projects || []).map((p) => {
+        const open = (p.reviews || []).filter((r) => !r.resolved).length;
+        const cur = this.currentPhase(p);
+        return {
+          phaseLabel: cur.title, phaseColor: this.color(cur.key), phaseStep: 'Phase ' + cur.n + ' of 4',
+          name: p.name, sub: [p.client, p.location].filter(Boolean).join(' · ') || 'no client yet',
+          cover: p.cover || PLACEHOLDER, status: p.status || 'draft', edited: this.ago(p.updatedAt),
+          hasPending: open > 0, pendingLabel: open + ' to review',
+          pips: PHASES.map((f) => ({ short: f.short, pct: ((p.phases && p.phases[f.key] && p.phases[f.key].progress) || 0) + '%', color: this.color(f.key) })),
+          open: () => this.openProject(p),
+        };
+      });
+      v.loadError = s.loadError;
+      v.needsSeed = admin && api.isFirebase() && (s.projects || []).length === 0;
+      v.seedNote = s.seedMsg || 'Import 86 Residence — four phases, five rooms with plans and moodboards, materials and palette — plus the 12-piece starter catalog and the studio questionnaire into Firestore. Runs once.';
+      v.seedLabel = s.seeding ? 'Importing…' : 'Import starter data';
+      v.runSeed = async () => {
+        if (this.state.seeding) return;
+        this.setState({ seeding: true, seedMsg: '' });
+        try {
+          const r = await api.seedFirestore(u);
+          await this.refresh();
+          this.setState({ seeding: false, seedMsg: r.catalog + ' catalog pieces, ' + r.projects + ' project and the questionnaire written to Firestore.' });
+        } catch (e) {
+          this.setState({ seeding: false, seedMsg: 'Could not write: ' + (e.message || e) + ' — check that the Firestore rules are published and that you are signed in as an admin.' });
+        }
+      };
+      v.newProject = async () => {
+        const name = window.prompt('Project name');
+        if (!name) return;
+        const client = window.prompt('Client (optional)') || '';
+        const p = await api.createProject(name, client, u);
+        await this.refresh();
+        this.openProject(p);
+      };
+    }
+
+    if (v.showCatalog) Object.assign(v, this.catalogVals(admin));
+    if (v.showProj) Object.assign(v, this.projectVals(admin));
+    if (v.showTeam) Object.assign(v, this.teamVals());
+    return v;
+  }
+
+  /* ---------- login ---------- */
+  loginVals() {
+    const s = this.state, api = s.api;
+    const v = {
+      signup: s.signup, fEmail: s.fEmail, fPw: s.fPw, fName: s.fName, authError: s.authError,
+      submitLabel: s.signup ? 'Create account' : 'Sign in',
+      toggleLabel: s.signup ? 'I already have an account' : 'Create an account',
+      greeting: (() => {
+        let n = '';
+        try {
+          n = localStorage.getItem('cs-last-user') || '';
+          if (/^alexandre rossler$/i.test(n.trim())) { n = 'Andre Rossler'; localStorage.setItem('cs-last-user', n); }
+        } catch (e) {}
+        return n ? 'Welcome back, ' + n.split(' ')[0] : 'Welcome back';
+      })(),
+      loginSteps: PHASES.map((f) => ({ n: '0' + f.n, title: f.title, when: f.when })),
+      modeNote: s.mode === 'firebase'
+        ? 'Connected to Firebase. New accounts need an invite from an admin.'
+        : 'Local mode (no Firebase keys yet) — data lives in this browser. Paste your keys into firebase-config.js to switch on the backend.',
+      toggleSignup: () => this.setState({ signup: !s.signup, authError: '' }),
+      setEmail: (e) => this.setState({ fEmail: e.target.value }),
+      setPw: (e) => this.setState({ fPw: e.target.value }),
+      setName: (e) => this.setState({ fName: e.target.value }),
+      google: async () => { try { const r = await api.signInGoogle(); if (s.mode !== 'firebase') this.hydrate(r); } catch (e) { this.setState({ authError: this.msg(e) }); } },
+      forgot: async () => {
+        if (!s.fEmail) return this.setState({ authError: 'Enter your email first.' });
+        try { await api.resetPassword(s.fEmail); this.setState({ authError: 'Reset link sent to ' + s.fEmail + '.' }); }
+        catch (e) { this.setState({ authError: this.msg(e) }); }
+      },
+    };
+    v.submit = async () => {
+      try {
+        const r = s.signup ? await api.signUpEmail(s.fEmail, s.fPw, s.fName) : await api.signInEmail(s.fEmail, s.fPw);
+        if (s.mode !== 'firebase') this.hydrate(r);
+      } catch (e) { this.setState({ authError: this.msg(e) }); }
+    };
+    v.onKey = (e) => { if (e.key === 'Enter') v.submit(); };
+    return v;
+  }
+
+  /* ---------- catalog ---------- */
+  catalogVals(admin) {
+    const s = this.state, api = s.api;
+    const all = s.catalog || [];
+    const rooms = [...new Set(all.map((c) => c.room).filter(Boolean))].sort();
+    const types = [...new Set(all.map((c) => c.type).filter(Boolean))].sort();
+    const stores = [...new Set(all.map((c) => c.retailer).filter(Boolean))].sort();
+    const q = s.q.toLowerCase().trim();
+    let list = all.filter((c) => {
+      if (s.fRoom && c.room !== s.fRoom) return false;
+      if (s.fType && c.type !== s.fType) return false;
+      if (s.fStore && c.retailer !== s.fStore) return false;
+      if (!q) return true;
+      return [c.name, c.retailer, c.type, c.room, c.color, c.finish, (c.tags || []).join(' ')].join(' ').toLowerCase().includes(q);
+    });
+    const by = { name: (a, b) => a.name.localeCompare(b.name), store: (a, b) => (a.retailer || '').localeCompare(b.retailer || ''), type: (a, b) => (a.type || '').localeCompare(b.type || ''), price: (a, b) => (b.price || 0) - (a.price || 0), recent: (a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || '') };
+    list = [...list].sort(by[s.sort] || by.recent);
+
+    const v = {
+      catCount: list.length + ' of ' + all.length + ' pieces',
+      canEditCatalog: admin,
+      roomOptions: (api && api.ROOM_TYPES) || rooms,
+      typeOptions: (api && api.ITEM_TYPES) || types,
+      storeOptions: stores,
+      q: s.q, fRoom: s.fRoom, fType: s.fType, fStore: s.fStore, sort: s.sort,
+      setQ: (e) => this.setState({ q: e.target.value }),
+      setFRoom: (e) => this.setState({ fRoom: e.target.value }),
+      setFType: (e) => this.setState({ fType: e.target.value }),
+      setFStore: (e) => this.setState({ fStore: e.target.value }),
+      setSort: (e) => this.setState({ sort: e.target.value }),
+      newPiece: () => this.setState({ form: { name: '', type: 'Sofa', room: 'Any room', retailer: '', url: '', image: '', dimensions: '', finish: '', color: '', price: '', notes: '', tags: '' } }),
+      catalog: list.map((c) => ({
+        name: c.name, retailer: c.retailer || '—', room: c.room || '—', type: c.type || '—',
+        image: c.image || PLACEHOLDER,
+        spec: [c.dimensions, c.color].filter(Boolean).join(' · ') || ' ',
+        price: this.money(c.price),
+        edit: () => this.setState({ form: { ...c, price: c.price == null ? '' : String(c.price), tags: (c.tags || []).join(', ') } }),
+      })),
+      editing: !!s.form,
+    };
+
+    if (s.form) {
+      const f = s.form;
+      const set = (k) => (e) => this.setState({ form: { ...this.state.form, [k]: e.target.value } });
+      Object.assign(v, {
+        editTitle: f.id ? 'Edit piece' : 'New piece',
+        e_name: f.name, e_retailer: f.retailer, e_type: f.type, e_room: f.room, e_price: f.price,
+        e_url: f.url, e_dimensions: f.dimensions, e_finish: f.finish, e_color: f.color, e_notes: f.notes,
+        e_tags: f.tags, e_image: f.image || PLACEHOLDER,
+        set_name: set('name'), set_retailer: set('retailer'), set_type: set('type'), set_room: set('room'),
+        set_price: set('price'), set_url: set('url'), set_dimensions: set('dimensions'), set_finish: set('finish'),
+        set_color: set('color'), set_notes: set('notes'), set_tags: set('tags'),
+        canDelete: !!f.id,
+        fetchLabel: s.fetching ? 'Fetching…' : 'Fetch details',
+        fetchDetails: () => this.fetchDetails(),
+        pickImage: async (e) => {
+          const file = e.target.files && e.target.files[0];
+          if (!file) return;
+          const url = await api.uploadFile('catalog', file);
+          this.setState({ form: { ...this.state.form, image: url } });
+        },
+        savePiece: async () => {
+          const f2 = this.state.form;
+          const rec = { ...f2, price: f2.price === '' ? null : Number(String(f2.price).replace(/[^0-9.]/g, '')), tags: String(f2.tags || '').split(',').map((x) => x.trim()).filter(Boolean) };
+          await api.saveCatalogItem(rec);
+          this.setState({ form: null, catalog: await api.listCatalog() });
+        },
+        cancelPiece: () => this.setState({ form: null }),
+        deletePiece: async () => {
+          await api.deleteCatalogItem(this.state.form.id);
+          this.setState({ form: null, catalog: await api.listCatalog() });
+        },
+      });
+    }
+    return v;
+  }
+
+  async fetchDetails() {
+    const f = this.state.form;
+    const url = (f && f.url || '').trim();
+    if (!url || !window.claude || !window.claude.complete) return;
+    this.setState({ fetching: true });
+    try {
+      const out = await window.claude.complete('Return ONLY JSON {"name":string,"retailer":string,"dimensions":string,"finish":string,"color":string,"price":number|null} describing the furniture product at this URL: ' + url);
+      const j = JSON.parse(String(out).replace(/```json|```/g, '').trim());
+      this.setState({ fetching: false, form: { ...this.state.form,
+        name: this.state.form.name || j.name || '', retailer: this.state.form.retailer || j.retailer || '',
+        dimensions: this.state.form.dimensions || j.dimensions || '', finish: this.state.form.finish || j.finish || '',
+        color: this.state.form.color || j.color || '', price: this.state.form.price || (j.price == null ? '' : String(j.price)) } });
+    } catch (e) { this.setState({ fetching: false }); }
+  }
+
+  /* ---------- project ---------- */
+  projectVals(admin) {
+    const s = this.state, api = s.api, p = s.proj, ph = p.phases || {};
+    const v = {
+      projName: p.name, projSub: [p.client, p.location].filter(Boolean).join(' · '), projEdited: this.ago(p.updatedAt),
+      phases: PHASES.map((f) => {
+        const d = ph[f.key] || {};
+        return { n: f.n, title: f.title, tagline: f.tagline,
+          statusLabel: ST[d.status] || 'Not started', pct: (d.progress || 0) + '%', dot: this.color(f.key),
+          ring: s.tab === f.key ? this.color(f.key) : 'transparent',
+          select: () => this.setState({ tab: f.key }) };
+      }),
+      tabs: TABS.map((t) => ({ label: t.label, ring: s.tab === t.key ? 'var(--color-accent)' : 'transparent', weight: s.tab === t.key ? '600' : '400', go: () => this.setState({ tab: t.key, pick: null }) })),
+      tabDiscovery: s.tab === 'discovery',
+      tabDoc: s.tab === 'concept' || s.tab === 'design' || s.tab === 'styling',
+      tabSelection: s.tab === 'selection',
+      tabFeedback: s.tab === 'feedback',
+      tabSharing: s.tab === 'sharing',
+      showPrice: s.tab === 'design' || s.tab === 'styling' || admin || (s.user && s.user.role === 'designer'),
+    };
+
+    if (v.tabDoc) {
+      const f = PHASES.find((x) => x.key === s.tab), d = ph[s.tab] || {};
+      Object.assign(v, { docTitle: f.title, docSub: d.note || f.tagline, docHref: d.doc || '', hasDoc: !!d.doc, noDoc: !d.doc });
+    }
+
+    if (v.tabDiscovery) {
+      const secs = s.sections || [];
+      let total = 0, done = 0;
+      secs.forEach((sec) => sec.questions.forEach((q) => { total++; const a = s.answers[q.id]; if (Array.isArray(a) ? a.length : (a || '').trim()) done++; }));
+      v.answeredLabel = done === 0 ? 'Not answered yet — ' + total + ' questions' : done + ' of ' + total + ' answered';
+      v.saveLabel = s.saved || 'Save answers';
+      v.saveAnswers = async () => {
+        const prog = total ? Math.round((done / total) * 100) : 0;
+        const phases = { ...p.phases, discovery: { ...(p.phases.discovery || {}), progress: prog, status: prog === 0 ? 'not-started' : prog === 100 ? 'done' : 'in-progress' } };
+        await this.persist({ answers: s.answers, phases });
+        this.setState({ saved: 'Saved' });
+        setTimeout(() => this.setState({ saved: '' }), 1600);
+      };
+      v.sections = secs.map((sec, i) => ({
+        n: String(i + 1).padStart(2, '0'), title: sec.title,
+        questions: sec.questions.map((q) => {
+          const val = s.answers[q.id];
+          const isPick = q.type === 'choice' || q.type === 'multi';
+          return {
+            label: q.label, isText: !isPick, isPick,
+            value: typeof val === 'string' ? val : '',
+            setValue: (e) => this.setState({ answers: { ...this.state.answers, [q.id]: e.target.value } }),
+            choices: (q.options || []).map((o) => {
+              const on = q.type === 'multi' ? (Array.isArray(val) && val.includes(o)) : val === o;
+              return {
+                label: o,
+                ring: on ? 'var(--color-accent)' : 'var(--color-neutral-300)',
+                bg: on ? 'var(--color-accent)' : 'transparent',
+                fg: on ? '#fff' : 'var(--color-neutral-800)',
+                pick: () => {
+                  const cur = this.state.answers[q.id];
+                  let next;
+                  if (q.type === 'multi') {
+                    const arr = Array.isArray(cur) ? [...cur] : [];
+                    const i2 = arr.indexOf(o);
+                    if (i2 >= 0) arr.splice(i2, 1); else arr.push(o);
+                    next = arr;
+                  } else next = cur === o ? '' : o;
+                  this.setState({ answers: { ...this.state.answers, [q.id]: next } });
+                },
+              };
+            }),
+          };
+        }),
+      }));
+    }
+
+    if (v.tabSelection) {
+      const rooms = this.rooms();
+      const verdictOf = (roomId, refId) => {
+        const r = (p.reviews || []).filter((x) => x.roomId === roomId && x.itemId === refId).slice(-1)[0];
+        return r ? r.verdict : null;
+      };
+      v.addRoom = async () => {
+        const name = window.prompt('Room name');
+        if (!name) return;
+        await this.setRooms([...rooms, { id: 'r-' + Math.random().toString(36).slice(2, 8), name, selected: [], alternatives: [] }]);
+      };
+      v.picking = !!s.pick;
+      if (s.pick) {
+        const q = s.pickQ.toLowerCase().trim();
+        const room = rooms.find((r) => r.id === s.pick.roomId);
+        v.pickTitle = 'Add to ' + (room ? room.name : '') + (s.pick.bucket === 'alternatives' ? ' — alternatives' : ' — layout');
+        v.pickQ = s.pickQ;
+        v.setPickQ = (e) => this.setState({ pickQ: e.target.value });
+        v.closePick = () => this.setState({ pick: null, pickQ: '' });
+        v.pickList = (s.catalog || []).filter((c) => !q || [c.name, c.retailer, c.type, c.room].join(' ').toLowerCase().includes(q)).map((c) => ({
+          name: c.name, retailer: c.retailer || '', image: c.image || PLACEHOLDER,
+          add: async () => {
+            const next = rooms.map((r) => r.id === s.pick.roomId ? { ...r, [s.pick.bucket]: [...(r[s.pick.bucket] || []), { refId: c.id, qty: 1 }] } : r);
+            await this.setRooms(next);
+          },
+        }));
+      }
+      const mk = (room, bucket) => (room[bucket] || []).map((entry, idx) => {
+        const c = this.cat(entry.refId) || { name: 'Removed from catalog', retailer: '', image: '' };
+        const verdict = verdictOf(room.id, entry.refId);
+        return {
+          name: c.name, retailer: c.retailer || '', image: c.image || PLACEHOLDER, price: this.money(c.price),
+          verdict: verdict === 'up' ? 'Approved' : verdict === 'down' ? 'Rejected' : '',
+          verdictBg: verdict === 'up' ? 'var(--color-accent-2)' : 'var(--color-accent-700)',
+          remove: async () => this.setRooms(rooms.map((r) => r.id === room.id ? { ...r, [bucket]: r[bucket].filter((_, i) => i !== idx) } : r)),
+          toAlt: async () => this.setRooms(rooms.map((r) => r.id === room.id ? { ...r, selected: r.selected.filter((_, i) => i !== idx), alternatives: [...(r.alternatives || []), entry] } : r)),
+          use: async () => this.setRooms(rooms.map((r) => r.id === room.id ? { ...r, alternatives: r.alternatives.filter((_, i) => i !== idx), selected: [...(r.selected || []), entry] } : r)),
+        };
+      });
+      v.rooms = rooms.map((room) => ({
+        name: room.name,
+        total: (room.selected || []).length + ' in layout · ' + (room.alternatives || []).length + ' alternatives',
+        rename: async (e) => this.setRooms(rooms.map((r) => r.id === room.id ? { ...r, name: e.target.value } : r)),
+        removeRoom: async () => this.setRooms(rooms.filter((r) => r.id !== room.id)),
+        addSelected: () => this.setState({ pick: { roomId: room.id, bucket: 'selected' }, pickQ: '' }),
+        addAlt: () => this.setState({ pick: { roomId: room.id, bucket: 'alternatives' }, pickQ: '' }),
+        selected: mk(room, 'selected'),
+        alternatives: mk(room, 'alternatives'),
+      }));
+    }
+
+    if (v.tabFeedback) {
+      const rs = [...(p.reviews || []), ...(s.inbox || [])]
+        .sort((a, b) => (a.at || '').localeCompare(b.at || '')).reverse();
+      v.noReviews = rs.length === 0;
+      const open = rs.filter((r) => !r.resolved).length;
+      v.reviewSub = open ? open + ' open · ' + rs.length + ' total' : rs.length + ' items, all handled';
+      v.reviews = rs.map((r) => {
+        const c = this.cat(r.itemId) || {};
+        const room = this.rooms().find((x) => x.id === r.roomId);
+        return {
+          name: c.name || 'Piece', image: c.image || PLACEHOLDER,
+          line: [room && room.name, r.by, new Date(r.at).toLocaleDateString('en-US')].filter(Boolean).join(' · '),
+          comment: r.comment || '',
+          badge: r.verdict === 'up' ? 'Approved' : 'Rejected',
+          badgeBg: r.verdict === 'up' ? 'var(--color-accent-2)' : 'var(--color-accent-700)',
+          dim: r.resolved ? '.55' : '1', open: !r.resolved,
+          resolve: async () => {
+            if ((p.reviews || []).some((x) => x.id === r.id)) { const np = await api.resolveReview(p, r.id); this.setState({ proj: np }); this.refresh(); }
+            else this.setState({ inbox: (this.state.inbox || []).map((x) => x.id === r.id ? { ...x, resolved: true } : x) });
+          },
+        };
+      });
+    }
+
+    if (v.tabSharing) {
+      v.shareName = s.shareName; v.sharePhase = s.sharePhase;
+      v.setShareName = (e) => this.setState({ shareName: e.target.value });
+      v.setSharePhase = (e) => this.setState({ sharePhase: e.target.value });
+      v.makeShare = async () => {
+        if (!s.shareName.trim()) return;
+        const phases = s.sharePhase === 'design' ? ['concept', 'design'] : ['concept'];
+        const { project } = await api.createShare(p, s.shareName.trim(), phases);
+        this.setState({ proj: project, shareName: '' });
+        this.refresh();
+      };
+      v.shares = (p.shares || []).map((sh) => ({
+        clientName: sh.clientName, url: api.shareUrl(sh.token),
+        scope: sh.phases.includes('design') ? 'Concept + Design' : 'Concept',
+        copyLabel: s.copied === sh.token ? 'Copied' : 'Copy link',
+        copy: async () => { try { await navigator.clipboard.writeText(api.shareUrl(sh.token)); } catch (e) {} this.setState({ copied: sh.token }); setTimeout(() => this.setState({ copied: '' }), 1600); },
+        revoke: async () => { const np = await api.revokeShare(p, sh.token); this.setState({ proj: np }); this.refresh(); },
+      }));
+    }
+    return v;
+  }
+
+  /* ---------- client share ---------- */
+  shareVals() {
+    const s = this.state, api = s.api;
+    const { project, share } = s.share;
+    const isPublic = !!s.share.public;
+    const cat = s.catalog || [];
+    const find = (id) => cat.find((c) => c.id === id) || {};
+    const doc = s.share.doc;
+    const st = s.shareState;
+    const touched = Object.keys(st).filter((k) => st[k] && (st[k].verdict || (st[k].comment || '').trim())).length;
+    return {
+      shareClient: share.clientName, shareProject: project.name,
+      shareHasDoc: !!doc, shareDocHref: doc || '',
+      shareSaveLabel: s.shareSaved || 'Send my feedback',
+      shareCount: touched ? touched + ' pieces marked' : 'Tap Yes or No on the pieces you have an opinion about.',
+      shareRooms: (project.rooms || []).map((room) => ({
+        name: room.name,
+        items: (isPublic ? (room.items || []) : (room.selected || [])).map((entry) => {
+          const c = isPublic ? entry : find(entry.refId);
+          const refId = isPublic ? entry.id : entry.refId;
+          const key = room.id + '|' + refId;
+          const cur = st[key] || {};
+          const on = (val) => cur.verdict === val;
+          const set = (patch) => this.setState({ shareState: { ...this.state.shareState, [key]: { ...cur, ...patch, roomId: room.id, itemId: refId } } });
+          return {
+            name: c.name || 'Piece', image: c.image || PLACEHOLDER,
+            meta: [c.retailer, c.dimensions].filter(Boolean).join(' · '),
+            comment: cur.comment || '',
+            setComment: (e) => set({ comment: e.target.value }),
+            up: () => set({ verdict: on('up') ? null : 'up' }),
+            down: () => set({ verdict: on('down') ? null : 'down' }),
+            upRing: on('up') ? 'var(--color-accent-2)' : 'var(--color-neutral-300)',
+            upBg: on('up') ? 'var(--color-accent-2-200)' : 'transparent',
+            downRing: on('down') ? 'var(--color-accent)' : 'var(--color-neutral-300)',
+            downBg: on('down') ? 'var(--color-accent-100)' : 'transparent',
+          };
+        }),
+      })),
+      shareSubmit: async () => {
+        let proj = project;
+        for (const key of Object.keys(st)) {
+          const e = st[key];
+          if (!e || (!e.verdict && !(e.comment || '').trim())) continue;
+          proj = await api.addReview(proj, { roomId: e.roomId, itemId: e.itemId, verdict: e.verdict || null, comment: e.comment || '', by: share.clientName, viaShare: isPublic ? share.token : null });
+        }
+        this.setState({ share: { ...this.state.share, project: proj }, shareSaved: 'Thank you — sent' });
+        setTimeout(() => this.setState({ shareSaved: '' }), 2600);
+      },
+    };
+  }
+
+  /* ---------- team ---------- */
+  teamVals() {
+    const s = this.state, api = s.api, u = s.user;
+    return {
+      invEmail: s.invEmail, invRole: s.invRole, inviteMsg: s.inviteMsg,
+      setInvEmail: (e) => this.setState({ invEmail: e.target.value }),
+      setInvRole: (e) => this.setState({ invRole: e.target.value }),
+      invite: async () => {
+        if (!/.+@.+\..+/.test(s.invEmail)) return this.setState({ inviteMsg: 'That email does not look right.' });
+        await api.inviteUser(s.invEmail, s.invRole);
+        this.setState({ users: await api.listUsers(), invEmail: '', inviteMsg: 'Invite recorded for ' + s.invEmail + '. They sign in with Google or create a password using that address.' });
+      },
+      users: (s.users || []).map((x) => {
+        const locked = (api.bootstrapAdmins || []).includes(String(x.email).toLowerCase());
+        return {
+          name: x.name || x.email, email: x.email, role: x.role, status: x.status || 'active', locked,
+          removable: !locked && x.id !== u.id,
+          setRole: async (e) => { await api.setUserRole(x.id, e.target.value); this.setState({ users: await api.listUsers() }); },
+          remove: async () => { await api.removeUser(x.id); this.setState({ users: await api.listUsers() }); },
+        };
+      }),
+    };
+  }
+
+  msg(e) {
+    const c = (e && e.code) || '';
+    if (c.includes('invalid-credential') || c.includes('wrong-password')) return 'Wrong email or password.';
+    if (c.includes('email-already-in-use')) return 'That email already has an account — sign in instead.';
+    if (c.includes('weak-password')) return 'Password too short (6 characters minimum).';
+    if (c.includes('user-not-found')) return 'No account with that email.';
+    return (e && e.message) || 'Could not continue.';
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="./image-slot.js"></script>
+<style>
+  body { margin:0; background:#F4EDE4; color:#3B342C; font-family:'Jost',sans-serif; -webkit-font-smoothing:antialiased; }
+  a { color:#8A6E45; text-decoration:none; }
+  a:hover { color:#3B342C; }
+  ::selection { background:#E7D9C2; }
+  *:focus-visible { outline:2px solid #A98A5F; outline-offset:2px; }
+</style>
+</helmet>
+
+<div style="max-width:1240px;margin:0 auto;padding:0 56px 120px">
+
+  <div style="display:flex;align-items:flex-end;justify-content:space-between;padding:38px 0 0;border-bottom:1px solid #E6DBCC;padding-bottom:20px">
+    <div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:26px;letter-spacing:0.01em;color:#3B342C">Cybelle Sampaio</div>
+      <div style="font-size:10px;letter-spacing:0.26em;text-transform:uppercase;color:#A98A5F;margin-top:4px">Studio · Design &amp; Decoration</div>
+    </div>
+    <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#9A8C7C;text-align:right;line-height:1.9">
+      Orange County · CA<br>Furnishings Investment · August 2026
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1.35fr 1fr;gap:64px;padding:88px 0 96px;align-items:end">
+    <div>
+      <div style="font-size:11px;letter-spacing:0.24em;text-transform:uppercase;color:#A98A5F;margin-bottom:26px">Furnishings investment</div>
+      <h1 style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:76px;line-height:1.02;letter-spacing:-0.015em;margin:0;max-width:16ch;text-wrap:pretty">The living room, in four directions</h1>
+      <p style="font-size:17px;line-height:1.75;color:#6A6154;max-width:48ch;margin:34px 0 0">Four complete furnishing schemes for the ground-floor living room — same footprint, four different temperaments. Every piece is listed with its store, dimensions, finish and cost, so the decision can be made on the whole room rather than one sofa at a time.</p>
+    </div>
+    <div style="display:grid;gap:24px;padding-bottom:8px">
+      <div style="border-top:1px solid #E6DBCC;padding-top:16px">
+        <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#9A8C7C;margin-bottom:6px">Prepared for</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:27px;line-height:1.2">Maya Vander</div>
+      </div>
+      <div style="border-top:1px solid #E6DBCC;padding-top:16px">
+        <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#9A8C7C;margin-bottom:6px">Residence</div>
+        <div style="font-size:15px;line-height:1.6;color:#3B342C">5901 SW 86 Street<br>Coral Gables, Miami, FL</div>
+      </div>
+      <div style="border-top:1px solid #E6DBCC;padding-top:16px">
+        <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#9A8C7C;margin-bottom:6px">Program</div>
+        <div style="font-size:15px;line-height:1.6;color:#3B342C">Five rooms · living room first</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="border-top:1px solid #E6DBCC;padding:80px 0">
+    <div style="display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:20px;margin-bottom:14px">
+      <h2 style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:44px;margin:0;letter-spacing:-0.01em">Ground floor</h2>
+      <div style="font-size:12px;letter-spacing:0.06em;color:#9A8C7C">Hover a room for detail · click a program room to filter below</div>
+    </div>
+    <p style="font-size:15px;line-height:1.7;color:#6A6154;max-width:60ch;margin:0 0 40px">Schematic of the permitted ground floor (Castillo Architecture, sheet A-1.1). Five rooms are in the program; the living room is under specification now.</p>
+
+    <div style="display:grid;grid-template-columns:1.55fr 1fr;gap:44px;align-items:start">
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);grid-auto-rows:96px;gap:10px">
+        <sc-for list="{{ plan }}" as="room" hint-placeholder-count="14">
+          <div style="{{ room.style }}" onMouseEnter="{{ room.onEnter }}" onMouseLeave="{{ room.onLeave }}" onClick="{{ room.onClick }}">
+            <div style="font-size:11.5px;letter-spacing:0.11em;text-transform:uppercase;line-height:1.4;text-wrap:pretty">{{ room.name }}</div>
+            <div style="font-size:10px;letter-spacing:0.14em;opacity:0.62;margin-top:5px">{{ room.tagline }}</div>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="background:#FBF7F1;border:1px solid #E6DBCC;border-radius:18px;padding:30px 30px 34px;min-height:300px">
+        <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#A98A5F;margin-bottom:14px">{{ card.status }}</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:34px;line-height:1.1;margin-bottom:6px">{{ card.name }}</div>
+        <div style="font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#9A8C7C;margin-bottom:22px">{{ card.code }}</div>
+        <p style="font-size:14.5px;line-height:1.75;color:#6A6154;margin:0 0 26px">{{ card.note }}</p>
+        <div style="display:grid;gap:12px;border-top:1px solid #E6DBCC;padding-top:20px">
+          <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:#9A8C7C">Stage</span><span>{{ card.stage }}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:#9A8C7C">Design fee</span><span>{{ card.fee }}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:#9A8C7C">Furnishings</span><span>{{ card.budget }}</span></div>
+        </div>
+        <div style="margin-top:26px;padding:16px 18px;background:#F1E7D8;border-radius:14px;font-size:12.5px;line-height:1.65;color:#6A6154">{{ card.hint }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="options" style="border-top:1px solid #E6DBCC;padding:80px 0 0">
+    <sc-if value="{{ isLiving }}" hint-placeholder-val="{{ true }}">
+      <div>
+        <div style="display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:20px">
+          <h2 style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:44px;margin:0;letter-spacing:-0.01em">Living Room · furnishings</h2>
+          <div style="font-size:12px;letter-spacing:0.06em;color:#9A8C7C">Costs are current retail estimates — to confirm at order</div>
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin:38px 0 0">
+          <sc-for list="{{ tabs }}" as="tab" hint-placeholder-count="4">
+            <div style="{{ tab.style }}" onClick="{{ tab.onClick }}">
+              <span style="font-size:10px;letter-spacing:0.18em;opacity:0.6">{{ tab.num }}</span>
+              <span style="font-family:'Cormorant Garamond',serif;font-size:21px;letter-spacing:0.01em">{{ tab.name }}</span>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1.25fr 1fr;gap:56px;padding:52px 0 44px;align-items:start">
+          <div>
+            <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#A98A5F;margin-bottom:16px">Option {{ opt.num }} · the character</div>
+            <p style="font-family:'Cormorant Garamond',serif;font-size:29px;line-height:1.45;color:#3B342C;margin:0;text-wrap:pretty">{{ opt.character }}</p>
+            <p style="font-size:15px;line-height:1.75;color:#6A6154;margin:24px 0 0;max-width:52ch">{{ opt.note }}</p>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+            <div style="background:#FBF7F1;border:1px solid #E6DBCC;border-radius:18px;padding:24px">
+              <div style="font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:#9A8C7C;margin-bottom:10px">Furnishings total</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:40px;line-height:1">{{ opt.totalFmt }}</div>
+              <div style="font-size:12px;color:#9A8C7C;margin-top:8px">{{ opt.pieceLine }}</div>
+            </div>
+            <div style="background:#FBF7F1;border:1px solid #E6DBCC;border-radius:18px;padding:24px">
+              <div style="font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:#9A8C7C;margin-bottom:10px">Anchor piece</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:22px;line-height:1.25">{{ opt.anchor }}</div>
+              <div style="font-size:12px;color:#9A8C7C;margin-top:8px">{{ opt.anchorMeta }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:#FBF7F1;border:1px solid #E6DBCC;border-radius:20px;overflow:hidden">
+          <div style="display:grid;grid-template-columns:88px 1.7fr 0.95fr 0.8fr 46px 104px 112px;gap:18px;padding:18px 28px;background:#F1E7D8;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#8A7E6C">
+            <div></div><div>Item · store</div><div>Dimensions</div><div>Finish</div><div style="text-align:right">Qty</div><div style="text-align:right">Unit est.</div><div style="text-align:right">Line total</div>
+          </div>
+          <sc-for list="{{ opt.rows }}" as="row" hint-placeholder-count="9">
+            <div style="display:grid;grid-template-columns:88px 1.7fr 0.95fr 0.8fr 46px 104px 112px;gap:18px;padding:18px 28px;align-items:center;border-top:1px solid #EDE3D5">
+              <div style="width:88px;height:74px;background:#F4EDE4;border-radius:12px;display:flex;align-items:center;justify-content:center;overflow:hidden">
+                <img src="{{ row.img }}" alt="{{ row.name }}" style="max-width:82%;max-height:82%;object-fit:contain;mix-blend-mode:multiply">
+              </div>
+              <div>
+                <div style="font-size:15px;line-height:1.4;color:#3B342C">{{ row.name }}</div>
+                <div style="font-size:11.5px;letter-spacing:0.1em;text-transform:uppercase;color:#A98A5F;margin-top:5px">{{ row.store }}</div>
+              </div>
+              <div style="font-size:13px;color:#6A6154;line-height:1.5">{{ row.size }}</div>
+              <div style="font-size:13px;color:#6A6154;line-height:1.5">{{ row.color }}</div>
+              <div style="font-size:14px;text-align:right;color:#6A6154">{{ row.qty }}</div>
+              <div style="font-size:14px;text-align:right;color:#6A6154">{{ row.unitFmt }}</div>
+              <div style="font-size:15px;text-align:right">{{ row.lineFmt }}</div>
+            </div>
+          </sc-for>
+          <div style="display:grid;grid-template-columns:88px 1.7fr 0.95fr 0.8fr 46px 104px 112px;gap:18px;padding:24px 28px;border-top:1px solid #DCCFBB;background:#F7F0E6">
+            <div></div>
+            <div style="font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#8A7E6C">Furnishings subtotal · option {{ opt.num }}</div>
+            <div></div><div></div><div></div>
+            <div style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:#9A8C7C;text-align:right">{{ opt.count }} pcs</div>
+            <div style="font-family:'Cormorant Garamond',serif;font-size:26px;text-align:right;line-height:1">{{ opt.totalFmt }}</div>
+          </div>
+        </div>
+
+        <p style="font-size:12.5px;line-height:1.7;color:#9A8C7C;margin:18px 0 0;max-width:80ch">Estimates reflect current published retail and exclude tax, freight, delivery and install. Dimensions and finish names are taken from published specs and are to be verified against the order confirmation.</p>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isUpcoming }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:20px 0 0">
+        <h2 style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:44px;margin:0 0 18px;letter-spacing:-0.01em">{{ card.name }} · not yet specified</h2>
+        <p style="font-size:16px;line-height:1.75;color:#6A6154;max-width:56ch;margin:0 0 34px">This room is in the five-room program but has no sourcing list yet. Concept direction and furnishings follow once the living room is approved.</p>
+        <div style="display:inline-flex;gap:14px;align-items:center;padding:16px 24px;background:#FBF7F1;border:1px solid #E6DBCC;border-radius:999px;font-size:13px;letter-spacing:0.04em;color:#6A6154">
+          <span style="width:7px;height:7px;border-radius:999px;background:#A98A5F"></span>{{ card.stage }} · design fee {{ card.fee }}
+        </div>
+        <div style="margin-top:40px"><a href="#options" onClick="{{ backToLiving }}" style="font-size:12px;letter-spacing:0.18em;text-transform:uppercase;color:#8A6E45">← Back to the living room</a></div>
+      </div>
+    </sc-if>
+  </div>
+
+  <div style="border-top:1px solid #E6DBCC;margin-top:80px;padding:80px 0">
+    <h2 style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:44px;margin:0 0 14px;letter-spacing:-0.01em">Side by side</h2>
+    <p style="font-size:15px;line-height:1.7;color:#6A6154;max-width:58ch;margin:0 0 44px">The four schemes at a glance. Difference is shown against the most economical direction.</p>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:18px">
+      <sc-for list="{{ compare }}" as="c" hint-placeholder-count="4">
+        <div style="{{ c.style }}" onClick="{{ c.onClick }}">
+          <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#A98A5F">Option {{ c.num }}</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:28px;line-height:1.15;margin:10px 0 20px">{{ c.name }}</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:34px;line-height:1">{{ c.totalFmt }}</div>
+          <div style="font-size:12px;color:#9A8C7C;margin-top:8px">{{ c.delta }}</div>
+          <div style="border-top:1px solid #E6DBCC;margin-top:24px;padding-top:18px;display:grid;gap:10px">
+            <div style="display:flex;justify-content:space-between;font-size:12.5px"><span style="color:#9A8C7C">Pieces</span><span>{{ c.count }}</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:12.5px"><span style="color:#9A8C7C">Seating</span><span>{{ c.seating }}</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:12.5px"><span style="color:#9A8C7C">Coffee table</span><span>{{ c.table }}</span></div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="border-top:1px solid #E6DBCC;padding:80px 0 0">
+    <div style="display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:20px;margin-bottom:12px">
+      <h2 style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:44px;margin:0;letter-spacing:-0.01em">Drawings &amp; renderings</h2>
+      <div style="font-size:12px;letter-spacing:0.06em;color:#9A8C7C">Drop files straight onto a frame</div>
+    </div>
+    <p style="font-size:15px;line-height:1.7;color:#6A6154;max-width:58ch;margin:0 0 40px">Reserved for the CAD furniture plan, elevations and rendering as they come in.</p>
+
+    <div style="display:grid;gap:22px">
+      <div style="min-width:0">
+        <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#A98A5F;margin-bottom:14px">3D rendering · living room</div>
+        <image-slot id="csv-render-living" style="width:100%;height:460px" shape="rounded" radius="20" placeholder="Drop the living room rendering"></image-slot>
+      </div>
+      <div style="display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:22px">
+        <div style="min-width:0">
+          <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#A98A5F;margin-bottom:14px">CAD furniture plan</div>
+          <image-slot id="csv-cad-plan" style="width:100%;height:340px" shape="rounded" radius="20" placeholder="Drop the CAD plan (PNG/JPG export)"></image-slot>
+        </div>
+        <div style="min-width:0">
+          <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#A98A5F;margin-bottom:14px">Finish &amp; material swatches</div>
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px">
+            <image-slot id="csv-swatch-1" style="width:100%;height:160px" shape="rounded" radius="16" placeholder="Textile"></image-slot>
+            <image-slot id="csv-swatch-2" style="width:100%;height:160px" shape="rounded" radius="16" placeholder="Wood"></image-slot>
+            <image-slot id="csv-swatch-3" style="width:100%;height:160px" shape="rounded" radius="16" placeholder="Stone"></image-slot>
+            <image-slot id="csv-swatch-4" style="width:100%;height:160px" shape="rounded" radius="16" placeholder="Metal"></image-slot>
+          </div>
+        </div>
+      </div>
+      <div style="min-width:0">
+        <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#A98A5F;margin-bottom:14px">Elevation sketches</div>
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px">
+          <image-slot id="csv-elev-1" style="width:100%;height:250px" shape="rounded" radius="18" placeholder="Elevation A"></image-slot>
+          <image-slot id="csv-elev-2" style="width:100%;height:250px" shape="rounded" radius="18" placeholder="Elevation B"></image-slot>
+          <image-slot id="csv-elev-3" style="width:100%;height:250px" shape="rounded" radius="18" placeholder="Elevation C"></image-slot>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="border-top:1px solid #E6DBCC;margin-top:88px;padding-top:34px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#9A8C7C">
+    <div>Cybelle Sampaio Studio · Design &amp; Decoration</div>
+    <div>Living Room Investment · 5901 SW 86 Street</div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+const R = 'refs/';
+
+const P = {
+  rug:      { name: 'Vaughn Area Rug, performance', store: 'Crate & Barrel', size: "9' × 12'", color: 'Ivory / flax', unit: 1899 },
+  brooklin: { name: 'Brooklin End Table', store: 'AllModern', size: '20" dia × 22" h', color: 'Walnut + travertine top', unit: 420 },
+  turn:     { name: 'Turn Tall Side Table', store: 'Blu Dot', size: '15" dia × 22" h', color: 'Solid walnut, turned', unit: 995 },
+  armengol: { name: 'Armengol Accent End Table', store: 'AllModern', size: '12" dia × 24" h', color: 'Aged brass + walnut top', unit: 340 },
+  altan:    { name: 'Altan Accent Stool', store: 'AllModern', size: '17" dia × 17" h', color: 'Chocolate bouclé', unit: 380 },
+  linton:   { name: 'Linton Genuine Leather Club Chair', store: 'AllModern', size: '33" w × 34" d × 27" h', color: 'Chestnut leather', unit: 1650 },
+  herman:   { name: 'Herman Cocktail Table', store: 'Natuzzi Italia', size: '47" × 47" × 11" h', color: 'Bronze frame, greige top', unit: 3400 },
+  dualite:  { name: 'Dualite Coffee Table', store: 'Crate & Barrel', size: '60" w × 24" d × 12" h', color: 'Travertine / burlwood', unit: 2299 },
+  drift:    { name: 'Drift 5-Piece L-Shape Sectional, power triple recliner', store: 'Crate & Barrel', size: '141" w × 105" d × 31" h', color: 'Sorrel', unit: 8499 },
+  decor:    { name: 'Styling package — books, vessels, stems', store: 'Studio sourced', size: 'Assorted', color: 'Sage, brass, glass', unit: 450 }
+};
+const it = (key, img, over) => Object.assign({ qty: 1, img: R + img }, P[key], over || {});
+
+const OPTIONS = [
+  {
+    num: '01', name: 'Eden',
+    character: 'Quiet and tailored — a low beige sectional, chestnut leather, and a bronze table holding the centre.',
+    note: 'The most restrained of the four. Everything sits low and horizontal, with sage ottomans and a bronze cocktail table carrying the only real contrast. Best if the room should read calm from the entry.',
+    anchor: 'Modani Eden Sectional', anchorMeta: '126" w · beige performance weave',
+    seating: 'Sectional + club chair', table: 'Natuzzi Herman, bronze',
+    rows: [
+      { name: 'Eden Sectional Sofa', store: 'Modani', size: '126" w × 94" d × 27" h', color: 'Beige performance weave', qty: 1, unit: 4990, img: R + 'canva-p1-01.png' },
+      it('rug', 'canva-p1-00.png'),
+      it('herman', 'canva-p1-06.png'),
+      it('linton', 'canva-p1-05.png'),
+      it('brooklin', 'canva-p1-02.png', { qty: 2 }),
+      { name: 'Ashford Tufted Ottoman', store: 'AllModern', size: '28" w × 20" d × 17" h', color: 'Sage green bouclé', qty: 2, unit: 560, img: R + 'canva-p1-10.png' },
+      it('altan', 'canva-p1-03.png'),
+      it('turn', 'canva-p1-12.png'),
+      it('armengol', 'canva-p1-13.png'),
+      it('decor', 'canva-p1-08.png')
+    ]
+  },
+  {
+    num: '02', name: 'Drift',
+    character: 'The comfort-first scheme — a reclining sectional in Sorrel, softened by cream and travertine.',
+    note: 'Built around motion furniture, so it carries the highest cost and the most everyday use. Travertine and marble keep it from reading heavy; the cognac leather stools add the warmth the recliner takes away.',
+    anchor: 'Drift Sectional, power recline', anchorMeta: '141" w · Sorrel',
+    seating: 'Power sectional + chair', table: 'Dualite, travertine',
+    rows: [
+      it('drift', 'canva-p2-03.png'),
+      it('rug', 'canva-p2-00.png'),
+      it('dualite', 'canva-p2-06.png'),
+      { name: 'Wanneta Upholstered Chair', store: 'AllModern', size: '34" w × 33" d × 28" h', color: 'Cream, walnut legs', qty: 1, unit: 1290, img: R + 'canva-p2-01.png' },
+      { name: 'Echo Stool', store: 'Rove Concepts', size: '18" w × 14" d × 17" h', color: 'Cognac leather, oak', qty: 2, unit: 795, img: R + 'canva-p2-07.png' },
+      { name: 'Marble Pedestal Side Table', store: 'AllModern', size: '12" dia × 22" h', color: 'Veined marble', qty: 1, unit: 690, img: R + 'canva-p2-02.png' },
+      it('brooklin', 'canva-p2-04.png', { qty: 2 }),
+      it('turn', 'canva-p2-09.png'),
+      it('decor', 'canva-p2-10.png')
+    ]
+  },
+  {
+    num: '03', name: 'Lounge Deep',
+    character: 'Deep, ivory and generous — a chaise sectional with clay bouclé ottomans on brass legs.',
+    note: 'The most social plan: the deep chaise and two long ottomans let seating move around the table. Clay and travertine warm the ivory upholstery, and the caned armchair gives the room an older note.',
+    anchor: 'Lounge Deep Sectional w/ chaise', anchorMeta: '143" w · ivory performance',
+    seating: 'Chaise sectional + armchair', table: 'Dualite, travertine',
+    rows: [
+      { name: 'Lounge Deep 4-Piece L-Shape Sectional with Chaise', store: 'Crate & Barrel', size: '143" w × 105" d × 31" h', color: 'Ivory performance weave', qty: 1, unit: 6999, img: R + 'canva-p3-02.png' },
+      it('rug', 'canva-p3-00.png'),
+      it('dualite', 'canva-p3-12.png'),
+      { name: 'V. Wells 32" Ottoman', store: 'Crate & Barrel', size: '32" w × 20" d × 17" h', color: 'Clay bouclé, brass legs', qty: 2, unit: 1099, img: R + 'canva-p3-10.png' },
+      { name: 'Caramelo Armchair', store: 'AllModern', size: '29" w × 32" d × 32" h', color: 'Cream, caned back, walnut', qty: 1, unit: 1150, img: R + 'canva-p3-04.png' },
+      it('brooklin', 'canva-p3-01.png', { qty: 2 }),
+      it('altan', 'canva-p3-08.png'),
+      { name: 'Travertine Drink Table', store: 'Blu Dot', size: '12" dia × 22" h', color: 'Travertine, brass stem', qty: 1, unit: 650, img: R + 'canva-p3-09.png' },
+      it('turn', 'canva-p3-07.png'),
+      it('decor', 'canva-p3-06.png')
+    ]
+  },
+  {
+    num: '04', name: 'Sorrel & Leather',
+    character: 'The warmest room — Sorrel sectional, chestnut leather, bronze, and cream shearling ottomans.',
+    note: 'Same reclining sectional as Option 02 but dressed in leather and bronze instead of stone. Fewer stone surfaces means a softer, more forgiving room, and the two Nils ottomans double as occasional seating.',
+    anchor: 'Drift Sectional, power recline', anchorMeta: '141" w · Sorrel',
+    seating: 'Power sectional + club chair', table: 'Natuzzi Herman, bronze',
+    rows: [
+      it('drift', 'canva-p4-05.png'),
+      it('rug', 'canva-p4-00.png'),
+      it('herman', 'canva-p4-02.png'),
+      it('linton', 'canva-p4-01.png'),
+      { name: 'Nils Chair Ottoman', store: 'West Elm', size: '24" w × 20" d × 16" h', color: 'Cream, walnut legs', qty: 2, unit: 599, img: R + 'canva-p4-11.png' },
+      { name: 'Linen Upholstered Ottoman', store: 'AllModern', size: '18" w × 18" d × 17" h', color: 'Sage linen', qty: 1, unit: 420, img: R + 'canva-p4-07.png' },
+      it('brooklin', 'canva-p4-06.png', { qty: 2 }),
+      it('turn', 'canva-p4-09.png'),
+      it('armengol', 'canva-p4-10.png'),
+      it('decor', 'canva-p4-04.png')
+    ]
+  }
+];
+
+const PLAN = [
+  { id: 'terrace',   name: 'Terrace',        code: '113', tagline: 'Rear', span: '1 / 1 / 2 / 7', kind: 'out',  note: 'Covered terrace off the family room, connecting to the pool area. Not in the current furnishing program.', stage: 'Out of scope', fee: '—', budget: '—' },
+  { id: 'living',    name: 'Living Room',    code: '100', tagline: 'In progress', span: '2 / 1 / 4 / 3', kind: 'live', note: 'The first room in the program. Four complete furnishing directions are specified below, all working to the same footprint.', stage: 'Sourcing · four options', fee: '$2,400', budget: '$12.9k – $18.5k est.' },
+  { id: 'family',    name: 'Family Room',    code: '104', tagline: 'Program', span: '2 / 3 / 4 / 5', kind: 'prog', note: 'Open-concept space at the centre of the plan, flowing to kitchen, breakfast and terrace. Second room in the program.', stage: 'Awaiting living-room approval', fee: '$2,400', budget: 'To be set' },
+  { id: 'breakfast', name: 'Breakfast',      code: '105', tagline: 'Program', span: '2 / 5 / 3 / 7', kind: 'prog', note: 'Casual dining beside the kitchen, with the terrace on one side. Table, seating and pendant only.', stage: 'Awaiting living-room approval', fee: '$950', budget: 'To be set' },
+  { id: 'pantry',    name: "Butler's / Pantry", code: '106', tagline: 'Service', span: '3 / 5 / 4 / 7', kind: 'out', note: 'Service run between kitchen and dining. No decoration scope.', stage: 'Out of scope', fee: '—', budget: '—' },
+  { id: 'dining',    name: 'Dining Room',    code: '102', tagline: 'Program', span: '4 / 1 / 5 / 3', kind: 'prog', note: 'Formal dining off the grand foyer. Table, ten chairs, lighting and drapery.', stage: 'Awaiting living-room approval', fee: '$2,400', budget: 'To be set' },
+  { id: 'kitchen',   name: 'Kitchen',        code: '103', tagline: 'Not in scope', span: '4 / 3 / 5 / 5', kind: 'out', note: 'The studio does not take on kitchen projects — millwork and appliances stay with the builder.', stage: 'Excluded by scope', fee: '—', budget: '—' },
+  { id: 'stair',     name: 'Stair · Elevator', code: '—', tagline: 'Circulation', span: '5 / 3 / 6 / 4', kind: 'out', note: 'Circulation core. Runner and light fixture may be added later.', stage: 'Out of scope', fee: '—', budget: '—' },
+  { id: 'powder',    name: 'Powder',         code: '107', tagline: 'Service', span: '5 / 4 / 6 / 5', kind: 'out', note: 'No bathroom scope in this program.', stage: 'Excluded by scope', fee: '—', budget: '—' },
+  { id: 'foyer',     name: 'Grand Foyer',    code: '101', tagline: 'Later phase', span: '5 / 1 / 6 / 3', kind: 'out', note: 'Double-height entry. A console, mirror and lighting are a likely add-on once the main rooms land.', stage: 'Possible add-on', fee: '$950', budget: '—' },
+  { id: 'bed5',      name: 'Bedroom 5 · Study', code: '108', tagline: 'Later phase', span: '4 / 5 / 6 / 7', kind: 'out', note: 'Ground-floor guest suite / study. Not in the five-room program.', stage: 'Out of scope', fee: '—', budget: '—' },
+  { id: 'porch',     name: 'Front Porch',    code: '—', tagline: 'Entry', span: '6 / 1 / 7 / 3', kind: 'out', note: 'Entry porch.', stage: 'Out of scope', fee: '—', budget: '—' },
+  { id: 'garage',    name: '2-Car Garage',   code: '110', tagline: '—', span: '6 / 3 / 7 / 7', kind: 'out', note: 'Garage.', stage: 'Out of scope', fee: '—', budget: '—' },
+  { id: 'primary',   name: 'Primary Bedroom', code: 'Upstairs', tagline: 'Program · L2', span: '7 / 1 / 8 / 3', kind: 'prog', note: 'Fifth room in the program, on the second floor — shown here for completeness. Bed, seating, nightstands, lighting and drapery.', stage: 'Awaiting living-room approval', fee: '$1,800', budget: 'To be set' }
+];
+
+const fmt = n => '$' + n.toLocaleString('en-US', { maximumFractionDigits: 0 });
+const totalOf = o => o.rows.reduce((s, r) => s + r.qty * r.unit, 0);
+const countOf = o => o.rows.reduce((s, r) => s + r.qty, 0);
+
+class Component extends DCLogic {
+  state = { opt: 0, room: 'living', hover: null };
+
+  planStyle(r, isHover) {
+    const base = 'grid-area:' + r.span + ';border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;justify-content:flex-end;transition:background .18s,color .18s,border-color .18s;';
+    const active = this.state.room === r.id;
+    if (r.kind === 'live') {
+      return base + 'cursor:pointer;background:' + (isHover || active ? '#3B342C' : '#A98A5F') + ';color:#F7F0E6;border:1px solid ' + (isHover || active ? '#3B342C' : '#A98A5F') + ';';
+    }
+    if (r.kind === 'prog') {
+      return base + 'cursor:pointer;background:' + (isHover || active ? '#EBDCC4' : '#FBF7F1') + ';color:#3B342C;border:1px solid ' + (active ? '#A98A5F' : '#E0D3BF') + ';';
+    }
+    return base + 'cursor:default;background:transparent;color:' + (isHover ? '#6A6154' : '#A79B8A') + ';border:1px dashed #DFD3C2;';
+  }
+
+  renderVals() {
+    const optIdx = this.state.opt;
+    const totals = OPTIONS.map(totalOf);
+    const min = Math.min.apply(null, totals);
+    const o = OPTIONS[optIdx];
+    const total = totals[optIdx];
+    const roomObj = PLAN.find(r => r.id === this.state.room) || PLAN[1];
+    const cardRoom = PLAN.find(r => r.id === (this.state.hover || this.state.room)) || roomObj;
+
+    return {
+      isLiving: this.state.room === 'living',
+      isUpcoming: this.state.room !== 'living',
+      backToLiving: () => this.setState({ room: 'living' }),
+
+      plan: PLAN.map(r => ({
+        name: r.name + (r.code !== '—' ? '  ' + r.code : ''),
+        tagline: r.tagline,
+        style: this.planStyle(r, this.state.hover === r.id),
+        onEnter: () => this.setState({ hover: r.id }),
+        onLeave: () => this.setState({ hover: null }),
+        onClick: () => { if (r.kind !== 'out') this.setState({ room: r.id }); }
+      })),
+
+      card: {
+        name: cardRoom.name,
+        code: cardRoom.code === '—' ? 'Ground floor' : 'Room ' + cardRoom.code,
+        status: cardRoom.kind === 'live' ? 'Under specification' : cardRoom.kind === 'prog' ? 'In the program' : 'Not in this program',
+        note: cardRoom.note,
+        stage: cardRoom.stage,
+        fee: cardRoom.fee,
+        budget: cardRoom.budget,
+        hint: cardRoom.kind === 'out'
+          ? 'Only the five program rooms can be opened.'
+          : cardRoom.kind === 'live'
+            ? 'Showing all four furnishing directions below.'
+            : 'Click to open this room in the sheet below.'
+      },
+
+      tabs: OPTIONS.map((op, i) => ({
+        num: op.num, name: op.name,
+        style: 'cursor:pointer;display:flex;flex-direction:column;gap:4px;padding:14px 26px 15px;border-radius:14px;transition:background .18s,color .18s;'
+          + (i === optIdx
+            ? 'background:#3B342C;color:#F7F0E6;border:1px solid #3B342C;'
+            : 'background:#FBF7F1;color:#6A6154;border:1px solid #E6DBCC;'),
+        onClick: () => this.setState({ opt: i })
+      })),
+
+      opt: {
+        num: o.num, character: o.character, note: o.note,
+        anchor: o.anchor, anchorMeta: o.anchorMeta,
+        totalFmt: fmt(total), count: countOf(o),
+        pieceLine: countOf(o) + ' pieces · estimates to confirm',
+        rows: o.rows.map(r => ({
+          img: r.img, name: r.name, store: r.store, size: r.size, color: r.color,
+          qty: r.qty, unitFmt: fmt(r.unit), lineFmt: fmt(r.unit * r.qty)
+        }))
+      },
+
+      compare: OPTIONS.map((op, i) => ({
+        num: op.num, name: op.name,
+        totalFmt: fmt(totals[i]),
+        delta: totals[i] === min ? 'Most economical' : '+ ' + fmt(totals[i] - min) + ' vs Option ' + OPTIONS[totals.indexOf(min)].num,
+        count: countOf(op), seating: op.seating, table: op.table,
+        style: 'cursor:pointer;border-radius:18px;padding:26px 24px 24px;transition:background .18s;'
+          + (i === optIdx ? 'background:#F7F0E6;border:1px solid #A98A5F;' : 'background:#FBF7F1;border:1px solid #E6DBCC;'),
+        onClick: () => this.setState({ opt: i, room: 'living' })
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>
