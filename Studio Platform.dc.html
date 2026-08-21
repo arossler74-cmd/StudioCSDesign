@@ -218,28 +218,25 @@
                 <p style="margin: 6px 0 0; font-size: 13.5px; color: var(--color-accent-800);">{{ loadError }}</p>
               </sc-if>
             </div>
-            <button type="button" onClick="{{ newProject }}" class="btn btn-primary">New project</button>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <sc-if value="{{ canSeed }}" hint-placeholder-val="{{ true }}">
+                <button type="button" onClick="{{ runSeed }}" class="btn btn-ghost">{{ seedLabel }}</button>
+              </sc-if>
+              <button type="button" onClick="{{ newProject }}" class="btn btn-primary">New project</button>
+            </div>
           </div>
 
-          <sc-if value="{{ needsSeed }}" hint-placeholder-val="{{ false }}">
-            <div class="card elev-md" style="padding: 26px 28px; margin-bottom: 32px; display: flex; align-items: center; gap: 24px; flex-wrap: wrap;">
-              <div style="flex: 1; min-width: 280px;">
-                <div style="font-family: var(--font-heading); font-size: 24px; color: var(--color-accent-900);">Set up this workspace</div>
-                <div style="font-size: 14px; color: var(--color-neutral-700); margin-top: 4px; max-width: 62ch; text-wrap: pretty;">{{ seedNote }}</div>
-                <sc-if value="{{ seeding }}" hint-placeholder-val="{{ false }}">
-                  <div style="margin-top: 14px; max-width: 62ch;">
-                    <div style="height: 6px; border-radius: 999px; background: var(--color-neutral-200); overflow: hidden;">
-                      <div style="height: 100%; width: {{ seedPctCss }}; background: var(--color-accent); transition: width .25s ease;"></div>
-                    </div>
-                    <div style="font-size: 12.5px; color: var(--color-neutral-600); margin-top: 6px;">{{ seedStep }}</div>
-                  </div>
-                </sc-if>
+          <sc-if value="{{ seeding }}" hint-placeholder-val="{{ false }}">
+            <div style="margin: -20px 0 32px; max-width: 62ch;">
+              <div style="height: 6px; border-radius: 999px; background: var(--color-neutral-200); overflow: hidden;">
+                <div style="height: 100%; width: {{ seedPctCss }}; background: var(--color-accent); transition: width .25s ease;"></div>
               </div>
-              <div style="display: flex; align-items: center; gap: 12px;">
-                <button type="button" onClick="{{ dismissSeed }}" class="btn btn-ghost">Not now</button>
-                <button type="button" onClick="{{ runSeed }}" class="btn btn-primary">{{ seedLabel }}</button>
-              </div>
+              <div style="font-size: 12.5px; color: var(--color-neutral-600); margin-top: 6px;">{{ seedStep }}</div>
             </div>
+          </sc-if>
+
+          <sc-if value="{{ seedMsg }}" hint-placeholder-val="{{ false }}">
+            <div class="card" style="padding: 14px 18px; margin-bottom: 28px; font-size: 13.5px; color: var(--color-accent-900); text-wrap: pretty;">{{ seedMsg }}</div>
           </sc-if>
 
           <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 36px;">
@@ -751,9 +748,7 @@ class Component extends DCLogic {
     invEmail: '', invRole: 'designer', inviteMsg: '',
     q: '', fRoom: '', fType: '', fStore: '', sort: 'recent', form: null, fetching: false,
     pick: null, pickQ: '', shareName: '', sharePhase: 'concept', copied: '',
-    share: null, shareState: {}, shareSaved: '', seeding: false, seedMsg: '', inbox: [], loadError: '',
-    // Read at startup so "Not now" on the starter-data card survives a reload.
-    seedDismissed: (() => { try { return localStorage.getItem('cs-seed-dismissed') === '1'; } catch (e) { return false; } })() };
+    share: null, shareState: {}, shareSaved: '', seeding: false, seedMsg: '', inbox: [], loadError: '' };
 
   async componentDidMount() {
     const api = await import('./platform-data.js');
@@ -895,13 +890,12 @@ class Component extends DCLogic {
         };
       });
       v.loadError = s.loadError;
-      v.needsSeed = admin && api.isFirebase() && (s.projects || []).length === 0 && !s.seedDismissed;
-      v.dismissSeed = () => {
-        try { localStorage.setItem('cs-seed-dismissed', '1'); } catch (e) {}
-        this.setState({ seedDismissed: true });
-      };
-      v.seedNote = s.seedMsg || 'Import 86 Residence — four phases, five rooms with plans and moodboards, materials and palette — plus the 12-piece starter catalog and the studio questionnaire into Firestore. Runs once.';
-      v.seedLabel = s.seeding ? (s.seedPct ? 'Importing ' + s.seedPct + '%' : 'Importing…') : 'Import starter data';
+      // Offered to any admin on Firebase, not only an empty workspace: the seed
+      // skips catalog rows that already exist and merges the project, so it is
+      // safe to run again after a partial or failed attempt.
+      v.canSeed = admin && api.isFirebase();
+      v.seedMsg = s.seedMsg || '';
+      v.seedLabel = s.seeding ? (s.seedPct ? 'Importing ' + s.seedPct + '%' : 'Importing…') : 'Import 86 Residence';
       v.seeding = !!s.seeding;
       v.seedPctCss = (s.seedPct || 0) + '%';
       v.seedStep = s.seedStep || '';
@@ -919,8 +913,16 @@ class Component extends DCLogic {
           this.setState({ seeding: false, seedPct: 0, seedStep: '',
             seedMsg: r.catalog + ' catalog pieces, ' + r.projects + ' project and the questionnaire written to Firestore.' + kept });
         } catch (e) {
+          // Every write the seed makes is gated on isAdmin() in the rules, which
+          // reads users/{uid}. permission-denied therefore has exactly two causes,
+          // and saying which two beats "check the rules".
+          const code = (e && e.code) || '';
+          const why = code === 'permission-denied'
+            ? ' Firestore refused the write. Either firestore.rules has not been published to this project yet, or users/'
+              + (u.id || '') + ' does not have role "admin" in Firestore.'
+            : '';
           this.setState({ seeding: false, seedPct: 0, seedStep: '',
-            seedMsg: 'Could not write: ' + (e.message || e) + ' — check that the Firestore rules are published and that you are signed in as an admin.' });
+            seedMsg: 'Import stopped at "' + (this.state.seedStep || 'the start') + '" — ' + (code || (e && e.message) || e) + '.' + why });
         }
       };
       v.newProject = async () => {
