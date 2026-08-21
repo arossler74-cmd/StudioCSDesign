@@ -773,15 +773,27 @@ class Component extends DCLogic {
     // single transient failure latched the banner on for the rest of the session,
     // long after the reads it complains about had started succeeding.
     this._loadErr = null;
-    const settle = (p, fallback) => p.catch((e) => { console.warn(e); this._loadErr = e; return fallback; });
+    // Each read is labelled, because "some data" could be any of four different
+    // collections under four different rules. Naming the one that failed, and
+    // quoting Firebase's own error, is the difference between a fix and a guess.
+    const settle = (label, p, fallback) => p.catch((e) => {
+      console.warn('[' + label + ']', e);
+      this._loadErr = { label, code: (e && e.code) || '', msg: (e && e.message) || String(e) };
+      return fallback;
+    });
     const [projects, sections, catalog] = await Promise.all([
-      settle(api.listProjects(user), []),
-      settle(api.getQuestionnaire(), null),
-      settle(api.listCatalog(), []),
+      settle('projects', api.listProjects(user), []),
+      settle('questionnaire', api.getQuestionnaire(), null),
+      settle('catalog', api.listCatalog(), []),
     ]);
-    const users = user.role === 'admin' ? await settle(api.listUsers(), []) : [];
+    const users = user.role === 'admin' ? await settle('team', api.listUsers(), []) : [];
     this.setState({ user, projects, sections, catalog, users, booting: false, view: 'dash', fPw: '',
-      authError: '', loadError: this._loadErr ? 'Some data could not be read — check that the Firestore rules are published.' : '' });
+      authError: '', loadError: this._loadErr
+        ? 'Could not read ' + this._loadErr.label + ' — ' + (this._loadErr.code || this._loadErr.msg)
+          + (this._loadErr.code === 'permission-denied'
+              ? '. The Firestore rules do not allow this account to read it; publish firestore.rules.'
+              : '.')
+        : '' });
   }
 
   async refresh() {
