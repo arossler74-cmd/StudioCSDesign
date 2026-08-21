@@ -4,6 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cybelle Sampaio Studio</title>
+<!--
+  GitHub Pages serves whatever it finds at the site root. The app itself is
+  "Studio Platform.dc.html", so without this file Pages falls back to
+  rendering README.md as the home page.
+
+  location.search and location.hash are carried across deliberately: client
+  share links are https://<domain>/#share=<token>, so dropping the hash here
+  would break every link already sent to a client. replace() rather than
+  assign() keeps this hop out of the back-button history.
+-->
 <script>
   location.replace('Studio%20Platform.dc.html' + location.search + location.hash);
 </script>
