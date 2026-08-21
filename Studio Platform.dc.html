@@ -432,6 +432,53 @@
             </sc-for>
           </div>
 
+          <!-- details — the client brief the report cover is built from -->
+          <sc-if value="{{ tabDetails }}">
+            <div style="animation: csFade .35s ease both; max-width: 900px;">
+              <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 24px;">
+                <div>
+                  <h2 style="font-family: var(--font-heading); font-size: 32px; margin: 0; color: var(--color-accent-900);">Project details</h2>
+                  <div style="color: var(--color-neutral-600); font-size: 14px;">Everything here appears on the client report.</div>
+                </div>
+                <button type="button" onClick="{{ saveDetails }}" class="btn btn-primary">{{ detailsLabel }}</button>
+              </div>
+
+              <div class="card" style="padding: 24px 26px; margin-bottom: 20px;">
+                <div style="font-family: var(--font-heading); font-size: 22px; color: var(--color-accent-900); margin-bottom: 16px;">The project</div>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
+                  <div class="field"><label>Project name</label><input class="input" value="{{ d_name }}" onChange="{{ setd_name }}" placeholder="86 Residence"></div>
+                  <div class="field"><label>Location</label><input class="input" value="{{ d_location }}" onChange="{{ setd_location }}" placeholder="Coral Gables, Miami"></div>
+                  <div class="field" style="grid-column: span 2;"><label>Tagline — the line across the report cover</label><input class="input" value="{{ d_tagline }}" onChange="{{ setd_tagline }}" placeholder="A home that lives the way you do"></div>
+                  <div class="field"><label>Scope</label><input class="input" value="{{ d_scope }}" onChange="{{ setd_scope }}" placeholder="Five spaces"></div>
+                  <div class="field"><label>Scope detail</label><input class="input" value="{{ d_scopeNote }}" onChange="{{ setd_scopeNote }}" placeholder="One layout each"></div>
+                  <div class="field"><label>Start date</label><input class="input" type="date" value="{{ d_startDate }}" onChange="{{ setd_startDate }}"></div>
+                  <div class="field"><label>Currency</label><input class="input" value="{{ d_currency }}" onChange="{{ setd_currency }}" placeholder="USD"></div>
+                </div>
+              </div>
+
+              <div class="card" style="padding: 24px 26px; margin-bottom: 20px;">
+                <div style="font-family: var(--font-heading); font-size: 22px; color: var(--color-accent-900); margin-bottom: 16px;">The client</div>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
+                  <div class="field"><label>Client name</label><input class="input" value="{{ d_client }}" onChange="{{ setd_client }}" placeholder="Maya Vander"></div>
+                  <div class="field"><label>Email</label><input class="input" value="{{ d_clientEmail }}" onChange="{{ setd_clientEmail }}" placeholder="name@email.com"></div>
+                  <div class="field" style="grid-column: span 2;"><label>Address</label><input class="input" value="{{ d_address }}" onChange="{{ setd_address }}" placeholder="5901 SW 86 Street"></div>
+                  <div class="field" style="grid-column: span 2;"><label>City / region</label><input class="input" value="{{ d_addressCity }}" onChange="{{ setd_addressCity }}" placeholder="Coral Gables, Miami"></div>
+                </div>
+              </div>
+
+              <div class="card" style="padding: 24px 26px;">
+                <div style="font-family: var(--font-heading); font-size: 22px; color: var(--color-accent-900); margin-bottom: 4px;">Hero photograph</div>
+                <div style="font-size: 13.5px; color: var(--color-neutral-600); margin-bottom: 16px;">Shown on the project card and across the top of the client report.</div>
+                <div style="display: flex; align-items: center; gap: 18px;">
+                  <div style="width: 190px; aspect-ratio: 4 / 3; border-radius: var(--radius-md); overflow: hidden; background: var(--color-neutral-100); flex: none;">
+                    <img src="assets/piece-placeholder.png" data-img="{{ d_hero }}" alt="" style="width: 100%; height: 100%; object-fit: cover;">
+                  </div>
+                  <label class="btn btn-secondary" style="cursor: pointer;">Choose photo<input type="file" accept="image/*" onChange="{{ pickHero }}" style="display: none;"></label>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
           <!-- discovery -->
           <sc-if value="{{ tabDiscovery }}">
             <div style="animation: csFade .35s ease both;">
@@ -732,6 +779,9 @@ const PHASES = [
 ];
 const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review': 'In review', 'done': 'Done' };
 const TABS = [
+  // Details comes first: it is the brief the client report's cover page is
+  // built from, so it is filled in before any phase work starts.
+  { key: 'details', label: 'Details' },
   { key: 'discovery', label: 'Discovery' }, { key: 'concept', label: 'Concept' }, { key: 'design', label: 'Design & sourcing' },
   { key: 'styling', label: 'Styling & reveal' },
   { key: 'selection', label: 'Selection' }, { key: 'feedback', label: 'Feedback' }, { key: 'sharing', label: 'Sharing' },
@@ -750,7 +800,8 @@ class Component extends DCLogic {
     invEmail: '', invRole: 'designer', inviteMsg: '',
     q: '', fRoom: '', fType: '', fStore: '', sort: 'recent', form: null, fetching: false,
     pick: null, pickQ: '', shareName: '', sharePhase: 'concept', copied: '',
-    share: null, shareState: {}, shareSaved: '', inbox: [], loadError: '' };
+    share: null, shareState: {}, shareSaved: '', inbox: [], loadError: '',
+    details: null, detailsSaving: false };
 
   async componentDidMount() {
     const api = await import('./platform-data.js');
@@ -1083,6 +1134,7 @@ class Component extends DCLogic {
           select: () => this.setState({ tab: f.key }) };
       }),
       tabs: TABS.map((t) => ({ label: t.label, ring: s.tab === t.key ? 'var(--color-accent)' : 'transparent', weight: s.tab === t.key ? '600' : '400', go: () => this.setState({ tab: t.key, pick: null }) })),
+      tabDetails: s.tab === 'details',
       tabDiscovery: s.tab === 'discovery',
       tabDoc: s.tab === 'concept' || s.tab === 'design' || s.tab === 'styling',
       tabSelection: s.tab === 'selection',
@@ -1094,6 +1146,46 @@ class Component extends DCLogic {
     if (v.tabDoc) {
       const f = PHASES.find((x) => x.key === s.tab), d = ph[s.tab] || {};
       Object.assign(v, { docTitle: f.title, docSub: d.note || f.tagline, docHref: d.doc || '', hasDoc: !!d.doc, noDoc: !d.doc });
+    }
+
+    if (v.tabDetails) {
+      // Edits are held in state and written on Save, so a half-typed address is
+      // never persisted and Firestore is not written on every keystroke.
+      const dr = s.details || p;
+      const setd = (k) => (e) => this.setState({ details: { ...(this.state.details || this.state.proj), [k]: e.target.value } });
+      Object.assign(v, {
+        d_name: dr.name || '', d_location: dr.location || '', d_tagline: dr.tagline || '',
+        d_scope: dr.scope || '', d_scopeNote: dr.scopeNote || '', d_startDate: (dr.startDate || '').slice(0, 10),
+        d_currency: dr.currency || 'USD', d_client: dr.client || '', d_clientEmail: dr.clientEmail || '',
+        d_address: dr.address || '', d_addressCity: dr.addressCity || '', d_hero: dr.hero || dr.cover || PLACEHOLDER,
+        setd_name: setd('name'), setd_location: setd('location'), setd_tagline: setd('tagline'),
+        setd_scope: setd('scope'), setd_scopeNote: setd('scopeNote'), setd_startDate: setd('startDate'),
+        setd_currency: setd('currency'), setd_client: setd('client'), setd_clientEmail: setd('clientEmail'),
+        setd_address: setd('address'), setd_addressCity: setd('addressCity'),
+        detailsLabel: s.detailsSaving ? 'Saving…' : 'Save details',
+        pickHero: async (e) => {
+          const file = e.target.files && e.target.files[0];
+          if (!file) return;
+          this.setState({ detailsSaving: true });
+          try {
+            const url = await api.uploadFile(p.id, file);
+            this.setState({ details: { ...(this.state.details || this.state.proj), hero: url }, detailsSaving: false });
+          } catch (err) {
+            this.setState({ detailsSaving: false, saved: 'Could not upload the photo: ' + (err.message || err) });
+          }
+        },
+        saveDetails: async () => {
+          const d = this.state.details || this.state.proj;
+          this.setState({ detailsSaving: true });
+          try {
+            const next = await api.saveProject({ ...this.state.proj, ...d });
+            this.setState({ proj: next || { ...this.state.proj, ...d }, details: null, detailsSaving: false, saved: 'Details saved' });
+            await this.refresh();
+          } catch (err) {
+            this.setState({ detailsSaving: false, saved: 'Could not save: ' + (err.message || err) });
+          }
+        },
+      });
     }
 
     if (v.tabDiscovery) {
