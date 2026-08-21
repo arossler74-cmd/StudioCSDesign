@@ -226,6 +226,14 @@
               <div style="flex: 1; min-width: 280px;">
                 <div style="font-family: var(--font-heading); font-size: 24px; color: var(--color-accent-900);">Set up this workspace</div>
                 <div style="font-size: 14px; color: var(--color-neutral-700); margin-top: 4px; max-width: 62ch; text-wrap: pretty;">{{ seedNote }}</div>
+                <sc-if value="{{ seeding }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top: 14px; max-width: 62ch;">
+                    <div style="height: 6px; border-radius: 999px; background: var(--color-neutral-200); overflow: hidden;">
+                      <div style="height: 100%; width: {{ seedPctCss }}; background: var(--color-accent); transition: width .25s ease;"></div>
+                    </div>
+                    <div style="font-size: 12.5px; color: var(--color-neutral-600); margin-top: 6px;">{{ seedStep }}</div>
+                  </div>
+                </sc-if>
               </div>
               <div style="display: flex; align-items: center; gap: 12px;">
                 <button type="button" onClick="{{ dismissSeed }}" class="btn btn-ghost">Not now</button>
@@ -893,16 +901,26 @@ class Component extends DCLogic {
         this.setState({ seedDismissed: true });
       };
       v.seedNote = s.seedMsg || 'Import 86 Residence — four phases, five rooms with plans and moodboards, materials and palette — plus the 12-piece starter catalog and the studio questionnaire into Firestore. Runs once.';
-      v.seedLabel = s.seeding ? 'Importing…' : 'Import starter data';
+      v.seedLabel = s.seeding ? (s.seedPct ? 'Importing ' + s.seedPct + '%' : 'Importing…') : 'Import starter data';
+      v.seeding = !!s.seeding;
+      v.seedPctCss = (s.seedPct || 0) + '%';
+      v.seedStep = s.seedStep || '';
       v.runSeed = async () => {
         if (this.state.seeding) return;
-        this.setState({ seeding: true, seedMsg: '' });
+        this.setState({ seeding: true, seedMsg: '', seedPct: 0, seedStep: 'starting…' });
         try {
-          const r = await api.seedFirestore(u);
+          const r = await api.seedFirestore(u, ({ done, total, label }) => {
+            this.setState({ seedPct: Math.round((done / Math.max(1, total)) * 100), seedStep: label });
+          });
           await this.refresh();
-          this.setState({ seeding: false, seedMsg: r.catalog + ' catalog pieces, ' + r.projects + ' project and the questionnaire written to Firestore.' });
+          const kept = r.skipped
+            ? ' ' + r.skipped + ' image(s) kept their repo path because Storage did not accept them.'
+            : '';
+          this.setState({ seeding: false, seedPct: 0, seedStep: '',
+            seedMsg: r.catalog + ' catalog pieces, ' + r.projects + ' project and the questionnaire written to Firestore.' + kept });
         } catch (e) {
-          this.setState({ seeding: false, seedMsg: 'Could not write: ' + (e.message || e) + ' — check that the Firestore rules are published and that you are signed in as an admin.' });
+          this.setState({ seeding: false, seedPct: 0, seedStep: '',
+            seedMsg: 'Could not write: ' + (e.message || e) + ' — check that the Firestore rules are published and that you are signed in as an admin.' });
         }
       };
       v.newProject = async () => {

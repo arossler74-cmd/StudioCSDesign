@@ -501,30 +501,52 @@ export async function resolveReview(project, id) {
 
 /* ---------------- one-time seed into Firestore ---------------- */
 
-export async function seedFirestore(user) {
+// A Storage upload that cannot succeed still costs real time: the SDK retries
+// internally for up to maxUploadRetryTime (two minutes by default) before it
+// rejects, so an unprovisioned bucket or a blocking Storage rule turns the seed
+// into a ten-minute silent stall. The repo path is a perfectly good fallback --
+// Pages serves assets/ and refs/ -- so cap the wait and move on.
+const UPLOAD_TIMEOUT_MS = 20000;
+const withTimeout = (p, ms, what) => Promise.race([
+  p,
+  new Promise((_, reject) => setTimeout(() => reject(new Error('timed out after ' + (ms / 1000) + 's: ' + what)), ms)),
+]);
+
+export async function seedFirestore(user, onProgress) {
   if (mode !== 'firebase') throw new Error('Not connected to Firebase.');
   const { doc, setDoc, collection, getDocs } = fb.D;
   const s = seed();
-  const report = { catalog: 0, projects: 0, questionnaire: false, users: 0, images: 0 };
+  const report = { catalog: 0, projects: 0, questionnaire: false, users: 0, images: 0, skipped: 0 };
+
+  // Every write below is one step, so the caller can show real progress rather
+  // than an indeterminate spinner that cannot distinguish work from a stall.
+  const invitees = s.users.filter((u) => !ADMIN_BOOTSTRAP.includes(u.email.toLowerCase()));
+  const total = s.catalog.length + s.projects.length + 1 + invitees.length;
+  let done = 0;
+  const say = (label) => { if (onProgress) onProgress({ done, total, label }); };
+  const step = (label) => { done++; say(label); };
 
   // move every repo-relative image into Storage so the data stops depending on where the HTML lives
   const cache = {};
   const host = async (path) => {
     if (!path || /^(https?:|data:)/.test(path)) return path;
     if (cache[path]) return cache[path];
+    const name = path.split('/').pop();
     try {
+      say('uploading ' + name);
       const res = await fetch(path);
-      if (!res.ok) throw new Error(res.status);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
       const blob = await res.blob();
-      const name = path.split('/').pop();
       const { ref, uploadBytes, getDownloadURL } = fb.S;
       const r = ref(fb.storage, 'library/' + name);
-      await uploadBytes(r, blob);
-      const url = await getDownloadURL(r);
+      await withTimeout(uploadBytes(r, blob), UPLOAD_TIMEOUT_MS, name);
+      const url = await withTimeout(getDownloadURL(r), UPLOAD_TIMEOUT_MS, name);
       cache[path] = url;
       report.images++;
       return url;
     } catch (e) {
+      console.warn('seed: keeping repo path for ' + path, e);
+      report.skipped++;
       cache[path] = path; // fall back to the repo path
       return path;
     }
@@ -533,11 +555,12 @@ export async function seedFirestore(user) {
   const existing = await getDocs(collection(fb.db, 'catalog'));
   const have = new Set(existing.docs.map((d) => d.id));
   for (const c of s.catalog) {
-    if (have.has(c.id)) continue;
+    if (have.has(c.id)) { step('catalog ' + c.id + ' already there'); continue; }
     const { id, ...data } = c;
     data.image = await host(data.image);
     await setDoc(doc(fb.db, 'catalog', id), data);
     report.catalog++;
+    step('catalog: ' + (data.name || id));
   }
 
   for (const p of s.projects) {
@@ -553,15 +576,17 @@ export async function seedFirestore(user) {
     }
     await setDoc(doc(fb.db, 'projects', id), data, { merge: true });
     report.projects++;
+    step('project: ' + (data.name || id));
   }
 
   await setDoc(doc(fb.db, 'settings', 'questionnaire'), { sections: DEFAULT_QUESTIONNAIRE() });
   report.questionnaire = true;
+  step('questionnaire');
 
-  for (const u of s.users) {
-    if (ADMIN_BOOTSTRAP.includes(u.email.toLowerCase())) continue;
+  for (const u of invitees) {
     await setDoc(doc(fb.db, 'invites', u.email.replace(/[^a-z0-9]/gi, '-')), { email: u.email, name: u.name, role: u.role, status: 'invited', createdAt: nowISO() });
     report.users++;
+    step('invite: ' + u.email);
   }
   return report;
 }
