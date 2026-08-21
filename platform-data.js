@@ -523,13 +523,33 @@ export async function seedFirestore(user, onProgress) {
   const invitees = s.users.filter((u) => !ADMIN_BOOTSTRAP.includes(u.email.toLowerCase()));
   const total = s.catalog.length + s.projects.length + 1 + invitees.length;
   let done = 0;
-  const say = (label) => { if (onProgress) onProgress({ done, total, label }); };
-  const step = (label) => { done++; say(label); };
+  let current = '';
+  // say() names the work in flight, bump() marks it finished. Reporting only on
+  // success made a failure blame the previous item, which had actually written
+  // fine -- the one that threw was never named.
+  const say = (label) => { current = label; if (onProgress) onProgress({ done, total, label }); };
+  const bump = () => { done++; if (onProgress) onProgress({ done, total, label: current }); };
+
+  // Firestore rejects a field whose value is undefined with invalid-argument,
+  // and the seed legitimately omits optional fields: four catalog rows carry no
+  // image, and at least one room no cad. Those omissions reached setDoc as
+  // explicit undefined via host(), so the write was refused outright. Strip
+  // them instead of writing them.
+  const clean = (v) => {
+    if (Array.isArray(v)) return v.map(clean);
+    if (v && typeof v === 'object' && !(v instanceof Date)) {
+      const out = {};
+      for (const k of Object.keys(v)) if (v[k] !== undefined) out[k] = clean(v[k]);
+      return out;
+    }
+    return v;
+  };
 
   // move every repo-relative image into Storage so the data stops depending on where the HTML lives
   const cache = {};
   const host = async (path) => {
-    if (!path || /^(https?:|data:)/.test(path)) return path;
+    if (!path) return '';   // never undefined: Firestore refuses it
+    if (/^(https?:|data:)/.test(path)) return path;
     if (cache[path]) return cache[path];
     const name = path.split('/').pop();
     try {
@@ -555,16 +575,18 @@ export async function seedFirestore(user, onProgress) {
   const existing = await getDocs(collection(fb.db, 'catalog'));
   const have = new Set(existing.docs.map((d) => d.id));
   for (const c of s.catalog) {
-    if (have.has(c.id)) { step('catalog ' + c.id + ' already there'); continue; }
+    if (have.has(c.id)) { say('catalog: ' + (c.name || c.id) + ' (already there)'); bump(); continue; }
     const { id, ...data } = c;
+    say('catalog: ' + (data.name || id));
     data.image = await host(data.image);
-    await setDoc(doc(fb.db, 'catalog', id), data);
+    await setDoc(doc(fb.db, 'catalog', id), clean(data));
     report.catalog++;
-    step('catalog: ' + (data.name || id));
+    bump();
   }
 
   for (const p of s.projects) {
     const { id, ...data } = p;
+    say('project: ' + (data.name || id));
     data.members = [user.id];
     data.cover = await host(data.cover);
     data.plan = await host(data.plan);
@@ -574,19 +596,21 @@ export async function seedFirestore(user, onProgress) {
       for (const m of r.moodboard || []) board.push(await host(m));
       data.rooms.push({ ...r, cad: await host(r.cad), moodboard: board });
     }
-    await setDoc(doc(fb.db, 'projects', id), data, { merge: true });
+    await setDoc(doc(fb.db, 'projects', id), clean(data), { merge: true });
     report.projects++;
-    step('project: ' + (data.name || id));
+    bump();
   }
 
-  await setDoc(doc(fb.db, 'settings', 'questionnaire'), { sections: DEFAULT_QUESTIONNAIRE() });
+  say('questionnaire');
+  await setDoc(doc(fb.db, 'settings', 'questionnaire'), clean({ sections: DEFAULT_QUESTIONNAIRE() }));
   report.questionnaire = true;
-  step('questionnaire');
+  bump();
 
   for (const u of invitees) {
-    await setDoc(doc(fb.db, 'invites', u.email.replace(/[^a-z0-9]/gi, '-')), { email: u.email, name: u.name, role: u.role, status: 'invited', createdAt: nowISO() });
+    say('invite: ' + u.email);
+    await setDoc(doc(fb.db, 'invites', u.email.replace(/[^a-z0-9]/gi, '-')), clean({ email: u.email, name: u.name, role: u.role, status: 'invited', createdAt: nowISO() }));
     report.users++;
-    step('invite: ' + u.email);
+    bump();
   }
   return report;
 }
