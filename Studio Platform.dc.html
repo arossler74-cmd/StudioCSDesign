@@ -218,26 +218,10 @@
                 <p style="margin: 6px 0 0; font-size: 13.5px; color: var(--color-accent-800);">{{ loadError }}</p>
               </sc-if>
             </div>
-            <div style="display: flex; align-items: center; gap: 12px;">
-              <sc-if value="{{ canSeed }}" hint-placeholder-val="{{ true }}">
-                <button type="button" onClick="{{ runSeed }}" class="btn btn-ghost">{{ seedLabel }}</button>
-              </sc-if>
-              <button type="button" onClick="{{ newProject }}" class="btn btn-primary">New project</button>
-            </div>
+            <button type="button" onClick="{{ newProject }}" class="btn btn-primary">New project</button>
           </div>
 
-          <sc-if value="{{ seeding }}" hint-placeholder-val="{{ false }}">
-            <div style="margin: -20px 0 32px; max-width: 62ch;">
-              <div style="height: 6px; border-radius: 999px; background: var(--color-neutral-200); overflow: hidden;">
-                <div style="height: 100%; width: {{ seedPctCss }}; background: var(--color-accent); transition: width .25s ease;"></div>
-              </div>
-              <div style="font-size: 12.5px; color: var(--color-neutral-600); margin-top: 6px;">{{ seedStep }}</div>
-            </div>
-          </sc-if>
 
-          <sc-if value="{{ seedMsg }}" hint-placeholder-val="{{ false }}">
-            <div class="card" style="padding: 14px 18px; margin-bottom: 28px; font-size: 13.5px; color: var(--color-accent-900); text-wrap: pretty;">{{ seedMsg }}</div>
-          </sc-if>
 
           <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 36px;">
             <sc-for list="{{ summary }}" as="c" hint-placeholder-count="4">
@@ -337,10 +321,12 @@
                     <sc-for list="{{ typeOptions }}" as="o" hint-placeholder-count="6"><option value="{{ o }}">{{ o }}</option></sc-for>
                   </select>
                 </div>
-                <div class="field"><label>Room</label>
-                  <select class="input" value="{{ e_room }}" onChange="{{ set_room }}">
-                    <sc-for list="{{ roomOptions }}" as="o" hint-placeholder-count="6"><option value="{{ o }}">{{ o }}</option></sc-for>
-                  </select>
+                <div class="field" style="grid-column: span 2;"><label>Rooms — a piece can serve more than one</label>
+                  <div style="display: flex; flex-wrap: wrap; gap: 7px;">
+                    <sc-for list="{{ roomChips }}" as="r" hint-placeholder-count="8">
+                      <button type="button" onClick="{{ r.toggle }}" class="tag {{ r.cls }}" style="cursor: pointer; border: 0; font: inherit;">{{ r.label }}</button>
+                    </sc-for>
+                  </div>
                 </div>
                 <div class="field"><label>Retail price (USD)</label><input class="input" value="{{ e_price }}" onChange="{{ set_price }}" placeholder="0.00"></div>
                 <div class="field" style="grid-column: span 3;"><label>Product URL</label>
@@ -353,7 +339,14 @@
                 <div class="field"><label>Finish / material</label><input class="input" value="{{ e_finish }}" onChange="{{ set_finish }}"></div>
                 <div class="field"><label>Color</label><input class="input" value="{{ e_color }}" onChange="{{ set_color }}"></div>
                 <div class="field" style="grid-column: span 2;"><label>Notes</label><input class="input" value="{{ e_notes }}" onChange="{{ set_notes }}"></div>
-                <div class="field"><label>Tags (comma separated)</label><input class="input" value="{{ e_tags }}" onChange="{{ set_tags }}"></div>
+                <div class="field" style="grid-column: span 3;"><label>Tags</label>
+                  <div style="display: flex; flex-wrap: wrap; gap: 7px; align-items: center;">
+                    <sc-for list="{{ tagChips }}" as="t" hint-placeholder-count="2">
+                      <span class="tag tag-accent" style="display: inline-flex; align-items: center; gap: 6px;">{{ t.label }}<button type="button" onClick="{{ t.remove }}" title="Remove" style="border: 0; background: none; cursor: pointer; font: inherit; line-height: 1; padding: 0; color: inherit; opacity: .65;">×</button></span>
+                    </sc-for>
+                    <input class="input" value="{{ e_tagDraft }}" onChange="{{ addTag }}" placeholder="add a tag, then Enter" style="width: 200px;">
+                  </div>
+                </div>
                 <div class="field" style="grid-column: span 3;"><label>Photo</label>
                   <div style="display: flex; align-items: center; gap: 14px;">
                     <div style="width: 76px; height: 76px; border-radius: var(--radius-md); overflow: hidden; background: var(--color-neutral-100); flex: none;">
@@ -383,7 +376,11 @@
                 </div>
                 <div style="padding: 13px 15px 15px; display: flex; flex-direction: column; gap: 7px; flex: 1;">
                   <div style="font-weight: 600; font-size: 14px; line-height: 1.3;">{{ c.name }}</div>
-                  <div style="font-size: 12.5px; color: var(--color-neutral-600);">{{ c.retailer }} · {{ c.room }}</div>
+                  <div style="font-size: 12.5px; color: var(--color-neutral-600);">{{ c.retailer }}</div>
+                  <div style="display: flex; flex-wrap: wrap; gap: 5px;">
+                    <sc-for list="{{ c.roomPills }}" as="r" hint-placeholder-count="2"><span class="tag">{{ r }}</span></sc-for>
+                    <sc-for list="{{ c.tagPills }}" as="t" hint-placeholder-count="1"><span class="tag tag-accent">{{ t }}</span></sc-for>
+                  </div>
                   <div style="font-size: 12.5px; color: var(--color-neutral-500);">{{ c.spec }}</div>
                   <div style="flex: 1;"></div>
                   <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
@@ -741,6 +738,11 @@ const TABS = [
 ];
 const PLACEHOLDER = 'assets/piece-placeholder.png';
 
+// A piece can serve more than one room, so the field is an array. Records
+// written before that -- including everything the seed imported -- carry a
+// single `room` string, so read through this rather than migrating the data.
+const roomsOf = (c) => (Array.isArray(c.rooms) && c.rooms.length ? c.rooms : (c.room ? [c.room] : []));
+
 class Component extends DCLogic {
   state = { booting: true, api: null, mode: 'local', user: null, view: 'dash', projects: [], proj: null, catalog: [],
     tab: 'discovery', answers: {}, saved: '', users: [], sections: null,
@@ -748,7 +750,7 @@ class Component extends DCLogic {
     invEmail: '', invRole: 'designer', inviteMsg: '',
     q: '', fRoom: '', fType: '', fStore: '', sort: 'recent', form: null, fetching: false,
     pick: null, pickQ: '', shareName: '', sharePhase: 'concept', copied: '',
-    share: null, shareState: {}, shareSaved: '', seeding: false, seedMsg: '', inbox: [], loadError: '' };
+    share: null, shareState: {}, shareSaved: '', inbox: [], loadError: '' };
 
   async componentDidMount() {
     const api = await import('./platform-data.js');
@@ -883,48 +885,15 @@ class Component extends DCLogic {
         return {
           phaseLabel: cur.title, phaseColor: this.color(cur.key), phaseStep: 'Phase ' + cur.n + ' of 4',
           name: p.name, sub: [p.client, p.location].filter(Boolean).join(' · ') || 'no client yet',
-          cover: p.cover || PLACEHOLDER, status: p.status || 'draft', edited: this.ago(p.updatedAt),
+          // hero is the project's own photograph; cover falls back to whatever
+          // the seed set (a floor plan for 86 Residence), then the placeholder.
+          cover: p.hero || p.cover || PLACEHOLDER, status: p.status || 'draft', edited: this.ago(p.updatedAt),
           hasPending: open > 0, pendingLabel: open + ' to review',
           pips: PHASES.map((f) => ({ short: f.short, pct: ((p.phases && p.phases[f.key] && p.phases[f.key].progress) || 0) + '%', color: this.color(f.key) })),
           open: () => this.openProject(p),
         };
       });
       v.loadError = s.loadError;
-      // Offered to any admin on Firebase, not only an empty workspace: the seed
-      // skips catalog rows that already exist and merges the project, so it is
-      // safe to run again after a partial or failed attempt.
-      v.canSeed = admin && api.isFirebase();
-      v.seedMsg = s.seedMsg || '';
-      v.seedLabel = s.seeding ? (s.seedPct ? 'Importing ' + s.seedPct + '%' : 'Importing…') : 'Import 86 Residence';
-      v.seeding = !!s.seeding;
-      v.seedPctCss = (s.seedPct || 0) + '%';
-      v.seedStep = s.seedStep || '';
-      v.runSeed = async () => {
-        if (this.state.seeding) return;
-        this.setState({ seeding: true, seedMsg: '', seedPct: 0, seedStep: 'starting…' });
-        try {
-          const r = await api.seedFirestore(u, ({ done, total, label }) => {
-            this.setState({ seedPct: Math.round((done / Math.max(1, total)) * 100), seedStep: label });
-          });
-          await this.refresh();
-          const kept = r.skipped
-            ? ' ' + r.skipped + ' image(s) kept their repo path because Storage did not accept them.'
-            : '';
-          this.setState({ seeding: false, seedPct: 0, seedStep: '',
-            seedMsg: r.catalog + ' catalog pieces, ' + r.projects + ' project and the questionnaire written to Firestore.' + kept });
-        } catch (e) {
-          // Every write the seed makes is gated on isAdmin() in the rules, which
-          // reads users/{uid}. permission-denied therefore has exactly two causes,
-          // and saying which two beats "check the rules".
-          const code = (e && e.code) || '';
-          const why = code === 'permission-denied'
-            ? ' Firestore refused the write. Either firestore.rules has not been published to this project yet, or users/'
-              + (u.id || '') + ' does not have role "admin" in Firestore.'
-            : '';
-          this.setState({ seeding: false, seedPct: 0, seedStep: '',
-            seedMsg: 'Import stopped at "' + (this.state.seedStep || 'the start') + '" — ' + (code || (e && e.message) || e) + '.' + why });
-        }
-      };
       v.newProject = async () => {
         const name = window.prompt('Project name');
         if (!name) return;
@@ -985,16 +954,16 @@ class Component extends DCLogic {
   catalogVals(admin) {
     const s = this.state, api = s.api;
     const all = s.catalog || [];
-    const rooms = [...new Set(all.map((c) => c.room).filter(Boolean))].sort();
+    const rooms = [...new Set(all.flatMap(roomsOf).filter(Boolean))].sort();
     const types = [...new Set(all.map((c) => c.type).filter(Boolean))].sort();
     const stores = [...new Set(all.map((c) => c.retailer).filter(Boolean))].sort();
     const q = s.q.toLowerCase().trim();
     let list = all.filter((c) => {
-      if (s.fRoom && c.room !== s.fRoom) return false;
+      if (s.fRoom && !roomsOf(c).includes(s.fRoom)) return false;
       if (s.fType && c.type !== s.fType) return false;
       if (s.fStore && c.retailer !== s.fStore) return false;
       if (!q) return true;
-      return [c.name, c.retailer, c.type, c.room, c.color, c.finish, (c.tags || []).join(' ')].join(' ').toLowerCase().includes(q);
+      return [c.name, c.retailer, c.type, roomsOf(c).join(' '), c.color, c.finish, (c.tags || []).join(' ')].join(' ').toLowerCase().includes(q);
     });
     const by = { name: (a, b) => a.name.localeCompare(b.name), store: (a, b) => (a.retailer || '').localeCompare(b.retailer || ''), type: (a, b) => (a.type || '').localeCompare(b.type || ''), price: (a, b) => (b.price || 0) - (a.price || 0), recent: (a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || '') };
     list = [...list].sort(by[s.sort] || by.recent);
@@ -1013,7 +982,8 @@ class Component extends DCLogic {
       setSort: (e) => this.setState({ sort: e.target.value }),
       newPiece: () => this.setState({ form: { name: '', type: 'Sofa', room: 'Any room', retailer: '', url: '', image: '', dimensions: '', finish: '', color: '', price: '', notes: '', tags: '' } }),
       catalog: list.map((c) => ({
-        name: c.name, retailer: c.retailer || '—', room: c.room || '—', type: c.type || '—',
+        name: c.name, retailer: c.retailer || '—', room: roomsOf(c).join(' · ') || '—', type: c.type || '—',
+        roomPills: roomsOf(c), tagPills: (c.tags || []),
         image: c.image || PLACEHOLDER,
         spec: [c.dimensions, c.color].filter(Boolean).join(' · ') || ' ',
         price: this.money(c.price),
@@ -1027,12 +997,35 @@ class Component extends DCLogic {
       const set = (k) => (e) => this.setState({ form: { ...this.state.form, [k]: e.target.value } });
       Object.assign(v, {
         editTitle: f.id ? 'Edit piece' : 'New piece',
-        e_name: f.name, e_retailer: f.retailer, e_type: f.type, e_room: f.room, e_price: f.price,
+        e_name: f.name, e_retailer: f.retailer, e_type: f.type, e_price: f.price,
         e_url: f.url, e_dimensions: f.dimensions, e_finish: f.finish, e_color: f.color, e_notes: f.notes,
-        e_tags: f.tags, e_image: f.image || PLACEHOLDER,
-        set_name: set('name'), set_retailer: set('retailer'), set_type: set('type'), set_room: set('room'),
+        e_image: f.image || PLACEHOLDER, e_tagDraft: '',
+        roomChips: ((api && api.ROOM_TYPES) || rooms).map((r) => {
+          const on = roomsOf(f).includes(r);
+          return { label: r, cls: on ? 'tag-accent' : '', toggle: () => {
+            const cur = roomsOf(this.state.form);
+            const next = on ? cur.filter((x) => x !== r) : cur.concat(r);
+            // `room` is written alongside `rooms` so anything still reading the
+            // old single field keeps working until every record is rewritten.
+            this.setState({ form: { ...this.state.form, rooms: next, room: next[0] || '' } });
+          } };
+        }),
+        tagChips: (Array.isArray(f.tags) ? f.tags : String(f.tags || '').split(',').map((x) => x.trim()).filter(Boolean))
+          .map((t) => ({ label: t, remove: () => {
+            const cur = Array.isArray(this.state.form.tags) ? this.state.form.tags : String(this.state.form.tags || '').split(',').map((x) => x.trim()).filter(Boolean);
+            this.setState({ form: { ...this.state.form, tags: cur.filter((x) => x !== t) } });
+          } })),
+        addTag: (e) => {
+          const val = String(e.target.value || '').trim();
+          e.target.value = '';
+          if (!val) return;
+          const cur = Array.isArray(this.state.form.tags) ? this.state.form.tags : String(this.state.form.tags || '').split(',').map((x) => x.trim()).filter(Boolean);
+          if (cur.includes(val)) return;
+          this.setState({ form: { ...this.state.form, tags: cur.concat(val) } });
+        },
+        set_name: set('name'), set_retailer: set('retailer'), set_type: set('type'),
         set_price: set('price'), set_url: set('url'), set_dimensions: set('dimensions'), set_finish: set('finish'),
-        set_color: set('color'), set_notes: set('notes'), set_tags: set('tags'),
+        set_color: set('color'), set_notes: set('notes'),
         canDelete: !!f.id,
         fetchLabel: s.fetching ? 'Fetching…' : 'Fetch details',
         fetchDetails: () => this.fetchDetails(),
@@ -1044,7 +1037,11 @@ class Component extends DCLogic {
         },
         savePiece: async () => {
           const f2 = this.state.form;
-          const rec = { ...f2, price: f2.price === '' ? null : Number(String(f2.price).replace(/[^0-9.]/g, '')), tags: String(f2.tags || '').split(',').map((x) => x.trim()).filter(Boolean) };
+          const rooms = roomsOf(f2);
+          const rec = { ...f2,
+            price: f2.price === '' ? null : Number(String(f2.price).replace(/[^0-9.]/g, '')),
+            tags: Array.isArray(f2.tags) ? f2.tags : String(f2.tags || '').split(',').map((x) => x.trim()).filter(Boolean),
+            rooms, room: rooms[0] || '' };
           await api.saveCatalogItem(rec);
           this.setState({ form: null, catalog: await api.listCatalog() });
         },
@@ -1165,7 +1162,7 @@ class Component extends DCLogic {
         v.pickQ = s.pickQ;
         v.setPickQ = (e) => this.setState({ pickQ: e.target.value });
         v.closePick = () => this.setState({ pick: null, pickQ: '' });
-        v.pickList = (s.catalog || []).filter((c) => !q || [c.name, c.retailer, c.type, c.room].join(' ').toLowerCase().includes(q)).map((c) => ({
+        v.pickList = (s.catalog || []).filter((c) => !q || [c.name, c.retailer, c.type, roomsOf(c).join(' ')].join(' ').toLowerCase().includes(q)).map((c) => ({
           name: c.name, retailer: c.retailer || '', image: c.image || PLACEHOLDER,
           add: async () => {
             const next = rooms.map((r) => r.id === s.pick.roomId ? { ...r, [s.pick.bucket]: [...(r[s.pick.bucket] || []), { refId: c.id, qty: 1 }] } : r);
