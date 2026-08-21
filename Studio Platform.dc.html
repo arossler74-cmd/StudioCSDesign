@@ -553,10 +553,17 @@
                   <h2 style="font-family: var(--font-heading); font-size: 32px; margin: 0; color: var(--color-accent-900);">{{ docTitle }}</h2>
                   <div style="color: var(--color-neutral-600); font-size: 14px;">{{ docSub }}</div>
                 </div>
-                <sc-if value="{{ hasDoc }}">
-                  <a class="btn btn-primary" href="{{ docHref }}" target="_top">Open document</a>
-                </sc-if>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <button type="button" onClick="{{ exportHtml }}" class="btn btn-secondary">{{ exportLabel }}</button>
+                  <button type="button" onClick="{{ exportPdf }}" class="btn btn-ghost">Export PDF</button>
+                  <sc-if value="{{ hasDoc }}">
+                    <a class="btn btn-primary" href="{{ docHref }}" target="_top">Open document</a>
+                  </sc-if>
+                </div>
               </div>
+              <sc-if value="{{ exportNote }}" hint-placeholder-val="{{ false }}">
+                <div class="card" style="padding: 12px 16px; margin-bottom: 18px; font-size: 13.5px; color: var(--color-accent-900);">{{ exportNote }}</div>
+              </sc-if>
               <sc-if value="{{ hasDoc }}">
                 <div style="border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--color-neutral-200); background: #fff; box-shadow: var(--shadow-md);">
                   <iframe src="{{ docHref }}" title="document" style="width: 100%; height: 720px; border: 0; display: block;"></iframe>
@@ -825,7 +832,8 @@ class Component extends DCLogic {
     q: '', fRoom: '', fType: '', fStore: '', sort: 'recent', form: null, fetching: false,
     pick: null, pickQ: '', shareName: '', sharePhase: 'concept', copied: '',
     share: null, shareState: {}, shareSaved: '', inbox: [], loadError: '',
-    details: null, detailsSaving: false, np: null, npBusy: false };
+    details: null, detailsSaving: false, np: null, npBusy: false,
+    exporting: false, exportNote: '' };
 
   async componentDidMount() {
     const api = await import('./platform-data.js');
@@ -1200,6 +1208,54 @@ class Component extends DCLogic {
     if (v.tabDoc) {
       const f = PHASES.find((x) => x.key === s.tab), d = ph[s.tab] || {};
       Object.assign(v, { docTitle: f.title, docSub: d.note || f.tagline, docHref: d.doc || '', hasDoc: !!d.doc, noDoc: !d.doc });
+
+      // The client report is generated from project data on demand rather than
+      // stored, so it always reflects what the platform currently holds.
+      const makeReport = async () => {
+        const R = await import('./report.js');
+        const { html, kept } = await R.buildReport(p, s.tab, s.catalog || [], ({ done, total, label }) => {
+          this.setState({ exportNote: 'Preparing ' + done + ' of ' + total + ' — ' + label });
+        });
+        return { R, html, kept };
+      };
+      Object.assign(v, {
+        exportLabel: s.exporting ? 'Preparing…' : 'Export HTML',
+        exportNote: s.exportNote || '',
+        exportHtml: async () => {
+          if (this.state.exporting) return;
+          this.setState({ exporting: true, exportNote: 'Preparing…' });
+          try {
+            const { R, html, kept } = await makeReport();
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+            a.download = R.reportFileName(p, s.tab);
+            document.body.appendChild(a); a.click(); a.remove();
+            setTimeout(() => URL.revokeObjectURL(a.href), 30000);
+            this.setState({ exporting: false, exportNote: kept
+              ? 'Downloaded. ' + kept + ' image(s) could not be embedded and are linked instead, so those need a connection to show.'
+              : 'Downloaded — every image is embedded, so the file works offline.' });
+          } catch (e) {
+            this.setState({ exporting: false, exportNote: 'Could not build the report — ' + ((e && e.message) || e) });
+          }
+        },
+        // Printing a generated document rather than the app: the report opens in
+        // its own window with print CSS of its own, so the client's PDF is the
+        // report, not a screenshot of the dashboard around it.
+        exportPdf: async () => {
+          if (this.state.exporting) return;
+          this.setState({ exporting: true, exportNote: 'Preparing…' });
+          try {
+            const { html } = await makeReport();
+            const w = window.open('', '_blank');
+            if (!w) { this.setState({ exporting: false, exportNote: 'The browser blocked the popup — allow popups for this site, then try again.' }); return; }
+            w.document.write(html); w.document.close();
+            w.addEventListener('load', () => setTimeout(() => w.print(), 400));
+            this.setState({ exporting: false, exportNote: 'Opened in a new tab — choose "Save as PDF" in the print dialog.' });
+          } catch (e) {
+            this.setState({ exporting: false, exportNote: 'Could not build the report — ' + ((e && e.message) || e) });
+          }
+        },
+      });
     }
 
     if (v.tabDetails) {
