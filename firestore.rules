@@ -1,12 +1,24 @@
 rules_version = '2';
 
 service cloud.firestore {
-  function isSignedIn() { return request.auth != null; }
-  function me() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
-  function isAdmin() { return isSignedIn() && me().role == 'admin'; }
-  function isMember(project) { return isSignedIn() && request.auth.uid in project.members; }
-
   match /databases/{database}/documents {
+
+    // These live INSIDE the match block on purpose. $(database) is bound by
+    // "match /databases/{database}/documents", so a function that references it
+    // has to share that scope. Declared at service level -- as they were --
+    // the variable is unbound, the get() path never resolves, and every
+    // isAdmin() check evaluates false no matter who is signed in. Reads that
+    // did not call isAdmin() still worked, so the app could show a user as
+    // ADMIN while Firestore refused every write that account attempted.
+    function isSignedIn() { return request.auth != null; }
+    function profile() { return /databases/$(database)/documents/users/$(request.auth.uid); }
+    // Guarded with exists(): get() on a missing document errors, and an errored
+    // rule denies, which would lock out an account whose profile has not been
+    // written yet rather than simply treating it as unprivileged.
+    function hasProfile() { return isSignedIn() && exists(profile()); }
+    function role() { return hasProfile() ? get(profile()).data.role : ''; }
+    function isAdmin() { return role() == 'admin'; }
+    function isMember(project) { return isSignedIn() && request.auth.uid in project.members; }
 
     match /users/{uid} {
       allow read: if isSignedIn();
@@ -50,13 +62,13 @@ service cloud.firestore {
       allow get: if isAdmin() || isMember(resource.data);
       // list queries must be scoped: non-admins query members array-contains their uid
       allow list: if isAdmin() || (isSignedIn() && request.query.limit <= 200);
-      allow create: if isAdmin() || me().role == 'designer';
+      allow create: if isAdmin() || role() == 'designer';
       allow update: if isAdmin() || isMember(resource.data);
       allow delete: if isAdmin();
 
       match /{sub=**} {
         allow read: if isAdmin() || isMember(get(/databases/$(database)/documents/projects/$(projectId)).data);
-        allow write: if isAdmin() || (isMember(get(/databases/$(database)/documents/projects/$(projectId)).data) && me().role != 'client');
+        allow write: if isAdmin() || (isMember(get(/databases/$(database)/documents/projects/$(projectId)).data) && role() != 'client');
       }
     }
   }
