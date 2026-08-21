@@ -288,7 +288,10 @@ export async function saveProject(p) {
 export function blankRoom(name) {
   return {
     id: 'r-' + String(name || 'room').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 24) + '-' + uid().slice(0, 4),
-    name: name || 'Room', code: '', cad: '', brief: '', moodboard: [], selected: [],
+    // `type` is the ROOM_TYPES value the room was created from and stays put
+    // even when the room is renamed ("Family Room" -> "The snug"), because the
+    // rate card quotes by type, not by whatever the room ends up being called.
+    name: name || 'Room', type: name || '', code: '', cad: '', brief: '', moodboard: [], selected: [],
   };
 }
 
@@ -368,6 +371,79 @@ export async function getQuestionnaire() {
   const s = readLS();
   if (!s.questionnaire) { s.questionnaire = DEFAULT_QUESTIONNAIRE(); writeLS(s); }
   return s.questionnaire;
+}
+
+/* ---------------- consultancy rates ---------------- */
+
+// The studio's standard design fee per type of space. A project quotes from
+// this, but never reads it live: a rate card that changed would silently
+// restate a fee already agreed with a client, so the numbers are copied into
+// the project when the quote is first built and only re-read on request.
+export function DEFAULT_RATES() {
+  return {
+    currency: 'USD',
+    perRoom: [
+      { room: 'Living room', fee: 3200 },
+      { room: 'Family room', fee: 3200 },
+      { room: 'Dining room', fee: 2400 },
+      { room: 'Breakfast area', fee: 1600 },
+      { room: 'Kitchen', fee: 3800 },
+      { room: 'Primary bedroom', fee: 2800 },
+      { room: 'Bedroom', fee: 2000 },
+      { room: 'Home office', fee: 2200 },
+      { room: 'Entry / hallway', fee: 1400 },
+      { room: 'Bathroom', fee: 1800 },
+      { room: 'Outdoor / terrace', fee: 2200 },
+      { room: 'Any room', fee: 2000 },
+    ],
+    fallback: 2000,
+    note: 'Design fee per space — concept, space plan, sourcing list and styling direction.',
+  };
+}
+
+export async function getRates() {
+  if (mode === 'firebase') {
+    const { doc, getDoc, setDoc } = fb.D;
+    const ref = doc(fb.db, 'settings', 'rates');
+    const snap = await getDoc(ref);
+    if (snap.exists()) return snap.data();
+    const r = DEFAULT_RATES();
+    await setDoc(ref, r);
+    return r;
+  }
+  const s = readLS();
+  if (!s.rates) { s.rates = DEFAULT_RATES(); writeLS(s); }
+  return s.rates;
+}
+
+export async function saveRates(rates) {
+  if (mode === 'firebase') {
+    const { doc, setDoc } = fb.D;
+    await setDoc(doc(fb.db, 'settings', 'rates'), rates);
+    return rates;
+  }
+  const s = readLS(); s.rates = rates; writeLS(s);
+  return rates;
+}
+
+/** The fee the rate card suggests for a room, by its type, falling back to the
+ *  card's own fallback when the type is not listed. */
+export function suggestFee(rates, roomType) {
+  const r = rates || DEFAULT_RATES();
+  const hit = (r.perRoom || []).find((x) => x.room === roomType);
+  return hit ? Number(hit.fee) || 0 : Number(r.fallback) || 0;
+}
+
+/** Build a quote for a project from the rate card. Each of the project's rooms
+ *  becomes a line at its suggested fee; `fee` is what is actually charged and
+ *  starts equal to the suggestion, so a negotiated line stays visibly
+ *  different from the standard one. */
+export function quoteFor(project, rates) {
+  const lines = ((project && project.rooms) || []).map((rm) => {
+    const suggested = suggestFee(rates, rm.type || rm.roomType || rm.name);
+    return { roomId: rm.id, name: rm.name || 'Room', type: rm.type || rm.roomType || rm.name || '', suggested, fee: suggested };
+  });
+  return { lines, discountPct: 0, discountNote: '', note: (rates && rates.note) || '' };
 }
 
 export async function saveQuestionnaire(sections) {

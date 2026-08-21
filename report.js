@@ -323,6 +323,38 @@ function sourcingSection(p, byId, img) {
 </div></section>`;
 }
 
+/** The design fee, per space. Shown as agreed, never as the rate card: the
+ *  client is reading what was negotiated, and a struck-through list price
+ *  invites a conversation about the discount rather than the work. */
+function feesSection(p) {
+  const q = p.fees;
+  const lines = (q && q.lines) || [];
+  if (!lines.length) return '';
+  const sub = lines.reduce((t, l) => t + (Number(l.fee) || 0), 0);
+  const pct = Math.max(0, Math.min(100, Number(q.discountPct) || 0));
+  const disc = sub * (pct / 100);
+  return `
+<section><div class="wrap">
+  <div class="kicker">Working together</div><h2>Design fee</h2>
+  ${q.note ? `<p class="lead" style="margin-top:12px">${esc(q.note)}</p>` : ''}
+  <table><thead><tr><th>Space</th><th class="num">Fee</th></tr></thead>
+    <tbody>${lines.map((l) => `<tr><td>${esc(l.name || '')}</td>
+      <td class="num">${esc(money(l.fee, p.currency))}</td></tr>`).join('')}</tbody>
+    ${pct > 0 ? `<tfoot>
+      <tr><td class="num">Subtotal</td><td class="num">${esc(money(sub, p.currency))}</td></tr>
+      <tr><td class="num">${esc('Discount ' + pct + '%' + (q.discountNote ? ' — ' + q.discountNote : ''))}</td>
+        <td class="num">−${esc(money(disc, p.currency))}</td></tr>
+    </tfoot>` : ''}
+  </table>
+  <div class="card" style="margin-top:24px;display:flex;justify-content:space-between;align-items:baseline">
+    <div style="font-size:17px">Total design fee</div>
+    <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:34px;color:var(--accent-dark)">${esc(money(sub - disc, p.currency))}</div>
+  </div>
+  <p class="lead" style="font-size:12.5px;margin-top:14px;color:var(--mute)">
+    The design fee covers the studio's work. Furnishings are quoted separately.</p>
+</div></section>`;
+}
+
 function footerSection(img) {
   return `
 <footer><div class="wrap">
@@ -371,6 +403,10 @@ export async function buildReport(project, phaseKey, catalog, onProgress) {
     phase.key === 'concept' || phase.key === 'design' ? planSection(p, img) : '',
     phase.key === 'concept' || phase.key === 'design' ? moodSection(p, img) : '',
     phase.key === 'design' || phase.key === 'styling' ? sourcingSection(p, byId, img) : '',
+    // The fee belongs where the engagement is being agreed — the concept
+    // proposal — and again alongside the furnishings total, so the client can
+    // see the studio's fee and the pieces as two separate numbers.
+    phase.key === 'concept' || phase.key === 'design' ? feesSection(p) : '',
     footerSection(img),
   ].join('');
 
