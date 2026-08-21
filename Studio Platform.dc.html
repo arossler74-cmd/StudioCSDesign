@@ -85,8 +85,7 @@
   <sc-if value="{{ showShare }}">
     <div style="max-width: 1100px; margin: 0 auto; padding: 56px 32px 96px; animation: csFade .4s ease both;">
       <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 40px;">
-        <img src="assets/cybelle-mark.png" alt="" style="width: 34px; height: 34px; display: block;">
-        <div style="font-weight: 600;">Cybelle Sampaio Studio</div>
+        <img src="assets/cybelle-logo-header.png" alt="Cybelle Sampaio Studio" style="height: 38px; width: auto; display: block;">
       </div>
       <div style="margin-bottom: 40px;">
         <div style="font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--color-accent-700); margin-bottom: 10px;">For {{ shareClient }}</div>
@@ -189,8 +188,7 @@
       <div class="cs-chrome" style="position: sticky; top: 0; z-index: 40; background: rgba(245,234,216,.82); backdrop-filter: saturate(1.4) blur(16px); border-bottom: 1px solid var(--color-neutral-200);">
         <div style="max-width: 1280px; margin: 0 auto; padding: 14px 32px; display: flex; align-items: center; gap: 20px;">
           <button type="button" onClick="{{ goDash }}" class="btn btn-ghost" style="gap: 10px; padding: 4px 8px;">
-            <img src="assets/cybelle-mark.png" alt="" style="width: 26px; height: 26px; display: inline-block;">
-            <span style="font-weight: 600;">Cybelle Sampaio Studio</span>
+            <img src="assets/cybelle-logo-header.png" alt="Cybelle Sampaio Studio" style="height: 34px; width: auto; display: block;">
           </button>
           <div style="flex: 1;"></div>
           <button type="button" onClick="{{ goDash }}" class="btn btn-ghost" style="white-space: nowrap; flex: none;">Projects</button>
@@ -229,7 +227,10 @@
                 <div style="font-family: var(--font-heading); font-size: 24px; color: var(--color-accent-900);">Set up this workspace</div>
                 <div style="font-size: 14px; color: var(--color-neutral-700); margin-top: 4px; max-width: 62ch; text-wrap: pretty;">{{ seedNote }}</div>
               </div>
-              <button type="button" onClick="{{ runSeed }}" class="btn btn-primary">{{ seedLabel }}</button>
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <button type="button" onClick="{{ dismissSeed }}" class="btn btn-ghost">Not now</button>
+                <button type="button" onClick="{{ runSeed }}" class="btn btn-primary">{{ seedLabel }}</button>
+              </div>
             </div>
           </sc-if>
 
@@ -742,7 +743,9 @@ class Component extends DCLogic {
     invEmail: '', invRole: 'designer', inviteMsg: '',
     q: '', fRoom: '', fType: '', fStore: '', sort: 'recent', form: null, fetching: false,
     pick: null, pickQ: '', shareName: '', sharePhase: 'concept', copied: '',
-    share: null, shareState: {}, shareSaved: '', seeding: false, seedMsg: '', inbox: [], loadError: '' };
+    share: null, shareState: {}, shareSaved: '', seeding: false, seedMsg: '', inbox: [], loadError: '',
+    // Read at startup so "Not now" on the starter-data card survives a reload.
+    seedDismissed: (() => { try { return localStorage.getItem('cs-seed-dismissed') === '1'; } catch (e) { return false; } })() };
 
   async componentDidMount() {
     const api = await import('./platform-data.js');
@@ -765,6 +768,11 @@ class Component extends DCLogic {
     const api = this.state.api;
     if (!user) return this.setState({ user: null, booting: false });
     try { localStorage.setItem('cs-last-user', user.name || user.email || ''); } catch (e) {}
+    // Cleared per hydrate: onAuth fires more than once, and the first pass can race
+    // the users/{uid} document being written at first sign-in. Without this reset a
+    // single transient failure latched the banner on for the rest of the session,
+    // long after the reads it complains about had started succeeding.
+    this._loadErr = null;
     const settle = (p, fallback) => p.catch((e) => { console.warn(e); this._loadErr = e; return fallback; });
     const [projects, sections, catalog] = await Promise.all([
       settle(api.listProjects(user), []),
@@ -867,7 +875,11 @@ class Component extends DCLogic {
         };
       });
       v.loadError = s.loadError;
-      v.needsSeed = admin && api.isFirebase() && (s.projects || []).length === 0;
+      v.needsSeed = admin && api.isFirebase() && (s.projects || []).length === 0 && !s.seedDismissed;
+      v.dismissSeed = () => {
+        try { localStorage.setItem('cs-seed-dismissed', '1'); } catch (e) {}
+        this.setState({ seedDismissed: true });
+      };
       v.seedNote = s.seedMsg || 'Import 86 Residence — four phases, five rooms with plans and moodboards, materials and palette — plus the 12-piece starter catalog and the studio questionnaire into Firestore. Runs once.';
       v.seedLabel = s.seeding ? 'Importing…' : 'Import starter data';
       v.runSeed = async () => {
