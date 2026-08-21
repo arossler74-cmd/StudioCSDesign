@@ -221,6 +221,30 @@
             <button type="button" onClick="{{ newProject }}" class="btn btn-primary">New project</button>
           </div>
 
+          <sc-if value="{{ showNew }}" hint-placeholder-val="{{ false }}">
+            <div class="card elev-md" style="padding: 26px 28px; margin-bottom: 32px; max-width: 820px;">
+              <div style="font-family: var(--font-heading); font-size: 26px; color: var(--color-accent-900); margin-bottom: 18px;">New project</div>
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px;">
+                <div class="field"><label>Project name</label><input class="input" value="{{ np_name }}" onChange="{{ setnp_name }}" placeholder="86 Residence"></div>
+                <div class="field"><label>Client</label><input class="input" value="{{ np_client }}" onChange="{{ setnp_client }}" placeholder="Maya Vander"></div>
+                <div class="field"><label>Location</label><input class="input" value="{{ np_location }}" onChange="{{ setnp_location }}" placeholder="Coral Gables, Miami"></div>
+              </div>
+              <div class="field" style="margin-bottom: 20px;">
+                <label>Spaces in scope — each becomes a room with its own plan and moodboard</label>
+                <div style="display: flex; flex-wrap: wrap; gap: 7px; margin-top: 8px;">
+                  <sc-for list="{{ npRooms }}" as="r" hint-placeholder-count="8">
+                    <button type="button" onClick="{{ r.toggle }}" class="tag {{ r.cls }}" style="cursor: pointer; border: 0; font: inherit;">{{ r.label }}</button>
+                  </sc-for>
+                </div>
+                <div style="font-size: 12.5px; color: var(--color-neutral-600); margin-top: 8px;">{{ npCount }}</div>
+              </div>
+              <div style="display: flex; justify-content: flex-end; gap: 10px;">
+                <button type="button" onClick="{{ cancelNew }}" class="btn btn-ghost">Cancel</button>
+                <button type="button" onClick="{{ createNew }}" class="btn btn-primary">{{ npBusyLabel }}</button>
+              </div>
+            </div>
+          </sc-if>
+
 
 
           <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 36px;">
@@ -801,7 +825,7 @@ class Component extends DCLogic {
     q: '', fRoom: '', fType: '', fStore: '', sort: 'recent', form: null, fetching: false,
     pick: null, pickQ: '', shareName: '', sharePhase: 'concept', copied: '',
     share: null, shareState: {}, shareSaved: '', inbox: [], loadError: '',
-    details: null, detailsSaving: false };
+    details: null, detailsSaving: false, np: null, npBusy: false };
 
   async componentDidMount() {
     const api = await import('./platform-data.js');
@@ -945,14 +969,44 @@ class Component extends DCLogic {
         };
       });
       v.loadError = s.loadError;
-      v.newProject = async () => {
-        const name = window.prompt('Project name');
-        if (!name) return;
-        const client = window.prompt('Client (optional)') || '';
-        const p = await api.createProject(name, client, u);
-        await this.refresh();
-        this.openProject(p);
-      };
+      // Two chained window.prompts could not capture the rooms in scope, and a
+      // project with no rooms has nowhere to hang a plan or a moodboard.
+      v.newProject = () => this.setState({ np: { name: '', client: '', location: '', rooms: [] } });
+      const np = s.np;
+      v.showNew = !!np;
+      if (np) {
+        const setnp = (k) => (e) => this.setState({ np: { ...this.state.np, [k]: e.target.value } });
+        Object.assign(v, {
+          np_name: np.name, np_client: np.client, np_location: np.location,
+          setnp_name: setnp('name'), setnp_client: setnp('client'), setnp_location: setnp('location'),
+          npRooms: ((api && api.ROOM_TYPES) || []).map((r) => {
+            const on = (np.rooms || []).includes(r);
+            return { label: r, cls: on ? 'tag-accent' : '', toggle: () => {
+              const cur = this.state.np.rooms || [];
+              this.setState({ np: { ...this.state.np, rooms: on ? cur.filter((x) => x !== r) : cur.concat(r) } });
+            } };
+          }),
+          npCount: (np.rooms || []).length
+            ? (np.rooms || []).length + ' space' + ((np.rooms || []).length === 1 ? '' : 's') + ' selected'
+            : 'No spaces selected yet',
+          npCanCreate: !!String(np.name || '').trim(),
+          cancelNew: () => this.setState({ np: null }),
+          createNew: async () => {
+            const d = this.state.np;
+            if (!String(d.name || '').trim() || this.state.npBusy) return;
+            this.setState({ npBusy: true });
+            try {
+              const p = await api.createProject(d.name.trim(), d.client.trim(), u, { location: d.location.trim(), rooms: d.rooms });
+              this.setState({ np: null, npBusy: false });
+              await this.refresh();
+              this.openProject(p);
+            } catch (e) {
+              this.setState({ npBusy: false, loadError: 'Could not create the project — ' + ((e && e.code) || (e && e.message) || e) });
+            }
+          },
+          npBusyLabel: s.npBusy ? 'Creating…' : 'Create project',
+        });
+      }
     }
 
     if (v.showCatalog) Object.assign(v, this.catalogVals(admin));

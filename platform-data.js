@@ -281,10 +281,28 @@ export async function saveProject(p) {
   return p;
 }
 
-export async function createProject(name, client, user) {
+/** A room as the app expects to find it: an id, the name, and the empty slots
+ *  each phase fills in — cad for the 2D plan, moodboard for Concept, selected
+ *  for the Design & sourcing list. Creating them up front means a new project
+ *  is ready to work in rather than a shell that has to be assembled first. */
+export function blankRoom(name) {
+  return {
+    id: 'r-' + String(name || 'room').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 24) + '-' + uid().slice(0, 4),
+    name: name || 'Room', code: '', cad: '', brief: '', moodboard: [], selected: [],
+  };
+}
+
+/** The shape every project starts from: the four phases in order, plus a room
+ *  for each space in scope. `opts` carries the brief captured at creation
+ *  (client, location, rooms); anything not given stays empty for the Details
+ *  tab to fill in. */
+export async function createProject(name, client, user, opts) {
+  const o = opts || {};
   const p = {
     id: (name || 'project').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + uid().slice(0, 4),
-    name: name || 'New project', client: client || '', location: '', cover: '', status: 'draft', currency: 'USD',
+    name: name || 'New project', client: client || '', location: o.location || '',
+    tagline: '', scope: '', scopeNote: '', address: '', addressCity: '', clientEmail: '',
+    hero: '', cover: '', startDate: '', status: 'draft', currency: o.currency || 'USD',
     members: [user.id], createdAt: nowISO(), updatedAt: nowISO(),
     phases: {
       discovery: { status: 'not-started', progress: 0, doc: null, note: '' },
@@ -292,7 +310,7 @@ export async function createProject(name, client, user) {
       design: { status: 'not-started', progress: 0, doc: null, note: '' },
       styling: { status: 'not-started', progress: 0, doc: null, note: '' },
     },
-    answers: {}, rooms: [], reviews: [], shares: [],
+    answers: {}, rooms: (o.rooms || []).map(blankRoom), reviews: [], shares: [],
   };
   return saveProject(p);
 }
