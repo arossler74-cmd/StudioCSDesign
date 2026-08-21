@@ -56,7 +56,7 @@ service cloud.firestore {
 
       match /{sub=**} {
         allow read: if isAdmin() || isMember(get(/databases/$(database)/documents/projects/$(projectId)).data);
-        allow write: if isAdmin() || (isMember(get(/databases/$(database)/documents/projects/$(projectId)).data) && me().role != 'cliente');
+        allow write: if isAdmin() || (isMember(get(/databases/$(database)/documents/projects/$(projectId)).data) && me().role != 'client');
       }
     }
   }

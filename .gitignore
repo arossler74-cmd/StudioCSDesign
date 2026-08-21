@@ -1,0 +1,8 @@
+# firebase-config.js is deliberately NOT ignored: GitHub Pages serves the
+# app straight from this repo, so the config has to be committed for the
+# deployed site to reach Firebase. Firebase web API keys are identifiers,
+# not secrets — firestore.rules and the Authentication authorized-domains
+# list are what actually protect the data.
+node_modules/
+dist/
+.firebase/

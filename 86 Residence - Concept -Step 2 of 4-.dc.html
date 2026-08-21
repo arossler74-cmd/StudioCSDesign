@@ -1,0 +1,2234 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="ext-resource-dependency" content="assets/cybelle-logo.png" data-resource-id="assets/cybelle-logo.png" />
+<meta name="ext-resource-dependency" content="assets/cybelle-portrait.png" data-resource-id="assets/cybelle-portrait.png" />
+<meta name="ext-resource-dependency" content="assets/floor-plan.png" data-resource-id="assets/floor-plan.png" />
+<meta name="ext-resource-dependency" content="assets/icon-discovery.png" data-resource-id="assets/icon-discovery.png" />
+<meta name="ext-resource-dependency" content="assets/icon-concept.png" data-resource-id="assets/icon-concept.png" />
+<meta name="ext-resource-dependency" content="assets/icon-design.png" data-resource-id="assets/icon-design.png" />
+<meta name="ext-resource-dependency" content="assets/icon-styling.png" data-resource-id="assets/icon-styling.png" />
+<meta name="ext-resource-dependency" content="assets/piece-placeholder.png" data-resource-id="assets/piece-placeholder.png" />
+<meta name="ext-resource-dependency" content="refs/canva-p1-00.png" data-resource-id="refs/canva-p1-00.png" />
+<meta name="ext-resource-dependency" content="refs/canva-p1-01.png" data-resource-id="refs/canva-p1-01.png" />
+<meta name="ext-resource-dependency" content="refs/canva-p1-02.png" data-resource-id="refs/canva-p1-02.png" />
+<meta name="ext-resource-dependency" content="refs/canva-p1-03.png" data-resource-id="refs/canva-p1-03.png" />
+<meta name="ext-resource-dependency" content="refs/canva-p1-05.png" data-resource-id="refs/canva-p1-05.png" />
+<meta name="ext-resource-dependency" content="refs/canva-p1-06.png" data-resource-id="refs/canva-p1-06.png" />
+<meta name="ext-resource-dependency" content="refs/canva-p1-08.png" data-resource-id="refs/canva-p1-08.png" />
+<meta name="ext-resource-dependency" content="refs/canva-p1-10.png" data-resource-id="refs/canva-p1-10.png" />
+<meta name="ext-resource-dependency" content="refs/canva-p1-12.png" data-resource-id="refs/canva-p1-12.png" />
+<meta name="ext-resource-dependency" content="refs/canva-p1-13.png" data-resource-id="refs/canva-p1-13.png" />
+<meta name="ext-resource-dependency" content="refs/canva-p2-01.png" data-resource-id="refs/canva-p2-01.png" />
+<meta name="ext-resource-dependency" content="refs/canva-p2-02.png" data-resource-id="refs/canva-p2-02.png" />
+<meta name="ext-resource-dependency" content="refs/canva-p2-03.png" data-resource-id="refs/canva-p2-03.png" />
+<meta name="ext-resource-dependency" content="refs/canva-p2-06.png" data-resource-id="refs/canva-p2-06.png" />
+<meta name="ext-resource-dependency" content="refs/canva-p2-07.png" data-resource-id="refs/canva-p2-07.png" />
+<meta name="ext-resource-dependency" content="refs/canva-p3-02.png" data-resource-id="refs/canva-p3-02.png" />
+<meta name="ext-resource-dependency" content="refs/canva-p3-04.png" data-resource-id="refs/canva-p3-04.png" />
+<meta name="ext-resource-dependency" content="refs/canva-p3-09.png" data-resource-id="refs/canva-p3-09.png" />
+<meta name="ext-resource-dependency" content="refs/canva-p3-10.png" data-resource-id="refs/canva-p3-10.png" />
+<meta name="ext-resource-dependency" content="refs/canva-p4-07.png" data-resource-id="refs/canva-p4-07.png" />
+<meta name="ext-resource-dependency" content="refs/canva-p4-11.png" data-resource-id="refs/canva-p4-11.png" />
+<script src="./support.js"></script>
+<template id="__bundler_thumbnail" data-bg-color="#F4EDE4">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" fill="#F4EDE4"/><rect x="60" y="60" width="80" height="80" rx="14" fill="none" stroke="#A98A5F" stroke-width="4"/><text x="100" y="112" text-anchor="middle" font-family="Georgia,serif" font-size="34" fill="#3B342C">86</text></svg>
+</template>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="./image-slot.js"></script>
+<style>
+  :root {
+    --c-bg:#F4EDE4; --c-surface:#FBF7F1; --c-surface-2:#F1E7D8; --c-surface-3:#F7F0E6; --c-field:#FFFDFA;
+    --c-line:#E6DBCC; --c-line-2:#EDE3D5; --c-line-3:#E0D3BF; --c-line-4:#DCCFBB; --c-line-5:#D8C7AC; --c-line-6:#D5C6AE;
+    --c-accent:#A98A5F; --c-accent-dark:#8A6E45; --c-ink:#3B342C; --c-ink-soft:#6A6154;
+    --c-ink-mute:#9A8C7C; --c-ink-mute-2:#8A7E6C; --c-ink-faint:#B3A695;
+  }
+  body { margin:0; background:var(--c-bg); color:var(--c-ink); font-family:'Jost',sans-serif; -webkit-font-smoothing:antialiased; }
+  [contenteditable="true"]:focus { outline:2px solid var(--c-accent); outline-offset:4px; }
+  a { color:var(--c-accent-dark); text-decoration:none; }
+  a:hover { color:var(--c-ink); }
+  ::selection { background:#E7D9C2; }
+  *:focus-visible { outline:2px solid var(--c-accent); outline-offset:3px; }
+  html { scroll-behavior:smooth; }
+  @keyframes p86spin { to { transform:rotate(360deg); } }
+  button, [role="button"] { transition:transform 110ms cubic-bezier(0.22,1,0.36,1), background 160ms ease, color 160ms ease, border-color 160ms ease; }
+  button:active { transform:scale(0.972); }
+  image-slot, [data-frame] { transition:box-shadow 200ms ease; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior:auto; }
+    *, *::before, *::after { animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; }
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    [data-studio="bar"], [data-studio="jump"] a, [data-studio="jump"] button { backdrop-filter:none !important; -webkit-backdrop-filter:none !important; background:var(--c-surface) !important; }
+  }
+</style>
+</helmet>
+
+<sc-if value="{{ studioOn }}" hint-placeholder-val="{{ true }}">
+<div data-studio="bar" style="position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 60px;background:rgba(247,241,232,0.66);backdrop-filter:blur(22px) saturate(180%);-webkit-backdrop-filter:blur(22px) saturate(180%);border-top:1px solid rgba(255,255,255,0.5);box-shadow:0 10px 22px -18px rgba(59,52,44,0.55)">
+  <span style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--c-accent);margin-right:6px">Studio</span>
+  <button type="button" style="{{ studio.btnStyle }}" onClick="{{ studio.onExport }}">Export client HTML</button>
+  <button type="button" style="{{ studio.btnStyle }}" onClick="{{ studio.onPrint }}">Print / PDF</button>
+  <span style="margin-left:auto;font-size:11.5px;letter-spacing:0.06em;color:var(--c-ink-mute)">{{ studio.saved }}</span>
+</div>
+</sc-if>
+
+<div data-studio="jump" style="{{ jump.wrap }}">
+  <a href="#space-plan" style="{{ jump.btn }}" style-hover="background:var(--c-ink);color:var(--c-surface-3);border-color:var(--c-ink)">Space plan</a>
+  <a href="#moodboards" style="{{ jump.btn }}" style-hover="background:var(--c-ink);color:var(--c-surface-3);border-color:var(--c-ink)">Moodboards</a>
+  <button type="button" onClick="{{ jump.onTop }}" style="{{ jump.btn }}" style-hover="background:var(--c-ink);color:var(--c-surface-3);border-color:var(--c-ink)">Top ↑</button>
+</div>
+
+<div style="max-width:1280px;margin:0 auto;padding:0 60px 140px">
+
+  <div data-sec="header" style="display:flex;align-items:flex-end;justify-content:space-between;padding:40px 0 26px;border-bottom:1px solid var(--c-line)">
+    <img src="assets/cybelle-logo.png" alt="Cybelle Sampaio Studio" style="height:124px;width:auto;display:block">
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:12px">
+      <div data-copy="header.meta" style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--c-ink-mute);text-align:right;line-height:2">Interior Design Proposal · Step 2 of 4<br>August 2026</div>
+      <div style="display:flex;gap:8px;align-items:center;flex:none"><button type="button" data-studio="editcopy" onClick="{{ sec.header.on }}" style="{{ sec.header.btn }}">{{ sec.header.label }}</button><button type="button" data-studio="editcopy" onClick="{{ sec.header.revert }}" style="{{ sec.header.btn2 }}">Revert</button></div>
+    </div>
+  </div>
+
+  <div data-sec="hero" style="padding:96px 0 0">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:30px">
+      <div data-copy="hero.kicker" style="font-size:11px;letter-spacing:0.26em;text-transform:uppercase;color:var(--c-accent)">86 Residence · Coral Gables</div>
+      <div style="display:flex;gap:8px;align-items:center;flex:none"><button type="button" data-studio="editcopy" onClick="{{ sec.hero.on }}" style="{{ sec.hero.btn }}">{{ sec.hero.label }}</button><button type="button" data-studio="editcopy" onClick="{{ sec.hero.revert }}" style="{{ sec.hero.btn2 }}">Revert</button></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1.1fr 1fr;gap:64px;align-items:start">
+      <h1 data-copy="hero.title" style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:92px;line-height:0.98;letter-spacing:-0.02em;margin:0;max-width:15ch;text-wrap:pretty">A home that lives the way you do</h1>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:26px;padding-top:14px">
+        <div style="border-top:1px solid var(--c-line);padding-top:14px">
+          <div data-copy="hero.client.label" style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--c-ink-mute);margin-bottom:6px">Prepared for</div>
+          <div data-copy="hero.client.value" style="font-family:'Cormorant Garamond',serif;font-size:25px">Maya Vander</div>
+        </div>
+        <div style="border-top:1px solid var(--c-line);padding-top:14px">
+          <div data-copy="hero.address.label" style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--c-ink-mute);margin-bottom:6px">Residence</div>
+          <div data-copy="hero.address.value" style="font-size:14.5px;line-height:1.6">5901 SW 86 Street<br>Coral Gables, Miami</div>
+        </div>
+        <div style="border-top:1px solid var(--c-line);padding-top:14px">
+          <div data-copy="hero.scope.label" style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--c-ink-mute);margin-bottom:6px">Scope</div>
+          <div data-copy="hero.scope.value" style="font-size:14.5px;line-height:1.6">Five spaces<br>One layout each</div>
+        </div>
+        <div style="border-top:1px solid var(--c-line);padding-top:14px">
+          <div data-copy="hero.stage.label" style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--c-ink-mute);margin-bottom:6px">Stage</div>
+          <div data-copy="hero.stage.value" style="font-size:14.5px;line-height:1.6">Concept &amp; direction<br>Materials and layouts</div>
+        </div>
+      </div>
+    </div>
+    <p data-copy="hero.intro" style="font-size:18px;line-height:1.8;color:var(--c-ink-soft);margin:44px 0 0;max-width:58ch">Five spaces on the ground floor and above, designed one at a time — concept, materials, plan and furniture selection agreed before anything is ordered. This document walks the direction, the finishes, then all five spaces, and closes with how the work runs.</p>
+    <div style="margin-top:64px;min-width:0">
+      <image-slot id="p86s-hero" style="width:100%;height:560px" shape="rounded" radius="24" placeholder="Drop the hero image — the room that sets the tone"></image-slot>
+    </div>
+  </div>
+
+  <div data-sec="about" style="border-top:1px solid var(--c-line);margin-top:96px;padding-top:70px;display:grid;grid-template-columns:300px 1fr;gap:56px;align-items:stretch">
+    <div style="display:flex;flex-direction:column">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px">
+        <div data-copy="about.kicker" style="font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:var(--c-accent)">Who I am</div>
+        <div style="display:flex;gap:8px;align-items:center;flex:none"><button type="button" data-studio="editcopy" onClick="{{ sec.about.on }}" style="{{ sec.about.btn }}">{{ sec.about.label }}</button><button type="button" data-studio="editcopy" onClick="{{ sec.about.revert }}" style="{{ sec.about.btn2 }}">Revert</button></div>
+      </div>
+      <h2 style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:40px;line-height:1.05;margin:0 0 18px;letter-spacing:-0.015em" data-copy="about.name">Cybelle Sampaio</h2>
+      <div data-copy="about.role" style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--c-ink-mute);margin-bottom:22px">Founder &amp; lead designer</div>
+      <img src="assets/cybelle-portrait.png" alt="Cybelle Sampaio" width="352" height="491" style="width:100%;flex:1;min-height:0;object-fit:cover;object-position:center 20%;display:block;border-radius:18px">
+    </div>
+    <div style="display:flex;flex-direction:column;gap:24px">
+      <p data-copy="about.p1" style="font-size:15.5px;line-height:1.8;color:var(--c-ink-soft);margin:0">I am an interior designer and decorator based in Orange County, California. My passion is creating warm, sophisticated homes built around the way you actually live — layered and tactile, quietly luxurious, combining creativity with a strong aesthetic sense.</p>
+      <p data-copy="about.p2" style="font-size:15.5px;line-height:1.8;color:var(--c-ink-soft);margin:0">Having lived in Brazil, Missouri, New York and Florida, I bring a well-travelled eye to residential interiors, creating elegant and personalised spaces. My practice is dedicated to designing and decorating living spaces — not replacing your general contractor, and not renovating kitchens or bathrooms.</p>
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:6px">
+        <div style="background:var(--c-surface);border:1px solid var(--c-line);border-radius:16px;padding:16px 18px 18px">
+          <div data-copy="about.stata.t" style="font-family:'Cormorant Garamond',serif;font-size:24px;color:var(--c-accent);line-height:1">Decor</div>
+          <div data-copy="about.stata.s" style="font-size:9.5px;letter-spacing:0.2em;text-transform:uppercase;color:var(--c-ink-mute);margin-top:5px">&amp; design</div>
+        </div>
+        <div style="background:var(--c-surface);border:1px solid var(--c-line);border-radius:16px;padding:16px 18px 18px">
+          <div data-copy="about.statb.t" style="font-family:'Cormorant Garamond',serif;font-size:24px;color:var(--c-accent);line-height:1">LA &amp; OC</div>
+          <div data-copy="about.statb.s" style="font-size:9.5px;letter-spacing:0.2em;text-transform:uppercase;color:var(--c-ink-mute);margin-top:5px">Online everywhere</div>
+        </div>
+        <div style="background:var(--c-surface);border:1px solid var(--c-line);border-radius:16px;padding:16px 18px 18px">
+          <div data-copy="about.statc.t" style="font-family:'Cormorant Garamond',serif;font-size:24px;color:var(--c-accent);line-height:1">1:1</div>
+          <div data-copy="about.statc.s" style="font-size:9.5px;letter-spacing:0.2em;text-transform:uppercase;color:var(--c-ink-mute);margin-top:5px">Personal service</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--c-line);border:1px solid var(--c-line);border-radius:18px;overflow:hidden;margin-top:auto">
+        <sc-for list="{{ services }}" as="s" hint-placeholder-count="4">
+          <div style="background:var(--c-surface);padding:18px 18px 20px">
+            <div style="font-size:9.5px;letter-spacing:0.2em;text-transform:uppercase;color:var(--c-accent);margin-bottom:7px">{{ s.num }}</div>
+            <div data-copy="svc.{{ $index }}.title" style="font-family:'Cormorant Garamond',serif;font-size:18px;line-height:1.25;margin-bottom:7px">{{ s.title }}</div>
+            <p data-copy="svc.{{ $index }}.body" style="font-size:12.5px;line-height:1.6;color:var(--c-ink-soft);margin:0">{{ s.body }}</p>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <div data-sec="goals" style="border-top:1px solid var(--c-line);margin-top:100px;padding-top:80px">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px">
+      <div data-copy="goals.kicker" style="font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:var(--c-accent)">What we're solving</div>
+      <div style="display:flex;gap:8px;align-items:center;flex:none"><button type="button" data-studio="editcopy" onClick="{{ sec.goals.on }}" style="{{ sec.goals.btn }}">{{ sec.goals.label }}</button><button type="button" data-studio="editcopy" onClick="{{ sec.goals.revert }}" style="{{ sec.goals.btn2 }}">Revert</button></div>
+    </div>
+    <h2 data-copy="goals.title" style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:52px;line-height:1.05;margin:0 0 54px;letter-spacing:-0.015em">Your goals</h2>
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:26px">
+      <sc-for list="{{ goals }}" as="g" hint-placeholder-count="3">
+        <div style="background:var(--c-surface);border:1px solid var(--c-line);border-radius:22px;padding:34px 32px 36px">
+          <div style="width:44px;height:44px;border-radius:999px;border:1px solid var(--c-accent);color:var(--c-accent);display:flex;align-items:center;justify-content:center;font-size:13px;letter-spacing:0.06em;margin-bottom:26px">{{ g.num }}</div>
+          <div data-copy="goal.{{ $index }}.title" style="font-family:'Cormorant Garamond',serif;font-size:27px;line-height:1.25;margin-bottom:14px">{{ g.title }}</div>
+          <p data-copy="goal.{{ $index }}.body" style="font-size:14.5px;line-height:1.8;color:var(--c-ink-soft);margin:0">{{ g.body }}</p>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div data-sec="timeline" style="border-top:1px solid var(--c-line);margin-top:110px;padding-top:80px">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px">
+      <div data-copy="tl.kicker" style="font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:var(--c-accent)">How we work together</div>
+      <div style="display:flex;gap:8px;align-items:center;flex:none"><button type="button" data-studio="editcopy" onClick="{{ sec.timeline.on }}" style="{{ sec.timeline.btn }}">{{ sec.timeline.label }}</button><button type="button" data-studio="editcopy" onClick="{{ sec.timeline.revert }}" style="{{ sec.timeline.btn2 }}">Revert</button></div>
+    </div>
+    <h2 data-copy="tl.title" style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:52px;line-height:1.05;margin:0 0 22px;letter-spacing:-0.015em">The process</h2>
+    <sc-if value="{{ tlEdit }}" hint-placeholder-val="{{ false }}">
+      <p style="font-size:12.5px;line-height:1.7;color:var(--c-ink-mute);margin:0 0 26px">Drag the <strong style="font-weight:500">We are here</strong> badge onto another phase — or click a phase — to move it. It stays put in the client copy.</p>
+    </sc-if>
+    <div style="height:32px"></div>
+    <div style="display:flex;flex-direction:column">
+      <sc-for list="{{ phases }}" as="p" hint-placeholder-count="4">
+        <div style="{{ p.row }}" onDragOver="{{ p.onDragOver }}" onDrop="{{ p.onDrop }}" onClick="{{ p.onClick }}">
+          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:12px;padding-top:2px">
+            <img src="{{ p.icon }}" alt="" width="58" height="58" style="width:58px;height:58px;object-fit:contain;display:block">
+            <span style="font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--c-accent)">{{ p.num }}</span>
+          </div>
+          <div style="min-width:0">
+            <div style="display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:10px">
+              <div data-copy="phase.{{ $index }}.title" style="font-family:'Cormorant Garamond',serif;font-size:32px;line-height:1.15">{{ p.title }}</div>
+              <sc-if value="{{ p.here }}" hint-placeholder-val="{{ false }}">
+                <div draggable="true" onDragStart="{{ p.onDragStart }}" style="{{ p.badge }}">We are here</div>
+              </sc-if>
+            </div>
+            <p data-copy="phase.{{ $index }}.body" style="font-size:15px;line-height:1.8;color:var(--c-ink-soft);margin:0;max-width:66ch">{{ p.body }}</p>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div data-sec="concept" style="border-top:1px solid var(--c-line);margin-top:100px;padding-top:80px">
+    <div style="display:grid;grid-template-columns:0.85fr 1.15fr;gap:80px;align-items:start;margin-bottom:56px">
+      <div>
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;flex-wrap:wrap">
+          <div data-copy="concept.kicker" style="font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:var(--c-accent)">Direction</div>
+          <div style="display:flex;gap:8px;align-items:center;flex:none"><button type="button" data-studio="editcopy" onClick="{{ sec.concept.on }}" style="{{ sec.concept.btn }}">{{ sec.concept.label }}</button><button type="button" data-studio="editcopy" onClick="{{ sec.concept.revert }}" style="{{ sec.concept.btn2 }}">Revert</button></div>
+        </div>
+        <h2 data-copy="concept.title" style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:52px;line-height:1.05;margin:0;letter-spacing:-0.015em">Design concept</h2>
+      </div>
+      <p data-copy="concept.intro" style="font-size:16.5px;line-height:1.85;color:var(--c-ink-soft);margin:0;max-width:52ch">A neutral, sun-tolerant ground — plaster, ivory and travertine — warmed with chestnut leather, sage and bronze. Low horizontal furniture so the terrace stays in view, and one sculptural wood or stone piece per room to keep the calm from going flat.</p>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--c-line);border:1px solid var(--c-line);border-radius:22px;overflow:hidden">
+      <sc-for list="{{ concept }}" as="c" hint-placeholder-count="6">
+        <div style="background:var(--c-surface);padding:34px 30px 38px">
+          <div data-copy="concept.{{ $index }}.title" style="font-size:10.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--c-accent);margin-bottom:16px">{{ c.title }}</div>
+          <p data-copy="concept.{{ $index }}.body" style="font-size:14.5px;line-height:1.8;color:var(--c-ink-soft);margin:0">{{ c.body }}</p>
+        </div>
+      </sc-for>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:18px;margin-top:34px">
+      <sc-for list="{{ palette }}" as="sw" hint-placeholder-count="6">
+        <div>
+          <div style="{{ sw.chip }}"></div>
+          <div style="font-size:12.5px;margin-top:12px">{{ sw.name }}</div>
+          <div style="font-size:11px;letter-spacing:0.1em;color:var(--c-ink-mute)">{{ sw.hex }}</div>
+        </div>
+      </sc-for>
+    </div>
+    <sc-if value="{{ themeOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="background:var(--c-surface);border:1px solid var(--c-line);border-radius:22px;padding:28px 30px 30px;margin-top:24px">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-bottom:20px">
+          <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--c-accent)">Document colours · type a Pantone code or pick a swatch</div>
+          <button type="button" onClick="{{ onThemeReset }}" style="{{ themeResetBtn }}">Restore studio colours</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px">
+          <sc-for list="{{ themeRows }}" as="t" hint-placeholder-count="3">
+            <div key="{{ t.k }}" style="border:1px solid var(--c-line);border-radius:16px;padding:16px 18px 18px;background:var(--c-surface-3)">
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+                <span style="{{ t.chip }}"></span>
+                <div style="min-width:0">
+                  <div style="font-size:13.5px">{{ t.label }}</div>
+                  <div style="font-size:11px;color:var(--c-ink-mute)">{{ t.note }}</div>
+                </div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <input type="text" defaultValue="{{ t.code }}" onBlur="{{ t.onCode }}" placeholder="Pantone code" style="{{ t.input }}" style-focus="border-color:var(--c-accent)">
+                <input type="text" defaultValue="{{ t.hex }}" onBlur="{{ t.onHex }}" placeholder="#HEX" style="{{ t.input }}" style-focus="border-color:var(--c-accent)">
+              </div>
+              <input type="color" value="{{ t.hex }}" onChange="{{ t.onPick }}" style="width:100%;height:34px;margin-top:8px;border:1px solid var(--c-line-3);border-radius:10px;background:var(--c-field);padding:3px;cursor:pointer">
+            </div>
+          </sc-for>
+        </div>
+        <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--c-accent);margin:26px 0 14px">Concept palette · six swatches</div>
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px">
+          <sc-for list="{{ palRows }}" as="p" hint-placeholder-count="6">
+            <div key="{{ p.k }}" style="display:grid;grid-template-columns:46px 1fr;gap:12px;align-items:center;border:1px solid var(--c-line);border-radius:16px;padding:12px 14px;background:var(--c-surface-3)">
+              <input type="color" value="{{ p.hex }}" onChange="{{ p.onPick }}" style="width:46px;height:46px;border:1px solid var(--c-line-3);border-radius:999px;background:var(--c-field);padding:2px;cursor:pointer">
+              <div style="display:grid;gap:6px;min-width:0">
+                <input type="text" defaultValue="{{ p.name }}" onBlur="{{ p.onName }}" placeholder="Name" style="{{ p.input }}" style-focus="border-color:var(--c-accent)">
+                <input type="text" defaultValue="{{ p.code }}" onBlur="{{ p.onCode }}" placeholder="Pantone code (optional)" style="{{ p.input }}" style-focus="border-color:var(--c-accent)">
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <p style="font-size:12px;line-height:1.7;color:var(--c-ink-mute);margin:16px 0 0;max-width:84ch">Pantone matches are approximate screen renderings. A recognised code fills the swatch for you; any other code is kept as the printed label. Ground, accent and ink re-colour the whole document — text, colours and added spaces all travel into the client export.</p>
+      </div>
+    </sc-if>
+  </div>
+
+  <div data-sec="materials" style="border-top:1px solid var(--c-line);margin-top:100px;padding-top:80px">
+    <div style="display:grid;grid-template-columns:0.85fr 1.15fr;gap:80px;align-items:start;margin-bottom:48px">
+      <div>
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;flex-wrap:wrap">
+          <div data-copy="materials.kicker" style="font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:var(--c-accent)">Finishes</div>
+          <div style="display:flex;gap:8px;align-items:center;flex:none"><button type="button" data-studio="editcopy" onClick="{{ sec.materials.on }}" style="{{ sec.materials.btn }}">{{ sec.materials.label }}</button><button type="button" data-studio="editcopy" onClick="{{ sec.materials.revert }}" style="{{ sec.materials.btn2 }}">Revert</button></div>
+        </div>
+        <h2 data-copy="materials.title" style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:52px;line-height:1.05;margin:0;letter-spacing:-0.015em">Material selections</h2>
+      </div>
+      <div>
+        <p data-copy="materials.intro" style="font-size:16.5px;line-height:1.85;color:var(--c-ink-soft);margin:0 0 18px;max-width:52ch">Performance textiles where the sun and the family land, honest materials everywhere else — travertine, rift-cut oak, aged brass, wool bouclé and linen. Physical samples come with the first presentation.</p>
+        <button type="button" data-studio="editlocal" onClick="{{ mat.onToggle }}" style="{{ mat.toggleStyle }}">{{ mat.toggleLabel }}</button>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:16px">
+      <sc-for list="{{ mats }}" as="m" hint-placeholder-count="4">
+        <div key="{{ m.key }}" style="min-width:0;display:flex;flex-direction:column;gap:14px;background:var(--c-surface);border:1px solid var(--c-line);border-radius:20px;padding:16px 16px 18px">
+          <image-slot id="{{ m.slot }}" style="width:100%;height:168px" shape="rounded" radius="14" placeholder="{{ m.ph }}"></image-slot>
+          <sc-if value="{{ m.show }}" hint-placeholder-val="{{ true }}">
+            <div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:23px;line-height:1.2">{{ m.name }}</div>
+              <p style="font-size:13px;line-height:1.7;color:var(--c-ink-soft);margin:8px 0 0">{{ m.note }}</p>
+            </div>
+          </sc-if>
+          <sc-if value="{{ m.edit }}" hint-placeholder-val="{{ false }}">
+            <div style="display:grid;gap:8px">
+              <input type="text" defaultValue="{{ m.nameVal }}" onBlur="{{ m.onName }}" placeholder="Material" style="{{ m.input }}" style-focus="border-color:var(--c-accent)">
+              <textarea defaultValue="{{ m.noteVal }}" onBlur="{{ m.onNote }}" rows="3" placeholder="Comment on this material" style="{{ m.area }}" style-focus="border-color:var(--c-accent)"></textarea>
+              <button type="button" onClick="{{ m.onRemove }}" style="{{ m.removeBtn }}">Remove</button>
+            </div>
+          </sc-if>
+        </div>
+      </sc-for>
+    </div>
+    <div style="{{ mat.addWrap }}">
+      <button type="button" onClick="{{ mat.onAdd }}" style="{{ mat.addBtn }}">+ Add a material</button>
+      <span style="font-size:12.5px;line-height:1.7;color:var(--c-ink-mute)">Each material carries its own photograph and a comment beneath it.</span>
+    </div>
+  </div>
+
+  <div id="space-plan" data-sec="plan" style="border-top:1px solid var(--c-line);margin-top:100px;padding-top:80px">
+    <div style="display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:20px;margin-bottom:44px">
+      <div>
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;flex-wrap:wrap">
+          <div data-copy="plan.kicker" style="font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:var(--c-accent)">First &amp; second floor</div>
+          <div style="display:flex;gap:8px;align-items:center;flex:none"><button type="button" data-studio="editcopy" onClick="{{ sec.plan.on }}" style="{{ sec.plan.btn }}">{{ sec.plan.label }}</button><button type="button" data-studio="editcopy" onClick="{{ sec.plan.revert }}" style="{{ sec.plan.btn2 }}">Revert</button></div>
+        </div>
+        <h2 data-copy="plan.title" style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:52px;line-height:1.05;margin:0;letter-spacing:-0.015em">Space plan · 2D</h2>
+      </div>
+      <div data-copy="plan.hint" style="font-size:12.5px;letter-spacing:0.05em;color:var(--c-ink-mute);max-width:34ch;text-align:right;line-height:1.7">The CAD layout for each floor · expand to read it full screen, and leave your notes beside it</div>
+    </div>
+
+    <sc-for list="{{ floors }}" as="f" hint-placeholder-count="2">
+      <div style="{{ f.wrap }}">
+        <div style="display:grid;grid-template-columns:1fr 340px;gap:36px;align-items:stretch">
+          <div style="min-width:0">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:16px">
+              <div style="display:flex;align-items:baseline;gap:14px">
+                <span style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--c-accent)">{{ f.num }}</span>
+                <span style="font-family:'Cormorant Garamond',serif;font-size:30px">{{ f.label }}</span>
+              </div>
+              <div style="display:flex;gap:8px;align-items:center">
+                <label data-up="1" style="{{ f.upBtn }}" style-hover="background:var(--c-surface-2);border-color:var(--c-line-5)">{{ f.upLabel }}<input type="file" accept="image/*" onChange="{{ f.onFile }}" style="display:none"></label>
+                <button type="button" onClick="{{ f.onExpand }}" style="{{ f.exBtn }}" style-hover="background:var(--c-ink);color:var(--c-surface-3);border-color:var(--c-ink)">Expand</button>
+              </div>
+            </div>
+            <div style="{{ f.frame }}" onClick="{{ f.onExpand }}">
+              <sc-if value="{{ f.hasImg }}" hint-placeholder-val="{{ false }}">
+                <img src="{{ f.img }}" alt="{{ f.label }} plan" style="width:100%;height:100%;object-fit:contain;display:block;mix-blend-mode:multiply">
+              </sc-if>
+              <sc-if value="{{ f.empty }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:10px;color:var(--c-ink-mute);font-size:13px">
+                  <span style="font-size:11px;letter-spacing:0.2em;text-transform:uppercase">No drawing yet</span>
+                  <span>Use “Upload CAD” to place the {{ f.label }} plan</span>
+                </div>
+              </sc-if>
+            </div>
+          </div>
+          <div style="{{ f.panel }}">
+            <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--c-accent);margin-bottom:16px">Comments · {{ f.label }}</div>
+            <div style="display:flex;flex-direction:column;gap:12px;flex:1;min-height:0">
+              <sc-for list="{{ f.notes }}" as="n" hint-placeholder-count="1">
+                <div style="{{ n.row }}">
+                  <div style="{{ n.shell }}">
+                    <div style="{{ n.bar }}">
+                      <sc-for list="{{ n.tools }}" as="t" hint-placeholder-count="6">
+                        <button type="button" title="{{ t.title }}" onMouseDown="{{ t.onDown }}" onClick="{{ t.onClick }}" style="{{ t.style }}" style-hover="background:var(--c-surface-2);color:var(--c-ink)">{{ t.label }}</button>
+                      </sc-for>
+                      <sc-for list="{{ n.colors }}" as="c" hint-placeholder-count="4">
+                        <button type="button" title="{{ c.title }}" onMouseDown="{{ c.onDown }}" onClick="{{ c.onClick }}" style="{{ c.style }}"></button>
+                      </sc-for>
+                      <button type="button" onClick="{{ n.onRemove }}" title="Remove note" style="{{ n.del }}" style-hover="color:var(--c-ink)">×</button>
+                    </div>
+                    <div contentEditable="{{ true }}" suppressContentEditableWarning="{{ true }}" ref="{{ n.ref }}" onBlur="{{ n.onBlur }}" onInput="{{ n.onInput }}" data-ph="{{ n.placeholder }}" dangerouslySetInnerHTML="{{ n.html }}" style="{{ n.area }}" style-focus="border-color:var(--c-accent)"></div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+            <button type="button" onClick="{{ f.onAdd }}" style="{{ f.addBtn }}" style-hover="background:var(--c-surface-2);border-color:var(--c-line-5)">+ Add comment</button>
+          </div>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div id="moodboards" data-sec="moodboards" style="border-top:1px solid var(--c-line);margin-top:110px;padding-top:80px">
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:36px;align-items:end;margin-bottom:36px">
+      <div>
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;flex-wrap:wrap">
+          <div data-copy="mood.kicker" style="font-size:10px;letter-spacing:0.22em;text-transform:uppercase;color:var(--c-accent)">Conceptual layout</div>
+          <div style="display:flex;gap:8px;align-items:center;flex:none"><button type="button" data-studio="editcopy" onClick="{{ sec.moodboards.on }}" style="{{ sec.moodboards.btn }}">{{ sec.moodboards.label }}</button><button type="button" data-studio="editcopy" onClick="{{ sec.moodboards.revert }}" style="{{ sec.moodboards.btn2 }}">Revert</button></div>
+        </div>
+        <h2 data-copy="mood.title" style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:52px;line-height:1.05;margin:0 0 16px;letter-spacing:-0.015em">Moodboards</h2>
+        <p data-copy="mood.intro" style="font-size:15.5px;line-height:1.8;color:var(--c-ink-soft);margin:0;max-width:54ch">The conceptual direction for the house — materials, tones and the weight of each room, held together as one story.</p>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap">
+        <label data-up="1" style="{{ mood.upBtn }}" style-hover="background:var(--c-surface-2);border-color:var(--c-line-5)">Upload moodboards<input type="file" accept="image/*" multiple="{{ true }}" onChange="{{ mood.onFiles }}" style="display:none"></label>
+        <button type="button" onClick="{{ mood.onExpand }}" style="{{ mood.exBtn }}" style-hover="background:var(--c-ink);color:var(--c-surface-3);border-color:var(--c-ink)">Expand</button>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:36px;align-items:stretch">
+      <div style="min-width:0;display:flex;flex-direction:column;gap:16px">
+        <div style="{{ mood.frame }}">
+          <sc-if value="{{ mood.hasImg }}" hint-placeholder-val="{{ false }}">
+            <img src="{{ mood.img }}" alt="Moodboard" onClick="{{ mood.onExpand }}" style="max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;display:block;cursor:zoom-in;border-radius:12px">
+          </sc-if>
+          <sc-if value="{{ mood.empty }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:10px;color:var(--c-ink-mute);font-size:13px">
+              <span style="font-size:11px;letter-spacing:0.2em;text-transform:uppercase">No moodboards yet</span>
+              <span>Upload one or several — flip through them here</span>
+            </div>
+          </sc-if>
+          <button type="button" onClick="{{ mood.onPrev }}" style="{{ mood.prevBtn }}" style-hover="background:var(--c-ink);color:var(--c-surface-3)">‹</button>
+          <button type="button" onClick="{{ mood.onNext }}" style="{{ mood.nextBtn }}" style-hover="background:var(--c-ink);color:var(--c-surface-3)">›</button>
+          <div style="{{ mood.counter }}">{{ mood.count }}</div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+          <sc-for list="{{ mood.thumbs }}" as="t" hint-placeholder-count="3">
+            <button type="button" onClick="{{ t.onClick }}" style="{{ t.style }}"><img src="{{ t.url }}" alt="Moodboard thumbnail" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:9px"></button>
+          </sc-for>
+          <sc-if value="{{ mood.hasImg }}" hint-placeholder-val="{{ false }}">
+            <button type="button" onClick="{{ mood.onRemove }}" style="{{ mood.rmBtn }}" style-hover="color:var(--c-ink);border-color:var(--c-line-5)">Remove current</button>
+          </sc-if>
+        </div>
+      </div>
+      <div style="{{ mood.panel }}">
+        <div style="font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--c-accent);margin-bottom:16px">Conceptual comments</div>
+        <div style="display:flex;flex-direction:column;gap:12px;flex:1;min-height:0">
+          <sc-for list="{{ mood.notes }}" as="n" hint-placeholder-count="1">
+            <div style="{{ n.row }}">
+              <div style="{{ n.shell }}">
+                <div style="{{ n.bar }}">
+                  <sc-for list="{{ n.tools }}" as="t" hint-placeholder-count="6">
+                    <button type="button" title="{{ t.title }}" onMouseDown="{{ t.onDown }}" onClick="{{ t.onClick }}" style="{{ t.style }}" style-hover="background:var(--c-surface-2);color:var(--c-ink)">{{ t.label }}</button>
+                  </sc-for>
+                  <sc-for list="{{ n.colors }}" as="c" hint-placeholder-count="4">
+                    <button type="button" title="{{ c.title }}" onMouseDown="{{ c.onDown }}" onClick="{{ c.onClick }}" style="{{ c.style }}"></button>
+                  </sc-for>
+                  <button type="button" onClick="{{ n.onRemove }}" title="Remove note" style="{{ n.del }}" style-hover="color:var(--c-ink)">×</button>
+                </div>
+                <div contentEditable="{{ true }}" suppressContentEditableWarning="{{ true }}" ref="{{ n.ref }}" onBlur="{{ n.onBlur }}" onInput="{{ n.onInput }}" data-ph="{{ n.placeholder }}" dangerouslySetInnerHTML="{{ n.html }}" style="{{ n.area }}" style-focus="border-color:var(--c-accent)"></div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <button type="button" onClick="{{ mood.onAdd }}" style="{{ mood.addBtn }}" style-hover="background:var(--c-surface-2);border-color:var(--c-line-5)">+ Add comment</button>
+      </div>
+    </div>
+  </div>
+
+  <div data-sec="footer" style="border-top:1px solid var(--c-line);margin-top:110px;padding-top:44px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:24px">
+    <img src="assets/cybelle-logo.png" alt="Cybelle Sampaio Studio" style="height:96px;width:auto;display:block;opacity:0.9">
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:12px">
+      <div data-copy="footer.contact" style="font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:var(--c-ink-mute);text-align:right;line-height:2">cybellesampaio@hotmail.com · (314) 640-9048<br>86 Residence · Design proposal · August 2026</div>
+      <div style="display:flex;gap:8px;align-items:center;flex:none"><button type="button" data-studio="editcopy" onClick="{{ sec.footer.on }}" style="{{ sec.footer.btn }}">{{ sec.footer.label }}</button><button type="button" data-studio="editcopy" onClick="{{ sec.footer.revert }}" style="{{ sec.footer.btn2 }}">Revert</button></div>
+    </div>
+  </div>
+
+</div>
+
+<sc-if value="{{ s2light.open }}" hint-placeholder-val="{{ false }}">
+  <div style="{{ s2light.back }}">
+    <img src="{{ s2light.url }}" alt="Full view" style="{{ s2light.img }}">
+    <button type="button" onClick="{{ s2light.onPrev }}" style="{{ s2light.prev }}">‹</button>
+    <button type="button" onClick="{{ s2light.onNext }}" style="{{ s2light.next }}">›</button>
+    <button type="button" onClick="{{ s2light.close }}" style="{{ s2light.closeBtn }}">Close ✕</button>
+  </div>
+</sc-if>
+
+<sc-if value="{{ light.open }}" hint-placeholder-val="{{ false }}">
+  <div style="{{ light.back }}" onClick="{{ light.close }}">
+    <img src="{{ light.url }}" alt="Full view" ref="{{ light.imgRef }}" style="{{ light.img }}">
+    <div style="{{ light.hint }}">Click anywhere to close</div>
+  </div>
+</sc-if>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const R = 'refs/';
+const RES = (p) => {
+  const m = (typeof window !== 'undefined') && window.__resources;
+  if (!m || !p || /^(data:|https?:|blob:)/.test(p)) return p;
+  return m[String(p).replace(/^\.\//, '')] || p;
+};
+
+const P = {
+  rug:      { name: 'Vaughn Performance Wool-Blend Handwoven Ivory Area Rug 10\u2032×14\u2032', store: 'Crate & Barrel', size: '120" × 168" (10\u2032×14\u2032)', color: 'Ivory · 63% polyester, 35% wool pile', url: 'https://www.crateandbarrel.com/vaughn-performance-wool-blend-handwoven-ivory-area-rug-10x14/s505534' },
+  brooklin: { name: 'Brooklyn End Table', store: 'AllModern', size: '20" dia × 22" h', color: 'Medium Oak · solid + manufactured wood', url: 'https://www.allmodern.com/furniture/pdp/allmodern-brooklyn-end-table-a110001395.html' },
+  turn:     { name: 'Turn Tall Side Table', store: 'Blu Dot', size: '18.1" dia × 20" h', color: 'Solid turned acacia', url: 'https://www.bludot.com/products/turn-tall-side-table' },
+  armengol: { name: 'Armengol Accent End Table', store: 'AllModern', size: '12" dia × 24" h', color: 'Aged brass + walnut top' },
+  altan:    { name: 'Altan Accent Stool', store: 'AllModern', size: '17" dia × 17" h', color: 'Chocolate bouclé' },
+  linton:   { name: 'Linton Genuine Leather Club Chair', store: 'AllModern', size: '34.75" w × 33.75" d × 29" h', color: 'Maestro Cigar top-grain leather', url: 'https://www.allmodern.com/furniture/pdp/allmodern-linton-genuine-leather-club-chair-a110009201.html' },
+  herman:   { name: 'Herman Coffee Table', store: 'Natuzzi Italia', size: '39" w × 39" d × 11" h', color: 'Pewter/bronze frame, bronze mirror top', url: 'https://www.natuzzi.com/us/en/shop/natuzzi-italia/na-coffee-tables-consoles-accent-tables/herman-t156-c' },
+  dualite:  { name: 'Dualité Travertine and Burl Wood 53" Coffee Table', store: 'Crate & Barrel', size: '53" w × 27" d × 14" h', color: 'Travertine + mappa burl', url: 'https://www.crateandbarrel.com/dualite-travertine-and-burl-wood-53-coffee-table-by-athena-calderone/s285759' },
+  drift:    { name: 'Drift 5-Piece L-Shaped Power Triple-Reclining Sectional Sofa', store: 'Crate & Barrel', size: 'L-shape, 5 pieces', color: 'Sorrel (fabric)', url: 'https://www.crateandbarrel.com/drift-5-piece-l-shaped-power-triple-reclining-sectional-sofa/s527468' },
+  decor:    { name: 'Styling package — books, vessels, stems', store: 'Studio sourced', size: 'Assorted', color: 'Sage, brass, glass' }
+};
+const it = (key, img, over) => Object.assign({ qty: 1, img: R + img }, P[key], over || {});
+
+const FAM_SELECTED = [
+  { name: 'Eden Sectional Sofa, Beige', store: 'Modani', size: '165⅜" w × 41¾" d · chaise 57⅞" d · seat 16⅞" h', color: 'Beige fabric', qty: 1, img: R + 'canva-p1-01.png', url: 'https://modani.com/products/eden-sectional-sofa-beige' },
+  it('rug', 'canva-p1-00.png'),
+  it('herman', 'canva-p1-06.png'),
+  it('linton', 'canva-p1-05.png'),
+  it('brooklin', 'canva-p1-02.png', { qty: 2 }),
+  { name: 'Ashford Tufted Ottoman', store: 'AllModern', size: '28" w × 20" d × 17" h', color: 'Sage green bouclé', qty: 2, img: R + 'canva-p1-10.png' },
+  it('altan', 'canva-p1-03.png'),
+  it('turn', 'canva-p1-12.png'),
+  it('armengol', 'canva-p1-13.png'),
+  it('decor', 'canva-p1-08.png')
+];
+const FAM_ALTS = [
+  { item: 'Drift 5-Piece Power Reclining Sectional, Sorrel', store: 'Crate & Barrel', img: R + 'canva-p2-03.png', url: P.drift.url, note: 'Motion seating instead of the Eden — the comfort-first swap for the sofa.' },
+  { item: 'Lounge Deep 4-Piece Sectional with Chaise', store: 'Crate & Barrel', img: R + 'canva-p3-02.png', url: 'https://www.crateandbarrel.com/lounge-deep-4-piece-l-shaped-sectional-sofa-with-chaise-lounge/s354136', note: 'Deeper and more social, in ivory performance weave.' },
+  { item: 'Dualité Travertine and Burl Wood Coffee Table', store: 'Crate & Barrel', img: R + 'canva-p2-06.png', url: P.dualite.url, note: 'Stone alternative to the bronze Herman table.' },
+  { item: 'Wanneta Upholstered Chair', store: 'AllModern', img: R + 'canva-p2-01.png', url: '', note: 'Softer alternative to the Linton leather club chair.' },
+  { item: 'Caramelo Armchair', store: 'AllModern', img: R + 'canva-p3-04.png', url: '', note: 'Caned back and walnut — an older note in the room.' },
+  { item: 'Echo Stool, cognac', store: 'Rove Concepts', img: R + 'canva-p2-07.png', url: '', note: 'Leather stool in place of the bouclé Altan.' },
+  { item: 'V. Wells 32" Ottoman', store: 'Crate & Barrel', img: R + 'canva-p3-10.png', url: '', note: 'Long clay bouclé ottoman on brass legs.' },
+  { item: 'Nils Chair Ottoman', store: 'West Elm', img: R + 'canva-p4-11.png', url: '', note: 'Cream shearling, doubles as occasional seating.' },
+  { item: 'Marble Pedestal Side Table', store: 'AllModern', img: R + 'canva-p2-02.png', url: '', note: 'Veined marble drink table.' },
+  { item: 'Travertine Drink Table', store: 'Blu Dot', img: R + 'canva-p3-09.png', url: '', note: 'Travertine on a brass stem.' },
+  { item: 'Linen Upholstered Ottoman', store: 'AllModern', img: R + 'canva-p4-07.png', url: '', note: 'Sage linen, lighter than the Ashford.' }
+];
+
+const SPACES = [
+  { id: 'space-family', name: 'Family Room', code: 'Room 104', x: 41.5, y: 44, onPlan: true, status: 'Layout selected',
+    brief: 'The centre of the ground floor — open to kitchen, breakfast and the terrace, and the room the family actually lives in. It sets the palette the other four spaces answer to. One layout is proposed below, with alternatives you can swap into it.',
+    schedule: FAM_SELECTED.map(r => ({ item: r.name, store: r.store || '', size: r.size || '', color: r.color || '', qty: r.qty || 1, url: r.url || '', img: r.img })) },
+  { id: 'space-dining', name: 'Dining Room', code: 'Room 103', x: 18.5, y: 72.5, onPlan: true, status: 'Next in program',
+    brief: 'Formal dining off the grand foyer. One long table, ten chairs, a single sculptural fixture above and full-height linen drapery to soften the room for evening.',
+    schedule: [
+      { item: 'Dining table, 108–120" solid wood or stone top', qty: 1 },
+      { item: 'Dining chairs, upholstered seat', qty: 8 },
+      { item: 'Head chairs / carvers', qty: 2 },
+      { item: 'Sideboard or console', qty: 1 },
+      { item: 'Chandelier or linear fixture', qty: 1 },
+      { item: 'Area rug, flatweave', qty: 1 },
+      { item: 'Drapery, fabricated & installed', qty: 1 }
+    ] },
+  { id: 'space-breakfast', name: 'Breakfast Area', code: 'Room 113', x: 18.2, y: 23, onPlan: true, status: 'Next in program',
+    brief: 'Morning room beside the kitchen with the terrace on one side. A round table so circulation stays easy, four to six chairs, and one warm pendant. No kitchen millwork \u2014 that stays with the builder.',
+    schedule: [
+      { item: 'Round dining table, 54–60" dia', qty: 1 },
+      { item: 'Dining chairs, performance seat', qty: 6 },
+      { item: 'Pendant fixture', qty: 1 },
+      { item: 'Bench or banquette cushion', qty: 1 },
+      { item: 'Roman shades, linen', qty: 2 }
+    ] },
+  { id: 'space-terrace', name: 'Terrace', code: 'Room 115 · outdoor', x: 42, y: 18, onPlan: true, status: 'Next in program',
+    brief: 'Covered terrace off the family room, running to the pool area. Outdoor furniture rated for Miami sun and rain — deep seating, a dining set for six, planters and one shaded lounge zone, all in the same palette as the rooms inside so the eye carries straight through.',
+    schedule: [
+      { item: 'Outdoor deep seating sofa, teak or powder-coated', qty: 1 },
+      { item: 'Lounge chairs, all-weather rope or teak', qty: 2 },
+      { item: 'Outdoor dining table, 72–84"', qty: 1 },
+      { item: 'Outdoor dining chairs', qty: 6 },
+      { item: 'Coffee / side tables, stone or concrete', qty: 3 },
+      { item: 'Outdoor rug, polypropylene', qty: 1 },
+      { item: 'Umbrella or shade structure', qty: 1 },
+      { item: 'Planters and outdoor lighting', qty: 1 }
+    ] },
+  { id: 'space-primary', name: 'Primary Bedroom', code: '1st floor', onPlan: false, status: 'Program · level 1',
+    brief: 'The one space above ground level in this program. Bed, upholstered headboard, nightstands, a seating corner by the window, layered lighting and blackout drapery behind linen sheers.',
+    schedule: [
+      { item: 'Bed with upholstered headboard, king', qty: 1 },
+      { item: 'Nightstands', qty: 2 },
+      { item: 'Table lamps', qty: 2 },
+      { item: 'Bench at foot of bed', qty: 1 },
+      { item: 'Lounge chair + side table, window corner', qty: 1 },
+      { item: 'Dresser', qty: 1 },
+      { item: 'Area rug, wool', qty: 1 },
+      { item: 'Blackout drapery behind linen sheers', qty: 1 }
+    ] }
+];
+
+const SPACE_SEED = SPACES.map(sp => ({
+  id: sp.id, name: sp.name, area: '', code: sp.code, brief: sp.brief, status: sp.status,
+  onPlan: !!sp.onPlan, x: sp.x, y: sp.y, schedule: sp.schedule || []
+}));
+
+const ALT_SEED = { 'space-family': FAM_ALTS.map(a => Object.assign({}, a)) };
+
+const MAT_SEED = [
+  { name: 'Textile', note: 'Performance weave on everything the sun and the family land on — cleanable, and it does not read like performance fabric.' },
+  { name: 'Wood', note: 'Rift-cut oak with a natural oil finish, plus one turned or carved piece per room.' },
+  { name: 'Stone', note: 'Honed travertine for table tops — warm, matte, forgiving of water rings.' },
+  { name: 'Metal', note: 'Aged brass and bronze only. No chrome and no black hardware anywhere on this floor.' }
+];
+
+const PHASE_ICONS = [
+  'assets/icon-discovery.png',
+  'assets/icon-concept.png',
+  'assets/icon-design.png',
+  'assets/icon-styling.png'
+];
+
+const PHASE_SEED = [
+  { num: 'Step 01', title: 'Discovery', body: 'We start with the questionnaire and a conversation, then I visit and measure the space. This is where I learn how you live.' },
+  { num: 'Step 02', title: 'Concept', body: 'I present a design direction — moodboard, palette and materials — so we agree on the feeling before anything is chosen.' },
+  { num: 'Step 03', title: 'Design & sourcing', body: 'Floor plans, renderings and a curated sourcing list come together into one cohesive scheme, with a round of refinements.' },
+  { num: 'Step 04', title: 'Styling & reveal', body: 'Pieces arrive, everything is placed and styled, and your space is ready to be lived in — exactly as we imagined it.' }
+];
+
+const PANTONE = {
+  '7527':'#D9D2C5','7528':'#CFC3B2','7529':'#C5B7A3','7530':'#AFA192','7531':'#7E7266','7532':'#6B5D51','7533':'#4A3F35',
+  '7534':'#D8D0C0','7535':'#B9AE95','7536':'#A69A7E','7537':'#C6CDC7','7538':'#A7B2AC',
+  'WARMGRAY1':'#D7D2CB','WARMGRAY2':'#D0C9C1','WARMGRAY3':'#C8C1B8','WARMGRAY4':'#BEB6AB','WARMGRAY5':'#B4ABA0',
+  'WARMGRAY6':'#ADA49A','WARMGRAY7':'#A39A90','WARMGRAY8':'#9A9187','WARMGRAY9':'#8F857B','WARMGRAY10':'#847B72','WARMGRAY11':'#79706A',
+  'COOLGRAY1':'#D9D9D6','COOLGRAY5':'#B1B3B3','COOLGRAY9':'#75787B','COOLGRAY11':'#53565A',
+  '4665':'#D9B48F','4655':'#C99A6E','4645':'#B98254','4635':'#A96B3E','4625':'#4E2E20','4685':'#E4CDB7','4675':'#C9A87C',
+  '468':'#DFD1BD','469':'#66351F','470':'#A8541E','728':'#E0B98B','729':'#CDA077','730':'#B98A5C','731':'#6B3A1B',
+  '871':'#8A7148','872':'#85754E','873':'#8C7853','874':'#8B6F4E','875':'#80613F',
+  '452':'#BDB395','453':'#ABA07E','454':'#9A8D68','5875':'#B6A87A','616':'#DDD8C0','617':'#CFC9A9','618':'#B9B189',
+  '5595':'#C9D3C4','5605':'#25392B','5645':'#C5CFC2','5665':'#A9B5A5','5763':'#6A7A3E','5773':'#9AA97C','5793':'#B7C09A','5803':'#C9CFAE',
+  '7494':'#9CAF88','7495':'#8A9A5B','7496':'#6C7C2E','7541':'#D9E1E2','7542':'#A4BCC2','7543':'#98A4AE',
+  '476':'#4C3327','477':'#5C3A28','478':'#8A5B3B','479':'#A08067','480':'#DEC9B4','7526':'#8C4A2F',
+  '488':'#E9C4AE','489':'#F0D5C4','490':'#5A2B2B','491':'#7A3535','492':'#93474B',
+  '1817':'#5A2A2B','4975':'#4A2C24','440':'#4B3E33','439':'#54443C','438':'#5C4841','437':'#6E5B57',
+  'BLACK7':'#3D3935','BLACK6':'#2B2926','WHITE':'#FFFFFF',
+  '155':'#EFD5A5','156':'#E5BE84','7401':'#F5E1A4','7402':'#EBDA9F','7500':'#DFD1B0','7501':'#D9C89E','7502':'#CDB380',
+  '7503':'#AA9A6E','7504':'#8B7355','7505':'#7B5D3F','7506':'#EFDBB5','7507':'#FCE0B5','7508':'#E3C08D',
+  '5455':'#C1CFC9','5445':'#B7C9C7','549':'#6EA0B0','5483':'#5A8A8E','5493':'#9DBAB8','5503':'#A9C2BE',
+  '7458':'#79A0BD','7459':'#3E82A5','2905':'#8DC8E8','545':'#C3D7E0'
+};
+const pkey = c => String(c || '').toUpperCase().replace(/PANTONE|PMS|®|™/g, '').replace(/[^A-Z0-9]/g, '');
+const pantoneHex = c => PANTONE[pkey(c)] || null;
+const normHex = v => {
+  const t = String(v || '').trim().replace(/^#/, '');
+  if (/^[0-9a-fA-F]{3}$/.test(t)) return '#' + t.split('').map(ch => ch + ch).join('').toUpperCase();
+  if (/^[0-9a-fA-F]{6}$/.test(t)) return '#' + t.toUpperCase();
+  return null;
+};
+const _rgb = h => { const n = parseInt(String(h).replace('#', ''), 16); return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 }; };
+const _hex = c => '#' + [c.r, c.g, c.b].map(v => {
+  const x = Math.max(0, Math.min(255, Math.round(v))).toString(16);
+  return x.length < 2 ? '0' + x : x;
+}).join('').toUpperCase();
+const mixc = (a, b, t) => { const A = _rgb(a), B = _rgb(b); return _hex({ r: A.r + (B.r - A.r) * t, g: A.g + (B.g - A.g) * t, b: A.b + (B.b - A.b) * t }); };
+const lift = (c, amt) => mixc(c, amt > 0 ? '#FFFFFF' : '#000000', Math.abs(amt));
+const THEME_DEF = { ground: '#F4EDE4', accent: '#A98A5F', ink: '#3B342C', codes: {} };
+const tokensFor = t => ({
+  '--c-bg': t.ground,
+  '--c-surface': lift(t.ground, 0.42),
+  '--c-surface-2': lift(t.ground, -0.05),
+  '--c-surface-3': lift(t.ground, 0.22),
+  '--c-field': lift(t.ground, 0.62),
+  '--c-line': lift(t.ground, -0.11),
+  '--c-line-2': lift(t.ground, -0.06),
+  '--c-line-3': lift(t.ground, -0.17),
+  '--c-line-4': lift(t.ground, -0.2),
+  '--c-line-5': lift(t.ground, -0.26),
+  '--c-line-6': lift(t.ground, -0.3),
+  '--c-accent': t.accent,
+  '--c-accent-dark': lift(t.accent, -0.2),
+  '--c-ink': t.ink,
+  '--c-ink-soft': mixc(t.ink, t.ground, 0.28),
+  '--c-ink-mute': mixc(t.ink, t.ground, 0.52),
+  '--c-ink-mute-2': mixc(t.ink, t.ground, 0.42),
+  '--c-ink-faint': mixc(t.ink, t.ground, 0.62)
+});
+const PAL_DEF = [
+  { name: 'Ivory', hex: '#F6F2EA', code: '' }, { name: 'Plaster', hex: '#EDE7DA', code: '' },
+  { name: 'Travertine', hex: '#D8C9B0', code: '' }, { name: 'Sage', hex: '#7A8A5E', code: '' },
+  { name: 'Bronze', hex: '#8A6E45', code: '' }, { name: 'Chestnut', hex: '#7A4A32', code: '' }
+];
+
+const LD_RE = new RegExp('<' + 'script[^>]+application/ld\\+json[^>]*>[\\s\\S]*?</' + 'script>', 'gi');
+const LD_END = new RegExp('</' + 'script>$', 'i');
+
+const LINK_KEY = 'p86-simple';
+const SEED_V = '2026-08-15-a';
+const BOT_WALL = /^\s*(access denied|403 forbidden|forbidden|attention required|just a moment|robot check|are you a robot|request blocked|error|page not found|404)/i;
+
+class Component extends DCLogic {
+  state = { light: null, mats: null, adata: null, hide: {}, here: 1, hover: null, edit: null, rdata: null, saved: '',
+    floor: 0, p5: null, drag: false, fetching: '', rev: {}, scrolled: false, copy: {}, esec: null, theme: null, pal: null, slist: null };
+
+  docSave(patch) {
+    const d = { fh: this._fh || {}, copy: this.state.copy || {}, theme: this.state.theme || null, pal: this.state.pal || null,
+      slist: this.state.slist || null, mats: this.state.mats || null, hide: this.state.hide || {}, here: this.state.here };
+    Object.assign(d, patch || {});
+    try { window.localStorage.setItem(LINK_KEY + '.doc', JSON.stringify(d)); } catch (e) {}
+  }
+
+  docLoad() {
+    try {
+      const raw = window.localStorage.getItem(LINK_KEY + '.doc');
+      if (!raw) return;
+      const d = JSON.parse(raw) || {};
+      this._fh = d.fh || {};
+      this.setState({ copy: d.copy || {}, theme: d.theme || null, pal: d.pal || null, slist: d.slist || null,
+        mats: d.mats || null, hide: d.hide || {}, here: d.here == null ? 1 : d.here });
+    } catch (e) {}
+  }
+
+  saveData(rooms, alts) {
+    try {
+      window.localStorage.setItem(LINK_KEY + '.data', JSON.stringify({
+        v: SEED_V, r: rooms || this.roomsOf(), a: alts || this.altsOf()
+      }));
+    } catch (e) { this.setState({ saved: 'Too many photos to save locally — export to keep them' }); }
+  }
+
+  applyTheme() {
+    const t = this.state.theme;
+    const key = t ? JSON.stringify(t) : 'def';
+    if (this._tkey === key) return;
+    this._tkey = key;
+    const root = document.documentElement;
+    const T = tokensFor(t || THEME_DEF);
+    Object.keys(T).forEach(k => { if (t) root.style.setProperty(k, T[k]); else root.style.removeProperty(k); });
+  }
+
+  applyCopy() {
+    const c = this.state.copy || {};
+    const list = document.querySelectorAll('[data-copy]');
+    for (let n = 0; n < list.length; n++) {
+      const el = list[n];
+      if (el.__p86orig == null) el.__p86orig = el.innerHTML;
+      const k = el.getAttribute('data-copy');
+      if (!(k in c) || el === document.activeElement) continue;
+      if (el.innerHTML !== c[k]) el.innerHTML = c[k];
+    }
+  }
+
+  applyEditable() {
+    const sec = this.client ? null : this.state.esec;
+    const list = document.querySelectorAll('[data-copy]');
+    for (let n = 0; n < list.length; n++) {
+      const el = list[n];
+      const host = el.closest ? el.closest('[data-sec]') : null;
+      const on = !!sec && !!host && host.getAttribute('data-sec') === sec;
+      if (on) {
+        if (el.getAttribute('contenteditable') === 'true') continue;
+        el.setAttribute('contenteditable', 'true');
+        el.style.outline = '1px dashed var(--c-accent)';
+        el.style.outlineOffset = '4px';
+        if (!el.__p86bound) {
+          el.__p86bound = 1;
+          el.addEventListener('blur', () => this.grabCopy(el));
+          el.addEventListener('keydown', (e) => { if (e.key === 'Escape') el.blur(); });
+          el.addEventListener('paste', (e) => {
+            e.preventDefault();
+            const t = (e.clipboardData || window.clipboardData).getData('text');
+            document.execCommand('insertText', false, t);
+          });
+        }
+      } else if (el.getAttribute('contenteditable')) {
+        el.removeAttribute('contenteditable');
+        el.style.outline = ''; el.style.outlineOffset = '';
+      }
+    }
+  }
+
+  grabCopy(el) {
+    const k = el.getAttribute('data-copy');
+    if (!k) return;
+    const html = el.innerHTML.trim();
+    const c = Object.assign({}, this.state.copy || {});
+    if (html === String(el.__p86orig || '').trim()) delete c[k]; else c[k] = html;
+    this.setState({ copy: c, saved: 'Text saved ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
+    this.docSave({ copy: c });
+  }
+
+  harvestSec(sec) {
+    const c = Object.assign({}, this.state.copy || {});
+    const list = document.querySelectorAll('[data-sec="' + sec + '"] [data-copy]');
+    for (let n = 0; n < list.length; n++) {
+      const el = list[n];
+      const k = el.getAttribute('data-copy');
+      const html = el.innerHTML.trim();
+      if (html === String(el.__p86orig || '').trim()) delete c[k]; else c[k] = html;
+    }
+    this.setState({ copy: c });
+    this.docSave({ copy: c });
+    return c;
+  }
+
+  toggleSec(k) {
+    const cur = this.state.esec;
+    if (cur === k) { this.harvestSec(k); this.setState({ esec: null, saved: 'Text saved' }); return; }
+    if (cur) this.harvestSec(cur);
+    this.setState({ esec: k, saved: 'Editing text — click into any line' });
+  }
+
+  revertSec(k) {
+    const c = Object.assign({}, this.state.copy || {});
+    const list = document.querySelectorAll('[data-sec="' + k + '"] [data-copy]');
+    for (let n = 0; n < list.length; n++) {
+      const el = list[n];
+      delete c[el.getAttribute('data-copy')];
+      if (el.__p86orig != null) el.innerHTML = el.__p86orig;
+    }
+    this.setState({ copy: c, saved: 'Section restored to the studio text' });
+    this.docSave({ copy: c });
+  }
+
+  themeNow() { return Object.assign({ codes: {} }, THEME_DEF, this.state.theme || {}); }
+
+  setThemeHex(k, v) {
+    const h = normHex(v);
+    if (!h) { this.setState({ saved: 'That is not a hex colour' }); return; }
+    const t = this.themeNow(); t[k] = h;
+    this.setState({ theme: t, saved: 'Colour applied' });
+    this.docSave({ theme: t });
+  }
+
+  setThemeCode(k, v) {
+    const t = this.themeNow();
+    const codes = Object.assign({}, t.codes || {});
+    codes[k] = String(v || '').trim();
+    t.codes = codes;
+    const hit = pantoneHex(codes[k]);
+    if (hit) t[k] = hit;
+    this.setState({ theme: t, saved: hit ? 'Pantone ' + codes[k] + ' matched' : (codes[k] ? 'Code saved as the label — set the swatch by hand' : 'Code cleared') });
+    this.docSave({ theme: t });
+  }
+
+  resetTheme() {
+    this.setState({ theme: null, pal: null, saved: 'Studio colours restored' });
+    this.docSave({ theme: null, pal: null });
+  }
+
+  palOf() { return this.state.pal || JSON.parse(JSON.stringify(PAL_DEF)); }
+
+  setPal(i, key, v) {
+    const p = JSON.parse(JSON.stringify(this.palOf()));
+    if (!p[i]) return;
+    if (key === 'hex') { const h = normHex(v); if (!h) return; p[i].hex = h; }
+    else if (key === 'code') {
+      p[i].code = String(v || '').trim();
+      const hit = pantoneHex(p[i].code);
+      if (hit) p[i].hex = hit;
+    } else p[i][key] = v;
+    this.setState({ pal: p, saved: 'Palette saved' });
+    this.docSave({ pal: p });
+  }
+
+  matsOf() { return this.state.mats || JSON.parse(JSON.stringify(MAT_SEED)); }
+
+  setMat(i, key, v) {
+    const m = JSON.parse(JSON.stringify(this.matsOf()));
+    if (!m[i]) return;
+    m[i][key] = v;
+    this.setState({ mats: m, saved: 'Material saved' });
+    this.docSave({ mats: m });
+  }
+
+  addMat() {
+    const m = JSON.parse(JSON.stringify(this.matsOf()));
+    m.push({ name: 'New material', note: 'Comment on this material.' });
+    this.setState({ mats: m, edit: 'mats', saved: 'Material added — drop its photograph in' });
+    this.docSave({ mats: m });
+  }
+
+  removeMat(i) {
+    const m = JSON.parse(JSON.stringify(this.matsOf()));
+    m.splice(i, 1);
+    this.setState({ mats: m, saved: 'Material removed' });
+    this.docSave({ mats: m });
+  }
+
+  spacesOf() { return this.state.slist || JSON.parse(JSON.stringify(SPACE_SEED)); }
+
+  restoreSlots(map) {
+    if (!map) return;
+    const go = () => document.querySelectorAll('image-slot').forEach(el => {
+      if (el.id && map[el.id] && el.getAttribute('src') !== map[el.id]) el.setAttribute('src', map[el.id]);
+    });
+    go();
+    [200, 800, 2000].forEach(t => setTimeout(go, t));
+  }
+
+  setHere(k) {
+    this.setState({ here: k, saved: 'Marked where the project stands' });
+    this.docSave({ here: k });
+  }
+
+  saveSpaces(list, msg) {
+    this.setState({ slist: list, saved: msg || 'Spaces saved' });
+    this.docSave({ slist: list });
+  }
+
+  setSpaceField(id, key, v) {
+    const list = JSON.parse(JSON.stringify(this.spacesOf()));
+    const sp = list.filter(x => x.id === id)[0];
+    if (!sp) return;
+    sp[key] = v;
+    this.saveSpaces(list, 'Space updated');
+  }
+
+  addSpace() {
+    const list = JSON.parse(JSON.stringify(this.spacesOf()));
+    list.push({
+      id: 'space-' + Date.now().toString(36), name: 'New space', area: '', code: 'Room —',
+      brief: 'Brief to be written.', status: 'To be scoped', onPlan: false, x: 50, y: 50, schedule: []
+    });
+    this.saveSpaces(list, 'Space added — name it and drop its drawings in');
+  }
+
+  removeSpace(id) {
+    const list = this.spacesOf().filter(x => x.id !== id);
+    const r = JSON.parse(JSON.stringify(this.roomsOf()));
+    const a = JSON.parse(JSON.stringify(this.altsOf()));
+    delete r[id]; delete a[id];
+    this.setState({ slist: list, rdata: r, adata: a, esec: null, edit: null, saved: 'Space removed' });
+    this.docSave({ slist: list });
+    this.saveData(r, a);
+  }
+
+  componentDidUpdate() { this.applyTheme(); this.applyCopy(); this.applyEditable(); this.applyFrames(); }
+
+  applyFrames() {
+    if (!this._fh) this._fh = {};
+    const list = document.querySelectorAll('[data-frame]');
+    for (let n = 0; n < list.length; n++) {
+      const el = list[n];
+      const k = el.getAttribute('data-frame');
+      const want = this._fh[k];
+      if (want && Math.abs(el.clientHeight - want) > 1) el.style.height = want + 'px';
+    }
+    if (this._fhBound || this.client) return;
+    this._fhBound = 1;
+    const bank = () => {
+      let dirty = false;
+      document.querySelectorAll('[data-frame]').forEach(el => {
+        const key = el.getAttribute('data-frame');
+        const h = Math.round(el.clientHeight);
+        if (h && this._fh[key] !== h) { this._fh[key] = h; dirty = true; }
+      });
+      if (dirty) this.docSave({});
+    };
+    window.addEventListener('pointerup', () => setTimeout(bank, 60));
+    window.addEventListener('mouseup', () => setTimeout(bank, 60));
+  }
+
+  expand(id) {
+    const el = document.getElementById(id);
+    const im = el && el.shadowRoot && el.shadowRoot.querySelector('img');
+    const u = im && im.getAttribute('src');
+    if (u && /^(data:|https?:|assets\/|\.)/.test(u) && (im.naturalWidth || 0) > 0) {
+      // the full view grows out of the frame it came from, so the two stay spatially linked
+      const host = el.closest ? el.closest('[data-frame]') : null;
+      const r = (host || el).getBoundingClientRect();
+      this._lf = { left: r.left, top: r.top, width: r.width, height: r.height };
+      this.setState({ light: u });
+    } else this.setState({ saved: 'Drop a drawing into that frame first' });
+  }
+
+  pin5Pos() { return this.state.p5 || { x: 50, y: 50 }; }
+
+  startPin5(e) {
+    e.preventDefault();
+    const box = this.planEl;
+    if (!box) return;
+    const move = (ev) => {
+      const r = box.getBoundingClientRect();
+      const x = Math.max(3, Math.min(97, ((ev.clientX - r.left) / r.width) * 100));
+      const y = Math.max(4, Math.min(96, ((ev.clientY - r.top) / r.height) * 100));
+      this.setState({ p5: { x: x, y: y }, drag: true });
+    };
+    const up = () => {
+      window.removeEventListener('mousemove', move);
+      window.removeEventListener('mouseup', up);
+      this.setState({ drag: false });
+      try { localStorage.setItem(LINK_KEY + '.pin05', JSON.stringify(this.state.p5)); } catch (err) {}
+    };
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', up);
+  }
+
+  componentDidMount() {
+    this._onScroll = () => {
+      const on = (window.pageYOffset || document.documentElement.scrollTop || 0) > 600;
+      if (on !== this.state.scrolled) this.setState({ scrolled: on });
+    };
+    window.addEventListener('scroll', this._onScroll, { passive: true });
+    this._onScroll();
+    const C = typeof window !== 'undefined' ? window.__P86S_CLIENT : null;
+    this.client = !!C;
+    if (C) {
+      const doc = C.doc || {};
+      this._fh = doc.fh || {};
+      this.setState({ rdata: C.rdata || null, adata: C.adata || null, p5: C.p5 || null, edit: null,
+        copy: doc.copy || {}, theme: doc.theme || null, pal: doc.pal || null, slist: doc.slist || null,
+        mats: doc.mats || null, hide: doc.hide || {}, here: doc.here == null ? 1 : doc.here });
+      this.restoreSlots(C.slots);
+      return;
+    }
+    try {
+      const raw = localStorage.getItem(LINK_KEY + '.pin05');
+      if (raw) this.setState({ p5: JSON.parse(raw) });
+    } catch (err) {}
+    this.docLoad();
+    try {
+      const raw = window.localStorage.getItem(LINK_KEY + '.data');
+      const box = raw ? JSON.parse(raw) : null;
+      if (box && box.v === SEED_V) this.setState({ rdata: box.r || null, adata: box.a || null });
+      else if (box) { try { window.localStorage.removeItem(LINK_KEY + '.data'); } catch (e2) {} }
+    } catch (e) {}
+  }
+
+  componentWillUnmount() {
+    if (this._onScroll) window.removeEventListener('scroll', this._onScroll);
+  }
+
+  roomSeed() {
+    const out = {};
+    this.spacesOf().forEach(sp => {
+      out[sp.id] = (sp.schedule || []).map(r => ({
+        item: r.item, store: r.store || '', size: r.size || '', color: r.color || '',
+        qty: r.qty || 1, url: r.url || '', img: r.img || ''
+      }));
+    });
+    return out;
+  }
+
+  roomsOf() { return this.state.rdata || this.roomSeed(); }
+
+  altsOf() { return this.state.adata || JSON.parse(JSON.stringify(ALT_SEED)); }
+
+  mutateRoom(id, fn) {
+    const all = JSON.parse(JSON.stringify(this.roomsOf()));
+    if (!all[id]) all[id] = [];
+    fn(all[id]);
+    this.setState({ rdata: all, saved: 'Saved ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
+    this.saveData(all, null);
+  }
+
+  mutateAlt(id, fn) {
+    const all = JSON.parse(JSON.stringify(this.altsOf()));
+    if (!all[id]) all[id] = [];
+    fn(all[id]);
+    this.setState({ adata: all, saved: 'Alternatives saved' });
+    this.saveData(null, all);
+  }
+
+  setRoomField(id, idx, key, val) {
+    this.mutateRoom(id, rows => {
+      const r = rows[idx];
+      if (!r) return;
+      if (key === 'qty') {
+        const n = parseFloat(String(val).replace(/[^0-9.]/g, ''));
+        r.qty = isNaN(n) ? 1 : Math.max(1, Math.round(n));
+      } else r[key] = val;
+    });
+  }
+
+  addRoomRow(id) {
+    this.mutateRoom(id, rows => rows.push({ item: 'New piece', store: '', size: '', color: '', qty: 1, url: '', img: '' }));
+  }
+
+  removeRoomRow(id, idx) {
+    this.mutateRoom(id, rows => rows.splice(idx, 1));
+    this.bumpRev('room-' + id + '-' + idx);
+  }
+
+  rowToAlt(id, idx, at) {
+    const rows = this.roomsOf()[id] || [];
+    const r = rows[idx];
+    if (!r) return;
+    const alts = JSON.parse(JSON.stringify(this.altsOf()));
+    if (!alts[id]) alts[id] = [];
+    const piece = { item: r.item, store: r.store || '', url: r.url || '', img: r.img || '',
+      note: [r.size, r.color].filter(Boolean).join(' · ') };
+    if (at == null || at > alts[id].length) alts[id].push(piece); else alts[id].splice(Math.max(0, at), 0, piece);
+    const rooms = JSON.parse(JSON.stringify(this.roomsOf()));
+    rooms[id].splice(idx, 1);
+    this.setState({ adata: alts, rdata: rooms, saved: 'Moved to the alternatives' });
+    this.saveData(rooms, alts);
+  }
+
+  altToRow(id, idx, at) {
+    const alts = JSON.parse(JSON.stringify(this.altsOf()));
+    const a = (alts[id] || [])[idx];
+    if (!a) return;
+    alts[id].splice(idx, 1);
+    const rooms = JSON.parse(JSON.stringify(this.roomsOf()));
+    if (!rooms[id]) rooms[id] = [];
+    const piece = { item: a.item, store: a.store || '', size: '', color: '', qty: 1, url: a.url || '', img: a.img || '' };
+    if (at == null || at > rooms[id].length) rooms[id].push(piece); else rooms[id].splice(Math.max(0, at), 0, piece);
+    this.setState({ adata: alts, rdata: rooms, saved: 'Moved into the selected furniture' });
+    this.saveData(rooms, alts);
+  }
+
+  // ordering: the same handlers serve the arrows and the drag, within a list and across the two
+  moveWithin(kind, id, from, to) {
+    if (from === to || to == null || to < 0) return;
+    const shift = (list) => {
+      if (from >= list.length || to > list.length) return;
+      const x = list.splice(from, 1)[0];
+      list.splice(Math.max(0, Math.min(to, list.length)), 0, x);
+    };
+    if (kind === 'rows') this.mutateRoom(id, shift); else this.mutateAlt(id, shift);
+  }
+
+  calm() {
+    return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  }
+
+  commitMove(srcKind, id, from, tgtKind, at) {
+    if (srcKind === 'row' && tgtKind === 'row') this.moveWithin('rows', id, from, at == null ? (this.roomsOf()[id] || []).length : at);
+    else if (srcKind === 'alt' && tgtKind === 'alt') this.moveWithin('alts', id, from, at == null ? (this.altsOf()[id] || []).length : at);
+    else if (srcKind === 'alt' && tgtKind === 'row') this.altToRow(id, from, at);
+    else if (srcKind === 'row' && tgtKind === 'alt') this.rowToAlt(id, from, at);
+  }
+
+  dndParse(str) {
+    const p = String(str || '').split('|');
+    return p.length >= 3 ? { kind: p[0], id: p[1], idx: parseInt(p[2], 10) } : null;
+  }
+
+  // the piece is lifted under the pointer and tracked 1:1 from where it was grabbed;
+  // on release it carries the gesture's velocity into a spring, so drag and animation
+  // are one continuous motion rather than two
+  grab(kind, id, idx, e) {
+    if (this.client || (e.button != null && e.button > 0)) return;
+    const src = e.currentTarget.closest ? e.currentTarget.closest('[data-dnd]') : null;
+    if (!src) return;
+    e.preventDefault();
+    if (e.currentTarget.setPointerCapture && e.pointerId != null) {
+      try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
+    }
+    const rect = src.getBoundingClientRect();
+    const ghost = src.cloneNode(true);
+    ghost.removeAttribute('data-dnd');
+    ghost.style.cssText += ';position:fixed;left:0;top:0;margin:0;pointer-events:none;z-index:9500;'
+      + 'width:' + rect.width + 'px;height:' + rect.height + 'px;box-sizing:border-box;'
+      + 'background:var(--c-surface);border-radius:18px;box-shadow:0 20px 48px rgba(59,52,44,0.22);'
+      + 'transform:translate3d(' + rect.left + 'px,' + rect.top + 'px,0) scale(1.02);'
+      + 'transform-origin:center;opacity:0.97;';
+    document.body.appendChild(ghost);
+    src.style.opacity = '0.2';
+    document.body.style.cursor = 'grabbing';
+    const st = this._dg = {
+      kind: kind, id: id, idx: idx, ghost: ghost, src: src, hit: null, area: null,
+      ox: e.clientX - rect.left, oy: e.clientY - rect.top,
+      x: rect.left, y: rect.top,
+      hist: [{ x: rect.left, y: rect.top, t: performance.now() }]
+    };
+    st.hitTest = () => {
+      const under = document.elementFromPoint(st.px, st.py);
+      const tgt = (under && under.closest) ? under.closest('[data-dnd]') : null;
+      st.area = (under && under.closest) ? under.closest('[data-dnd-area]') : null;
+      const next = (tgt && tgt !== src) ? tgt : null;
+      if (st.hit && st.hit !== next) { st.hit.style.outline = ''; st.hit.style.outlineOffset = ''; }
+      if (next) { next.style.outline = '2px solid var(--c-accent)'; next.style.outlineOffset = '3px'; }
+      st.hit = next;
+    };
+    st.px = e.clientX; st.py = e.clientY;
+    st.move = (ev) => {
+      st.px = ev.clientX; st.py = ev.clientY;
+      st.x = ev.clientX - st.ox;
+      st.y = ev.clientY - st.oy;
+      ghost.style.transform = 'translate3d(' + st.x + 'px,' + st.y + 'px,0) scale(1.02)';
+      st.hist.push({ x: st.x, y: st.y, t: performance.now() });
+      if (st.hist.length > 6) st.hist.shift();
+      st.hitTest();
+    };
+    // the page follows the piece near the edges, so a list longer than the window is still reachable
+    const edge = 120;
+    st.tick = () => {
+      if (this._dg !== st) return;
+      const h = window.innerHeight;
+      let d = 0;
+      if (st.py < edge) d = -Math.pow((edge - st.py) / edge, 1.6) * 26;
+      else if (st.py > h - edge) d = Math.pow((st.py - (h - edge)) / edge, 1.6) * 26;
+      if (d) { window.scrollBy(0, d); st.hitTest(); }
+      st.scroller = requestAnimationFrame(st.tick);
+    };
+    st.scroller = requestAnimationFrame(st.tick);
+    st.up = () => this.release();
+    window.addEventListener('pointermove', st.move);
+    window.addEventListener('pointerup', st.up);
+    window.addEventListener('pointercancel', st.up);
+  }
+
+  release() {
+    const st = this._dg;
+    if (!st) return;
+    this._dg = null;
+    window.removeEventListener('pointermove', st.move);
+    window.removeEventListener('pointerup', st.up);
+    window.removeEventListener('pointercancel', st.up);
+    if (st.scroller) cancelAnimationFrame(st.scroller);
+    document.body.style.cursor = '';
+    if (st.hit) { st.hit.style.outline = ''; st.hit.style.outlineOffset = ''; }
+
+    const h = st.hist;
+    const last = h[h.length - 1];
+    const first = h[Math.max(0, h.length - 4)];
+    const dt = Math.max(16, last.t - first.t);
+    const vx = (last.x - first.x) / dt * 1000;
+    const vy = (last.y - first.y) / dt * 1000;
+
+    let target = null;
+    const drop = st.hit ? this.dndParse(st.hit.getAttribute('data-dnd')) : null;
+    if (drop && drop.id === st.id) target = { kind: drop.kind, at: drop.idx, el: st.hit };
+    else if (st.area) {
+      const a = String(st.area.getAttribute('data-dnd-area')).split('|');
+      if (a[1] === st.id) target = { kind: a[0], at: null, el: st.area };
+    }
+
+    const finish = () => {
+      if (st.ghost.parentNode) st.ghost.parentNode.removeChild(st.ghost);
+      if (st.src && st.src.isConnected) st.src.style.opacity = '';
+      if (target) this.commitMove(st.kind, st.id, st.idx, target.kind, target.at);
+    };
+    if (this.calm()) { finish(); return; }
+    const destEl = target && target.el ? target.el : st.src;
+    const d = destEl.getBoundingClientRect();
+    this.springTo(st.ghost, st.x, st.y, d.left, d.top, vx, vy, finish);
+  }
+
+  // two independent springs — a single spring on the 2D distance desyncs when the
+  // axes carry different velocities. Damping 0.86 / response 0.32: the flick earned the bounce
+  springTo(el, x0, y0, x1, y1, vx, vy, done) {
+    const w = 2 * Math.PI / 0.32;
+    const z = 0.86;
+    let x = x0, y = y0, t0 = performance.now();
+    const bail = setTimeout(() => { cancelAnimationFrame(this._raf); done(); }, 900);
+    const step = (now) => {
+      const dt = Math.min(0.032, Math.max(0.001, (now - t0) / 1000));
+      t0 = now;
+      vx += (-w * w * (x - x1) - 2 * z * w * vx) * dt;
+      vy += (-w * w * (y - y1) - 2 * z * w * vy) * dt;
+      x += vx * dt;
+      y += vy * dt;
+      const dist = Math.sqrt((x - x1) * (x - x1) + (y - y1) * (y - y1));
+      const speed = Math.sqrt(vx * vx + vy * vy);
+      const settle = Math.max(0, Math.min(1, 1 - dist / 90));
+      el.style.transform = 'translate3d(' + x + 'px,' + y + 'px,0) scale(' + (1.02 - 0.02 * settle) + ')';
+      el.style.opacity = String(0.97 - 0.5 * settle);
+      if (dist < 1 && speed < 40) { clearTimeout(bail); done(); return; }
+      this._raf = requestAnimationFrame(step);
+    };
+    this._raf = requestAnimationFrame(step);
+  }
+
+  async fetchAltRow(id, idx) {
+    const a = (this.altsOf()[id] || [])[idx] || {};
+    const url = (a.url || '').trim();
+    if (!url) { this.setState({ saved: 'Paste a product link on that card first' }); return; }
+    this.setState({ saved: 'Reading ' + url.replace(/^https?:\/\/(www\.)?/, '').split('/')[0] + '…', fetching: 'alt:' + id + ':' + idx });
+    let page = null;
+    try { page = await this.readPage(url); } catch (e) { page = null; }
+    if (!page) {
+      let who = 'That store';
+      try { who = new URL(url).hostname.replace(/^www\./, ''); } catch (e) {}
+      this.setState({ fetching: '', saved: who + ' blocks automatic reading — the link is saved and the name links to it' });
+      return;
+    }
+    let got = {};
+    try { got = this.parseProduct(page) || {}; } catch (e) { got = {}; }
+    let host = '';
+    try { host = new URL(url).hostname.replace(/^www\./, '').replace(/\.com$/, ''); } catch (e) {}
+    const clean = this.cleanTitle(got.name || '', host);
+    if (!clean || clean.length < 8) {
+      this.setState({ fetching: '', saved: 'Nothing readable came back from that page' });
+      return;
+    }
+    const spec = [got.size ? this.cleanSize(got.size) : '', got.color ? this.cleanFinish(got.color) : ''].filter(Boolean).join(' · ');
+    this.mutateAlt(id, list => {
+      const t = list[idx];
+      if (!t) return;
+      t.item = clean.slice(0, 110);
+      if (host && !t.store) t.store = host.charAt(0).toUpperCase() + host.slice(1);
+      if (spec && !t.note) t.note = spec;
+    });
+    this.setState({ fetching: '', saved: 'Filled from the store page' });
+  }
+
+  setAltField(id, idx, key, val) {
+    this.mutateAlt(id, list => { if (list[idx]) list[idx][key] = val; });
+  }
+
+  addAlt(id) {
+    this.mutateAlt(id, list => list.push({ item: 'Alternative piece', store: '', url: '', img: '', note: '' }));
+  }
+
+  removeAlt(id, idx) { this.mutateAlt(id, list => list.splice(idx, 1)); }
+
+  setAltPhoto(id, idx, file) {
+    if (!file) return;
+    const rd = new FileReader();
+    rd.onload = () => this.mutateAlt(id, list => { if (list[idx]) list[idx].img = rd.result; });
+    rd.readAsDataURL(file);
+  }
+
+  setRoomPhoto(key, idx, file) {
+    if (!file) return;
+    const rd = new FileReader();
+    rd.onload = () => this.mutateRoom(key, rows => { if (rows[idx]) rows[idx].img = rd.result; });
+    rd.readAsDataURL(file);
+  }
+
+  bumpRev(k) {
+    const rev = Object.assign({}, this.state.rev || {});
+    rev[k] = (rev[k] || 0) + 1;
+    this.setState({ rev: rev });
+  }
+
+  async readBoard(slotId) {
+    const el = document.getElementById(slotId);
+    const im = el && el.shadowRoot && el.shadowRoot.querySelector('img');
+    if (!im || !(im.naturalWidth > 0)) { this.setState({ saved: 'Drop the moodboard into that frame first' }); return null; }
+    if (!(window.claude && typeof window.claude.complete === 'function')) {
+      this.setState({ saved: 'Reading pictures is not available here — add the pieces by hand' });
+      return null;
+    }
+    const MAX = 1568;
+    const scale = Math.min(1, MAX / Math.max(im.naturalWidth, im.naturalHeight));
+    const cv = document.createElement('canvas');
+    cv.width = Math.round(im.naturalWidth * scale);
+    cv.height = Math.round(im.naturalHeight * scale);
+    cv.getContext('2d').drawImage(im, 0, 0, cv.width, cv.height);
+    const data = cv.toDataURL('image/jpeg', 0.86).split(',')[1];
+    const prompt = 'This is an interior designer\'s moodboard. Each tile is one furnishing, usually captioned with the '
+      + 'retailer name, the product name, and sometimes a SKU or dimensions. '
+      + 'Read every tile and return ONLY a JSON array — no prose, no code fence. Each element: '
+      + '{"item":string,"store":string,"sku":string,"size":string,"color":string,"qty":number}. '
+      + 'Skip decorative tiles that are not purchasable pieces.';
+    const body = {
+      max_tokens: 4000,
+      messages: [{ role: 'user', content: [
+        { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: data } },
+        { type: 'text', text: prompt }
+      ] }]
+    };
+    let out = null;
+    try { out = await window.claude.complete(Object.assign({ model: 'claude-sonnet-4-5' }, body)); }
+    catch (e) { try { out = await window.claude.complete(body); } catch (e2) { out = null; } }
+    if (!out) { this.setState({ saved: 'The board could not be read — add the pieces by hand' }); return null; }
+    const m = String(out).match(/\[[\s\S]*\]/);
+    if (!m) { this.setState({ saved: 'Nothing readable on that board' }); return null; }
+    let arr = null;
+    try { arr = JSON.parse(m[0]); } catch (e) { arr = null; }
+    if (!Array.isArray(arr) || !arr.length) { this.setState({ saved: 'No pieces found on that board' }); return null; }
+    return arr.filter(x => x && x.item).map(x => ({
+      item: String(x.item), store: String(x.store || ''), sku: String(x.sku || ''),
+      size: String(x.size || ''), color: String(x.color || ''),
+      qty: Math.max(1, parseInt(x.qty, 10) || 1)
+    }));
+  }
+
+  async captureBoard(id, slotId) {
+    this.setState({ saved: 'Reading the moodboard…' });
+    let items = null;
+    try { items = await this.readBoard(slotId); } catch (e) { items = null; }
+    if (!items || !items.length) return;
+    this.mutateRoom(id, rows => items.forEach(p => rows.push({
+      item: p.item, store: p.store || '', size: p.size || '', color: p.color || '',
+      qty: p.qty || 1, url: '', img: '', sku: p.sku || ''
+    })));
+    this.setState({ saved: items.length + ' piece' + (items.length === 1 ? '' : 's') + ' read from the board' });
+  }
+
+  cleanUrl(raw) {
+    let u = String(raw || '').trim();
+    try {
+      const p = new URL(u);
+      const drop = [];
+      p.searchParams.forEach((v, k) => {
+        if (/^(aid|utm_|gclid|fbclid|msclkid|ref|referrer|source|sid|cid|irclickid|_branch)/i.test(k) || /\[/.test(k)) drop.push(k);
+      });
+      drop.forEach(k => p.searchParams.delete(k));
+      p.hash = '';
+      u = p.toString();
+    } catch (e) {}
+    return u;
+  }
+
+  async readPage(rawUrl) {
+    const url = this.cleanUrl(rawUrl);
+    const bad = (t) => !t || t.length < 400
+      || BOT_WALL.test(t.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim())
+      || /access denied|403 forbidden|request blocked|are you a robot|captcha|enable javascript and cookies/i.test(t.slice(0, 1200));
+    const readers = [
+      { u: 'https://test.cors.workers.dev/?' + url, html: true },
+      { u: 'https://r.jina.ai/' + url, html: false },
+      { u: 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url), html: true },
+      { u: 'https://api.cors.lol/?url=' + encodeURIComponent(url), html: true },
+      { u: 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(url), html: true }
+    ];
+    const started = Date.now();
+    for (const r of readers) {
+      if (Date.now() - started > 40000) break;
+      const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+      const timer = setTimeout(() => { try { ctrl && ctrl.abort(); } catch (e) {} }, 11000);
+      try {
+        const res = await fetch(r.u, { headers: { Accept: 'text/plain,text/html' }, signal: ctrl ? ctrl.signal : undefined });
+        if (res.ok) {
+          const t = await res.text();
+          if (!bad(t)) { clearTimeout(timer); return { text: t, html: r.html }; }
+        }
+      } catch (e) {}
+      clearTimeout(timer);
+    }
+    return null;
+  }
+
+  decodeEnt(str) {
+    let t = String(str || '');
+    for (let i = 0; i < 3 && /&[a-z#0-9]+;/i.test(t); i++) {
+      t = t.replace(/&(amp|lt|gt|quot|apos|nbsp|#39|#x27|#8217|#8211|#8212);/gi, (m, e) => ({
+        amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ',
+        '#39': "'", '#x27': "'", '#8217': '\u2019', '#8211': '\u2013', '#8212': '\u2014'
+      }[e.toLowerCase()] || m));
+    }
+    return t;
+  }
+
+  cleanSize(raw) {
+    let t = this.decodeEnt(raw).replace(/\s+/g, ' ').trim();
+    const m = t.match(/\d+(?:\.\d+)?\s*(?:"|”|in\b|inch(?:es)?\b|cm\b)?\s*(?:x|×|by)\s*[\s\S]{0,80}/i);
+    if (m) t = m[0];
+    t = t.replace(/\s*\bmax\w*\b[\s\S]*$/i, '');
+    t = t.replace(/\b(weight capacity|assembly|seat height|please note)\b[\s\S]*$/i, '');
+    return t.replace(/[·|,;]\s*$/, '').trim().slice(0, 90);
+  }
+
+  cleanFinish(raw) {
+    const t = this.decodeEnt(raw).replace(/\s+/g, ' ').trim();
+    if (t.length < 3 || t.length > 70) return '';
+    if (/^(var|null|undefined|true|false|default|select|choose)$/i.test(t)) return '';
+    if (/[{}<>;=]|--[a-z]/i.test(t)) return '';
+    if (!/[a-z]{3}/i.test(t)) return '';
+    return t;
+  }
+
+  cleanTitle(raw, host) {
+    let t = this.decodeEnt(raw).replace(/\s+/g, ' ').trim();
+    t = t.split(/\s\|\s/)[0].trim();
+    t = t.replace(/\s*[|\u2013\u2014]\s*[^|\u2013\u2014]{2,40}$/, '');
+    t = t.replace(/\s*[&+]\s*Reviews\s*$/i, '');
+    const brand = (host || '').split('.')[0];
+    if (brand && brand.length > 3) {
+      const re = new RegExp('^' + brand.replace(/[^a-z0-9]/gi, '') + '\\s+', 'i');
+      t = t.replace(re, '');
+    }
+    return t.trim();
+  }
+
+  parseProduct(page) {
+    const out = {};
+    const raw = page.text;
+    if (page.html) {
+      const blocks = raw.match(LD_RE) || [];
+      const nodes = [];
+      blocks.forEach(b => {
+        const body = b.replace(/^[\s\S]*?>/, '').replace(LD_END, '');
+        try {
+          const j = JSON.parse(body);
+          (Array.isArray(j) ? j : [j]).forEach(n => {
+            nodes.push(n);
+            if (n && n['@graph']) n['@graph'].forEach(g => nodes.push(g));
+          });
+        } catch (e) {}
+      });
+      const prod = nodes.filter(n => n && /product/i.test([].concat(n['@type'] || '').join(' ')))[0];
+      if (prod) {
+        out.hasProduct = true;
+        if (prod.name) out.name = String(prod.name);
+        if (prod.color) out.color = String(prod.color);
+        if (prod.material) out.color = (out.color ? out.color + ', ' : '') + [].concat(prod.material).join(', ');
+        const dims = [];
+        ['width', 'depth', 'height'].forEach(k => {
+          const v = prod[k];
+          if (v && (v.value || typeof v === 'string' || typeof v === 'number')) {
+            const n = v.value != null ? v.value : v;
+            dims.push(Math.round(parseFloat(n) * 10) / 10 + '" ' + k.charAt(0));
+          }
+        });
+        const props = [].concat(prod.additionalProperty || []);
+        props.forEach(pr => {
+          const nm = String(pr.name || '').toLowerCase();
+          if (/^(overall )?(width|depth|height|diameter|length)$/.test(nm) && dims.length < 4) {
+            dims.push(String(pr.value).replace(/\s*(inches|in\.?)$/i, '"') + ' ' + nm.charAt(0));
+          }
+          if (/color|finish|fabric|upholstery|material/.test(nm) && !out.color) out.color = String(pr.value);
+        });
+        if (dims.length) out.size = dims.join(' × ');
+      }
+      if (!out.name) {
+        const og = raw.match(/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)/i);
+        if (og) out.name = og[1];
+      }
+    }
+    const text = page.html ? raw.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ') : raw;
+    if (!out.name) {
+      const t1 = (raw.match(/^meta-og:title:\s*(.+)$/mi) || [])[1]
+        || (raw.match(/^Title:\s*(.+)$/mi) || [])[1]
+        || (raw.match(/^#\s+(.+)$/m) || [])[1];
+      if (t1) out.name = t1.replace(/\s*[|]\s*[^|]*$/, '').trim();
+    }
+    if (!out.size) {
+      const pats = [
+        /(\d{1,3}(?:[.\u00bc-\u00be\u2150-\u215e\/\d]*)?\s?(?:"|''|in\b|inches)?\s?[wW]\b[^\n]{0,70}?[hH]\b)/,
+        /(?:Overall Dimensions|Product Dimensions|Dimensions)\s*:?\s*([^\n]{6,90})/i,
+        /(\d{1,3}(?:\.\d+)?\s?"?\s?(?:dia|diameter)[^\n]{0,50})/i
+      ];
+      for (const p of pats) {
+        const m = text.match(p);
+        if (m) { out.size = (m[1] || m[0]).trim(); break; }
+      }
+    }
+    if (!out.color) {
+      const m = text.match(/\b(?:Color|Colour|Finish|Upholstery|Fabric|Material)\s*:\s*([A-Za-z][A-Za-z0-9 ,\/&+'-]{2,44})/i);
+      if (m) out.color = m[1].trim();
+    }
+    if (out.size) {
+      const sz = out.size.replace(/^(Overall |Product )?Dimensions:?\s*/i, '').replace(/\s+/g, ' ').trim().slice(0, 74);
+      const hasUnit = /\d\s*(?:"|''|\u2033|in\b|inch|cm\b|mm\b)/i.test(sz);
+      const junky = /price|shipping|bestseller|add to cart|cart|menu|sign in|free\b|review/i.test(sz);
+      out.size = (hasUnit && !junky) ? sz : null;
+    }
+    if (out.color) {
+      const c = out.color.replace(/\s+/g, ' ').trim().slice(0, 60);
+      const junky = /commitment|standards|shop|menu|account|search|design services|sign in|newsletter/i.test(c);
+      const wordy = c.split(/\s+/).length > 6;
+      out.color = (!junky && !wordy && c.length > 2) ? c : null;
+    }
+    return out;
+  }
+
+  async fetchRoomRow(id, idx) {
+    const rows = this.roomsOf()[id] || [];
+    const r = rows[idx] || {};
+    const url = (r.url || '').trim();
+    if (!url) { this.setState({ saved: 'Paste a product link on that row first' }); return; }
+    const key = id + ':' + idx;
+    this.setState({ saved: 'Reading ' + url.replace(/^https?:\/\/(www\.)?/, '').split('/')[0] + '…', fetching: key });
+    let page = null;
+    try { page = await this.readPage(url); } catch (e) { page = null; }
+    if (!page) {
+      let who = 'That store';
+      try { who = new URL(url).hostname.replace(/^www\./, ''); } catch (e) {}
+      this.setState({ fetching: '', saved: who + ' blocks automatic reading — the link is saved and the name links to it; type the size and finish by hand' });
+      return;
+    }
+    let got = {};
+    try { got = this.parseProduct(page) || {}; } catch (e) { got = {}; }
+    if (!got.size && !got.hasProduct) {
+      this.setState({ fetching: '', saved: 'That store builds its product specs in the browser, so the link can\u2019t be read automatically' });
+      return;
+    }
+    let host = '';
+    try { host = new URL(url).hostname.replace(/^www\./, '').replace(/\.com$/, ''); } catch (e) {}
+    this.mutateRoom(id, rws => {
+      const t = rws[idx];
+      if (!t) return;
+      const clean = this.cleanTitle(got.name || '', host);
+      if (clean && clean.length > 8) t.item = clean.slice(0, 110);
+      if (got.size) { const sz = this.cleanSize(got.size); if (sz) t.size = sz; }
+      if (got.color) { const cl = this.cleanFinish(got.color); if (cl) t.color = cl; }
+      if (host && !t.store) t.store = host.charAt(0).toUpperCase() + host.slice(1);
+    });
+    this.bumpRev('room-' + id + '-' + idx);
+    const missing = ['size', 'color'].filter(k => !got[k]);
+    this.setState({ fetching: '', saved: missing.length ? 'Filled — still missing ' + missing.join(', ') : 'Filled from the store page' });
+  }
+
+  async exportClient() {
+    this.setState({ saved: 'Building client copy…' });
+    try {
+      const txt = async (p) => (await fetch(p, { cache: 'no-store' })).text();
+      const dataUrl = async (p) => {
+        const b = await (await fetch(p, { cache: 'no-store' })).blob();
+        return await new Promise((res, rej) => {
+          const fr = new FileReader();
+          fr.onload = () => res(fr.result); fr.onerror = rej;
+          fr.readAsDataURL(b);
+        });
+      };
+      const CLOSE = '<' + '/scr' + 'ipt>';
+      const OPEN = '<' + 'scr' + 'ipt>';
+      const CLOSEBARE = '<' + '/scr' + 'ipt';
+      const safe = (js) => js.split(CLOSEBARE).join('<\\/scr' + 'ipt');
+
+      let src = await txt(location.pathname);
+      const sup = await txt('./support.js');
+      const isl = await txt('./image-slot.js');
+
+      const payload = { rdata: this.roomsOf(), adata: this.altsOf(), p5: this.state.p5, client: true,
+        doc: { copy: this.state.copy || {}, theme: this.state.theme || null, pal: this.state.pal || null,
+          slist: this.state.slist || null, mats: this.state.mats || null, hide: this.state.hide || {},
+          here: this.state.here, fh: this._fh || {} } };
+
+      const paths = {};
+      (src.match(/(?:assets|refs)\/[A-Za-z0-9._%()+-]+/g) || []).forEach(p => { paths[p] = 1; });
+      const scan = (obj) => Object.keys(obj || {}).forEach(k => (obj[k] || []).forEach(r => {
+        if (r.img && !/^data:|^https?:/.test(r.img)) paths[r.img.replace(/^\.\//, '')] = 1;
+      }));
+      scan(payload.rdata); scan(payload.adata);
+      const map = {};
+      for (const p of Object.keys(paths)) {
+        try { map[p] = await dataUrl(p); } catch (e) {}
+      }
+      Object.keys(map).forEach(p => { src = src.split(p).join(map[p]); });
+      const swap = (obj) => Object.keys(obj || {}).forEach(k => (obj[k] || []).forEach(r => {
+        const key = r.img && r.img.replace(/^\.\//, '');
+        if (map[key]) r.img = map[key];
+      }));
+      swap(payload.rdata); swap(payload.adata);
+
+      payload.slots = {};
+      document.querySelectorAll('image-slot').forEach(el => {
+        const im = el.shadowRoot && el.shadowRoot.querySelector('img');
+        const u = im && im.getAttribute('src');
+        if (u && /^data:/.test(u) && el.id) payload.slots[el.id] = u;
+      });
+
+      const supTag = '<' + 'scr' + 'ipt src="./support.js">' + CLOSE;
+      const islTag = '<' + 'scr' + 'ipt src="./image-slot.js">' + CLOSE;
+      src = src.replace(supTag,
+        OPEN + 'window.__P86S_CLIENT = ' + JSON.stringify(payload).split('<').join('\\u003c') + ';' + CLOSE
+        + '\n' + OPEN + safe(sup) + CLOSE);
+      src = src.replace(islTag, OPEN + safe(isl) + CLOSE);
+
+      const url = URL.createObjectURL(new Blob([src], { type: 'text/html' }));
+      const a = document.createElement('a');
+      a.href = url; a.download = '86-Residence-Escopo-client.html';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 8000);
+      this.setState({ saved: 'Client copy downloaded — plans, moodboards and photos included' });
+    } catch (e) {
+      this.setState({ saved: 'Export failed: ' + (e && e.message ? e.message : 'unknown') });
+    }
+  }
+
+  renderVals() { return Object.assign(this.baseVals(), this.step2Vals()); }
+
+  baseVals() {
+    const R2 = this.roomsOf();
+    const A = this.altsOf();
+    const inputBase = 'width:100%;padding:7px 11px;border:1px solid var(--c-line-3);border-radius:10px;background:var(--c-field);'
+      + "font-family:Jost,sans-serif;font-size:13px;color:var(--c-ink);outline:none;box-sizing:border-box;";
+    const SP = this.spacesOf().map((sp, k) => Object.assign({}, sp, { num: (k + 1) < 10 ? '0' + (k + 1) : String(k + 1) }));
+    const offSp = SP.filter(sp => !sp.onPlan)[0] || SP[SP.length - 1] || { id: 'space-primary', name: 'Upper level' };
+    const pill = (on) => 'padding:8px 16px;border-radius:999px;cursor:pointer;font-family:Jost,sans-serif;font-size:11px;'
+      + 'letter-spacing:0.12em;text-transform:uppercase;white-space:nowrap;transition:background .18s,color .18s,border-color .18s;'
+      + (on ? 'border:1px solid var(--c-ink);background:var(--c-ink);color:var(--c-surface-3);' : 'border:1px solid var(--c-line-5);background:transparent;color:var(--c-accent-dark);');
+    const SECS = ['header', 'hero', 'about', 'goals', 'concept', 'materials', 'plan', 'moodboards', 'timeline', 'next', 'footer'];
+    const TH = this.themeNow();
+    const fl = this.state.floor;
+    const p5 = this.pin5Pos();
+    const planBox = 'position:relative;min-width:0;aspect-ratio:3/2;background:var(--c-surface);border:1px solid var(--c-line);border-radius:22px;overflow:hidden;';
+    const floorTab = (on) => 'padding:10px 20px;border-radius:999px;cursor:pointer;font-family:Jost,sans-serif;font-size:11.5px;white-space:nowrap;line-height:1.2;'
+      + 'letter-spacing:0.14em;text-transform:uppercase;transition:background .18s,color .18s,border-color .18s;'
+      + (on ? 'background:var(--c-ink);color:var(--c-surface-3);border:1px solid var(--c-ink);' : 'background:var(--c-surface);color:var(--c-ink-soft);border:1px solid var(--c-line);');
+    const matEd = !this.client && this.state.edit === 'mats';
+    const smallBtn = 'padding:7px 9px;border:1px solid var(--c-line-3);border-radius:10px;background:var(--c-bg);'
+      + 'font-family:Jost,sans-serif;font-size:12px;color:var(--c-accent-dark);cursor:pointer;white-space:nowrap';
+    const soft = 'font-size:12.5px;color:var(--c-ink-faint);line-height:1.5';
+    const ordBtn = (grab) => 'width:24px;height:24px;flex:none;border-radius:8px;border:1px solid var(--c-line-3);background:var(--c-bg);'
+      + 'color:var(--c-ink-mute);font-family:Jost,sans-serif;font-size:12px;line-height:1;display:flex;align-items:center;'
+      + 'justify-content:center;padding:0;user-select:none;'
+      + (grab ? 'touch-action:none;cursor:grab;' : 'cursor:pointer;');
+
+    return {
+      studioOn: !this.client,
+      light: {
+        url: this.state.light,
+        open: !!this.state.light,
+        close: () => { this._lf = null; this.setState({ light: null }); },
+        imgRef: (el) => {
+          if (!el || el.__grown || !this._lf || this.calm() || !el.animate) return;
+          el.__grown = 1;
+          const o = this._lf;
+          const grow = () => {
+            const r = el.getBoundingClientRect();
+            if (!r.width || !r.height) return;
+            const sx = o.width / r.width, sy = o.height / r.height;
+            const dx = (o.left + o.width / 2) - (r.left + r.width / 2);
+            const dy = (o.top + o.height / 2) - (r.top + r.height / 2);
+            el.animate([
+              { transform: 'translate(' + dx + 'px,' + dy + 'px) scale(' + sx + ',' + sy + ')', opacity: 0.35, filter: 'blur(8px)' },
+              { transform: 'none', opacity: 1, filter: 'blur(0px)' }
+            ], { duration: 420, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' });
+          };
+          if (el.complete) grow(); else el.addEventListener('load', grow, { once: true });
+        },
+        back: 'position:fixed;inset:0;z-index:9000;background:rgba(32,29,26,0.88);display:flex;align-items:center;'
+          + 'justify-content:center;padding:36px;cursor:zoom-out;',
+        img: 'max-width:94vw;max-height:92vh;width:auto;height:auto;border-radius:14px;box-shadow:0 30px 90px rgba(0,0,0,0.45);',
+        hint: 'position:fixed;left:0;right:0;bottom:26px;text-align:center;font-family:Jost,sans-serif;font-size:11px;'
+          + 'letter-spacing:0.18em;text-transform:uppercase;color:rgba(247,240,230,0.7);pointer-events:none;'
+      },
+      frameWrap: 'position:relative;height:320px;min-height:150px;resize:vertical;overflow:hidden;border-radius:18px;',
+      expandBtn: 'position:absolute;right:10px;bottom:10px;z-index:2;padding:7px 14px;border-radius:999px;'
+        + 'border:1px solid rgba(59,52,44,0.12);background:rgba(251,247,241,0.92);color:var(--c-ink-soft);'
+        + 'font-family:Jost,sans-serif;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;cursor:zoom-in;',
+      jump: {
+        wrap: 'position:fixed;right:26px;bottom:26px;z-index:70;display:flex;gap:10px;align-items:center;'
+          + 'transition:opacity .25s,transform .25s;'
+          + (this.state.scrolled ? 'opacity:1;transform:translateY(0);' : 'opacity:0;transform:translateY(12px);pointer-events:none;'),
+        btn: 'display:inline-flex;align-items:center;justify-content:center;padding:11px 20px;border-radius:999px;'
+          + 'border:1px solid rgba(169,138,95,0.34);background:rgba(251,247,241,0.55);backdrop-filter:blur(10px);color:var(--c-ink-soft);'
+          + 'font-family:Jost,sans-serif;font-size:11.5px;letter-spacing:0.12em;text-transform:uppercase;'
+          + 'text-decoration:none;cursor:pointer;white-space:nowrap;box-shadow:0 4px 14px rgba(59,52,44,0.06);transition:background .18s,color .18s,border-color .18s;',
+        onTop: () => { try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) { window.scrollTo(0, 0); } }
+      },
+      studio: {
+        saved: this.state.saved,
+        btnStyle: 'cursor:pointer;padding:11px 20px;border-radius:999px;font-family:Jost,sans-serif;font-size:12.5px;letter-spacing:0.06em;border:1px solid var(--c-line);background:var(--c-surface);color:var(--c-ink);',
+        onExport: () => this.exportClient(),
+        onPrint: () => { this.setState({ edit: null }); setTimeout(() => window.print(), 250); }
+      },
+      services: [
+        { num: '01', title: 'Concept & mood boards', body: 'Palette, materials and mood agreed before a single purchase.' },
+        { num: '02', title: 'Floor plans & layouts', body: 'Space planning to scale — placement, flow and dimensions.' },
+        { num: '03', title: 'Material selections', body: 'Textiles, woods, stone and metal chosen as one family.' },
+        { num: '04', title: 'Sourcing & styling', body: 'A curated furniture list, then the styling that finishes it.' }
+      ],
+      goals: [
+        { num: '01', title: 'One ground floor, not four rooms', body: 'Family room, dining, breakfast and terrace share a palette and a material language without repeating the same furniture — the eye should travel, not stop, and it should carry straight out to the pool.' },
+        { num: '02', title: 'Comfort that survives real life', body: 'Performance textiles where the sun and the family land, motion seating where it earns its place, and nothing so precious it changes how you use a room.' },
+        { num: '03', title: 'One decision at a time', body: 'Each space is concepted, planned and furnished before anything is ordered — starting with the family room, so the rest has something to answer to.' }
+      ],
+      concept: [
+        { title: 'Simplicity', body: 'Fewer, better pieces with air between them. Every room has one empty corner on purpose.' },
+        { title: 'Neutral palette', body: 'Plaster, ivory and travertine as the ground, so the light off the terrace does the decorating.' },
+        { title: 'Layered texture', body: 'Bouclé against leather against linen — the interest is tactile rather than graphic.' },
+        { title: 'Sculptural wood', body: 'One turned or carved wood piece per room to break the straight lines of the architecture.' },
+        { title: 'Warm metals', body: 'Aged brass and bronze only. No chrome, no black hardware anywhere on this floor.' },
+        { title: 'Quiet lighting', body: 'Layered and low — table and floor lamps carrying the evening, ceiling light for cleaning day.' }
+      ],
+      palette: this.palOf().map(s => ({
+        name: s.name,
+        hex: (s.code ? 'PANTONE ' + s.code + ' · ' : '') + String(s.hex).toUpperCase(),
+        chip: 'height:82px;border-radius:16px;background:' + s.hex + ';border:1px solid rgba(59,52,44,0.09);'
+      })),
+      sec: SECS.reduce((m, k) => {
+        const on = this.state.esec === k;
+        m[k] = {
+          on: () => this.toggleSec(k),
+          revert: () => this.revertSec(k),
+          label: on ? 'Done' : 'Edit text',
+          btn: this.client ? 'display:none' : pill(on),
+          btn2: (!this.client && on) ? pill(false) : 'display:none'
+        };
+        return m;
+      }, {}),
+      themeOpen: !this.client && this.state.esec === 'concept',
+      themeResetBtn: pill(false),
+      onThemeReset: () => this.resetTheme(),
+      themeRows: [['ground', 'Page ground'], ['accent', 'Accent · bronze'], ['ink', 'Ink · text']].map(pair => {
+        const k = pair[0];
+        const code = (TH.codes || {})[k] || '';
+        return {
+          k: k + ':' + TH[k] + ':' + code, label: pair[1], hex: TH[k], code: code,
+          note: code ? (pantoneHex(code) ? 'Pantone match applied' : 'Kept as the label') : 'Type a code or pick a swatch',
+          chip: 'width:34px;height:34px;border-radius:999px;flex:none;border:1px solid rgba(59,52,44,0.14);background:' + TH[k] + ';',
+          input: inputBase,
+          onCode: (e) => this.setThemeCode(k, e.target.value),
+          onHex: (e) => this.setThemeHex(k, e.target.value),
+          onPick: (e) => this.setThemeHex(k, e.target.value)
+        };
+      }),
+      palRows: this.palOf().map((p, k) => ({
+        k: 'pal' + k + ':' + p.hex + ':' + (p.code || ''),
+        name: p.name, code: p.code || '', hex: p.hex, input: inputBase,
+        onName: (e) => this.setPal(k, 'name', e.target.value),
+        onCode: (e) => this.setPal(k, 'code', e.target.value),
+        onPick: (e) => this.setPal(k, 'hex', e.target.value)
+      })),
+
+      mat: {
+        onToggle: () => this.setState({ edit: matEd ? null : 'mats' }),
+        toggleLabel: matEd ? 'Done editing' : 'Edit materials',
+        toggleStyle: this.client ? 'display:none' : pill(matEd),
+        onAdd: () => this.addMat(),
+        addWrap: this.client ? 'display:none' : 'display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin-top:22px;',
+        addBtn: 'padding:12px 24px;border-radius:999px;border:1px dashed var(--c-accent);background:transparent;color:var(--c-accent-dark);'
+          + 'font-family:Jost,sans-serif;font-size:12px;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;white-space:nowrap;'
+      },
+      mats: this.matsOf().map((m, k) => ({
+        key: 'mat-' + k,
+        slot: 'p86s-mat-' + k,
+        ph: m.name || 'Material',
+        name: m.name, note: m.note,
+        show: !matEd, edit: matEd,
+        nameVal: m.name || '', noteVal: m.note || '',
+        input: inputBase,
+        area: inputBase + 'line-height:1.6;min-height:70px;resize:vertical;',
+        removeBtn: smallBtn,
+        onName: (e) => this.setMat(k, 'name', e.target.value),
+        onNote: (e) => this.setMat(k, 'note', e.target.value),
+        onRemove: () => this.removeMat(k)
+      })),
+
+      onFloorGround: () => this.setState({ floor: 0 }),
+      onFloorSecond: () => this.setState({ floor: 1 }),
+      floorTabGround: floorTab(fl === 0),
+      floorTabSecond: floorTab(fl === 1),
+      groundWrap: planBox + (fl === 0 ? '' : 'display:none;'),
+      secondWrap: planBox + (fl === 1 ? '' : 'display:none;'),
+      planRef: (el) => { this.planEl = el; },
+      dragHint: 'font-size:12.5px;color:var(--c-ink-mute);margin-top:12px;line-height:1.6;'
+        + (fl === 1 && !this.client ? '' : 'display:none;'),
+      pin5: {
+        href: '#' + offSp.id, title: offSp.name,
+        onDown: this.client ? null : ((e) => this.startPin5(e)),
+        onEnter: () => this.setState({ hover: offSp.id }),
+        onLeave: () => this.setState({ hover: null }),
+        style: 'position:absolute;left:' + p5.x + '%;top:' + p5.y + '%;'
+          + 'transform:translate(-50%,-50%) scale(' + (this.state.hover === offSp.id || this.state.drag ? 1.14 : 1) + ');'
+          + 'width:48px;height:48px;border-radius:999px;display:flex;align-items:center;justify-content:center;'
+          + 'font-family:Jost,sans-serif;font-size:14px;letter-spacing:0.04em;text-decoration:none;'
+          + 'background:' + (this.state.hover === offSp.id ? 'var(--c-ink)' : 'rgba(169,138,95,0.94)') + ';color:var(--c-surface-3);'
+          + 'border:1px solid ' + (this.state.hover === offSp.id ? 'var(--c-ink)' : 'var(--c-accent)') + ';'
+          + 'box-shadow:0 0 0 5px rgba(169,138,95,0.16), 0 0 34px 6px rgba(169,138,95,0.34);'
+          + 'transition:box-shadow .25s,background .2s;z-index:3;cursor:' + (this.client ? 'pointer' : 'grab') + ';'
+      },
+      pins: SP.filter(s => s.onPlan).map(s => {
+        const on = this.state.hover === s.id;
+        return {
+          num: s.num, href: '#' + s.id, title: s.name,
+          onEnter: () => this.setState({ hover: s.id }),
+          onLeave: () => this.setState({ hover: null }),
+          style: 'position:absolute;left:' + s.x + '%;top:' + s.y + '%;transform:translate(-50%,-50%) scale(' + (on ? 1.14 : 1) + ');'
+            + 'width:48px;height:48px;border-radius:999px;display:flex;align-items:center;justify-content:center;'
+            + 'font-family:Jost,sans-serif;font-size:14px;letter-spacing:0.04em;text-decoration:none;'
+            + 'background:' + (on ? 'var(--c-ink)' : 'rgba(169,138,95,0.94)') + ';color:var(--c-surface-3);'
+            + 'border:1px solid ' + (on ? 'var(--c-ink)' : 'var(--c-accent)') + ';'
+            + 'box-shadow:' + (on ? '0 0 0 10px rgba(169,138,95,0.28), 0 0 34px 6px rgba(169,138,95,0.5)' : '0 0 0 5px rgba(169,138,95,0.16)') + ';'
+            + 'transition:transform .2s,box-shadow .25s,background .2s;cursor:pointer;'
+        };
+      }),
+      legend: SP.map(s => {
+        const on = this.state.hover === s.id;
+        return {
+          num: s.num, name: s.name, area: s.area, status: s.code + ' · ' + s.status, href: '#' + s.id,
+          onEnter: () => this.setState({ hover: s.id }),
+          onLeave: () => this.setState({ hover: null }),
+          style: 'flex:1;min-width:0;display:flex;gap:18px;align-items:center;border-radius:16px;text-decoration:none;color:var(--c-ink);'
+            + 'padding:18px 22px;'
+            + 'background:' + (on ? 'var(--c-surface-2)' : 'var(--c-surface)') + ';border:1px solid ' + (on ? 'var(--c-accent)' : 'var(--c-line)') + ';transition:background .18s,border-color .18s;',
+          numStyle: 'width:38px;height:38px;flex:none;border-radius:999px;display:flex;align-items:center;justify-content:center;font-size:12.5px;'
+            + (on ? 'background:var(--c-accent);color:var(--c-surface-3);border:1px solid var(--c-accent);' : 'background:transparent;color:var(--c-accent);border:1px solid var(--c-accent);'),
+          delBtn: this.client ? 'display:none'
+            : 'position:absolute;right:10px;bottom:11px;width:24px;height:24px;border-radius:999px;transition:color .18s,border-color .18s;'
+              + 'display:flex;align-items:center;justify-content:center;border:1px solid var(--c-line-3);background:var(--c-bg);'
+              + 'color:var(--c-ink-mute);font-family:Jost,sans-serif;font-size:15px;line-height:1;cursor:pointer;padding:0;',
+          onDelete: () => {
+            const ok = typeof window.confirm !== 'function' || window.confirm('Delete ' + s.name + ' from the proposal? Its furniture list and drawings go with it.');
+            if (ok) this.removeSpace(s.id);
+          }
+        };
+      }),
+
+      addSpace: {
+        on: () => this.addSpace(),
+        wrap: this.client ? 'display:none'
+          : 'display:flex;align-items:center;gap:22px;flex-wrap:wrap;margin-top:60px;padding:30px 32px;'
+            + 'border:1px dashed var(--c-line-5);border-radius:22px;background:var(--c-surface);',
+        btn: 'padding:13px 26px;border-radius:999px;border:1px solid var(--c-accent);background:var(--c-accent);color:var(--c-surface-3);'
+          + 'font-family:Jost,sans-serif;font-size:12.5px;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;white-space:nowrap;'
+      },
+
+      rooms: SP.map((sp, ri) => {
+        const rows = R2[sp.id] || [];
+        const alts = A[sp.id] || [];
+        const on = this.state.edit === sp.id;
+        const eon = this.state.esec === 'room-' + sp.id;
+        const first = ri === 0;
+        return {
+          id: sp.id, num: sp.num, name: sp.name, brief: sp.brief, status: sp.status,
+          meta: sp.code + (sp.area ? ' · ' + sp.area : ''),
+          numStyle: 'width:54px;height:54px;border-radius:999px;display:flex;align-items:center;justify-content:center;font-size:16px;flex:none;'
+            + (first ? 'background:var(--c-accent);color:var(--c-surface-3);' : 'border:1px solid var(--c-accent);color:var(--c-accent);'),
+          edit: on,
+          editing: eon && !this.client,
+          onCopy: () => this.toggleSec('room-' + sp.id),
+          copyLabel: eon ? 'Done' : 'Edit this space',
+          copyBtn: this.client ? 'display:none' : pill(eon),
+          nameVal: sp.name, codeVal: sp.code, areaVal: sp.area, statusVal: sp.status,
+          briefVal: sp.brief || '', onPlanVal: !!sp.onPlan,
+          input: inputBase,
+          area: inputBase + 'margin-top:10px;line-height:1.7;min-height:82px;resize:vertical;',
+          removeBtn: 'padding:9px 18px;border-radius:999px;border:1px solid var(--c-line-5);background:transparent;'
+            + 'font-family:Jost,sans-serif;font-size:11.5px;letter-spacing:0.08em;text-transform:uppercase;color:var(--c-accent-dark);cursor:pointer;',
+          onName: (e) => this.setSpaceField(sp.id, 'name', e.target.value),
+          onCode: (e) => this.setSpaceField(sp.id, 'code', e.target.value),
+          onArea: (e) => this.setSpaceField(sp.id, 'area', e.target.value),
+          onStatus: (e) => this.setSpaceField(sp.id, 'status', e.target.value),
+          onBrief: (e) => this.setSpaceField(sp.id, 'brief', e.target.value),
+          onPlanToggle: (e) => this.setSpaceField(sp.id, 'onPlan', !!e.target.checked),
+          onRemoveSpace: () => this.removeSpace(sp.id),
+          scheduleLabel: 'Selected furniture · ' + rows.length + ' piece' + (rows.length === 1 ? '' : 's'),
+          onToggle: () => this.setState({ edit: on ? null : sp.id }),
+          toggleLabel: on ? 'Done editing' : 'Edit this table',
+          toggleStyle: this.client ? 'display:none' : pill(on),
+          readBtn: this.client ? 'display:none' : pill(false),
+          onReadBoard: () => this.captureBoard(sp.id, 'p86s-' + sp.id + '-mood'),
+          onAddRow: () => this.addRoomRow(sp.id),
+          addRowBtn: 'padding:11px 22px;border:1px solid var(--c-accent);border-radius:999px;background:var(--c-surface-2);'
+            + 'font-family:Jost,sans-serif;font-size:12.5px;letter-spacing:0.06em;color:var(--c-accent-dark);cursor:pointer;',
+          count: rows.reduce((a, r) => a + (r.qty || 1), 0),
+          slotCad: 'p86s-' + sp.id + '-cad',
+          slotMood: 'p86s-' + sp.id + '-mood',
+          expCad: () => this.expand('p86s-' + sp.id + '-cad'),
+          expMood: () => this.expand('p86s-' + sp.id + '-mood'),
+          altHint: alts.length
+            ? 'Same footprint — any of these can replace a piece above. Tell me which and I update the plan.'
+            : 'Alternatives are added as the sourcing progresses.',
+          hasAlts: alts.length > 0,
+          noAlts: alts.length === 0,
+          addAltWrap: this.client ? 'display:none' : 'margin-top:18px;',
+          onAddAlt: () => this.addAlt(sp.id),
+          addAltBtn: 'padding:11px 22px;border-radius:999px;border:1px dashed var(--c-accent);background:transparent;color:var(--c-accent-dark);'
+            + 'font-family:Jost,sans-serif;font-size:12px;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;white-space:nowrap;',
+          areaRows: 'row|' + sp.id,
+          areaAlts: 'alt|' + sp.id,
+          alts: alts.map((a, idx) => ({
+            key: 'alt-' + sp.id + '-' + idx + '-' + String(a.item || '').slice(0, 20),
+            order: !this.client,
+            dnd: 'alt|' + sp.id + '|' + idx,
+            grip: ordBtn(true), arrow: ordBtn(false),
+            onGrab: (e) => this.grab('alt', sp.id, idx, e),
+            onUp: () => this.moveWithin('alts', sp.id, idx, idx - 1),
+            onDown: () => this.moveWithin('alts', sp.id, idx, idx + 1),
+            item: a.item, store: a.store || 'Store to be sourced', note: a.note || '',
+            img: RES(a.img || 'assets/piece-placeholder.png'),
+            hasUrl: !!a.url && !on, plain: !a.url && !on,
+            hasNote: !!a.note && !on,
+            edit: on,
+            itemVal: a.item || '', storeVal: a.store || '', urlVal: a.url || '', noteVal: a.note || '',
+            input: inputBase, smallBtn: smallBtn,
+            onItem: (e) => this.setAltField(sp.id, idx, 'item', e.target.value),
+            onStore: (e) => this.setAltField(sp.id, idx, 'store', e.target.value),
+            onUrl: (e) => this.setAltField(sp.id, idx, 'url', e.target.value),
+            onNote: (e) => this.setAltField(sp.id, idx, 'note', e.target.value),
+            onPhoto: (e) => this.setAltPhoto(sp.id, idx, e.target.files && e.target.files[0]),
+            onUse: () => this.altToRow(sp.id, idx),
+            onRemove: () => this.removeAlt(sp.id, idx),
+            onFetch: () => this.fetchAltRow(sp.id, idx),
+            fetchLabel: this.state.fetching === ('alt:' + sp.id + ':' + idx) ? 'Reading…' : (a.url ? 'Fetch details' : 'Add a link first'),
+            fetchBtn: 'display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:9px 15px;border-radius:999px;'
+              + 'font-family:Jost,sans-serif;font-size:11.5px;letter-spacing:0.04em;white-space:nowrap;line-height:1.2;'
+              + (this.state.fetching === ('alt:' + sp.id + ':' + idx)
+                  ? 'border:1px solid var(--c-accent);background:var(--c-surface-2);color:var(--c-accent-dark);cursor:progress;'
+                  : a.url ? 'border:1px solid var(--c-accent);background:var(--c-accent);color:var(--c-surface-3);cursor:pointer;'
+                          : 'border:1px dashed #C9B48D;background:transparent;color:var(--c-accent);cursor:pointer;'),
+            spinner: this.state.fetching === ('alt:' + sp.id + ':' + idx)
+              ? 'width:13px;height:13px;border-radius:999px;border:2px solid rgba(169,138,95,0.3);border-top-color:var(--c-accent-dark);animation:p86spin .7s linear infinite;display:inline-block;'
+              : 'display:none;'
+          })),
+          rows: rows.map((r, idx) => {
+            const busy = this.state.fetching === (sp.id + ':' + idx);
+            return {
+              key: 'rm-' + sp.id + '-' + idx + '-' + String(r.item || '').slice(0, 20) + '-' + (((this.state.rev || {})['room-' + sp.id + '-' + idx]) || 0),
+              order: !this.client,
+              dnd: 'row|' + sp.id + '|' + idx,
+              grip: ordBtn(true), arrow: ordBtn(false),
+              onGrab: (e) => this.grab('row', sp.id, idx, e),
+              onUp: () => this.moveWithin('rows', sp.id, idx, idx - 1),
+              onDown: () => this.moveWithin('rows', sp.id, idx, idx + 1),
+              show: !on, edit: on,
+              hasUrl: !!r.url && !on, plain: !r.url && !on,
+              img: RES(r.img || 'assets/piece-placeholder.png'),
+              onPhoto: (e) => this.setRoomPhoto(sp.id, idx, e.target.files && e.target.files[0]),
+              item: r.item, storeLine: (r.store || 'Store to be sourced') + (r.sku ? ' · ' + r.sku : ''),
+              size: r.size || 'On measure', color: r.color || 'On concept',
+              qty: r.qty || 1,
+              softStyle: soft,
+              itemVal: r.item, storeVal: r.store || '', sizeVal: r.size || '', colorVal: r.color || '',
+              qtyVal: String(r.qty || 1), urlVal: r.url || '',
+              input: inputBase, inputSm: inputBase + 'text-align:right;padding:7px 9px;',
+              smallBtn: smallBtn,
+              onItem: (e) => this.setRoomField(sp.id, idx, 'item', e.target.value),
+              onStore: (e) => this.setRoomField(sp.id, idx, 'store', e.target.value),
+              onSize: (e) => this.setRoomField(sp.id, idx, 'size', e.target.value),
+              onColor: (e) => this.setRoomField(sp.id, idx, 'color', e.target.value),
+              onQty: (e) => this.setRoomField(sp.id, idx, 'qty', e.target.value),
+              onUrl: (e) => this.setRoomField(sp.id, idx, 'url', e.target.value),
+              onUrlLive: (e) => this.setRoomField(sp.id, idx, 'url', e.target.value),
+              onRemove: () => this.removeRoomRow(sp.id, idx),
+              onToAlt: () => this.rowToAlt(sp.id, idx),
+              onFetch: () => this.fetchRoomRow(sp.id, idx),
+              fetchLabel: busy ? 'Reading…' : (r.url ? 'Fetch details' : 'Add a link first'),
+              fetchBtn: 'justify-self:start;display:inline-flex;align-items:center;gap:8px;padding:9px 15px;border-radius:999px;'
+                + 'font-family:Jost,sans-serif;font-size:11.5px;letter-spacing:0.04em;white-space:nowrap;line-height:1.2;'
+                + (busy ? 'border:1px solid var(--c-accent);background:var(--c-surface-2);color:var(--c-accent-dark);cursor:progress;'
+                        : r.url ? 'border:1px solid var(--c-accent);background:var(--c-accent);color:var(--c-surface-3);cursor:pointer;'
+                                : 'border:1px dashed #C9B48D;background:transparent;color:var(--c-accent);cursor:pointer;'),
+              spinner: busy
+                ? 'width:13px;height:13px;border-radius:999px;border:2px solid rgba(169,138,95,0.3);border-top-color:var(--c-accent-dark);animation:p86spin .7s linear infinite;display:inline-block;'
+                : 'display:none;'
+            };
+          })
+        };
+      }),
+
+      tlEdit: !this.client && this.state.esec === 'timeline',
+      phases: PHASE_SEED.map((p, k) => Object.assign({}, p, {
+        here: this.state.here === k,
+        icon: RES(PHASE_ICONS[k] || ''),
+        row: 'display:grid;grid-template-columns:150px 1fr;gap:34px;align-items:start;padding:30px 0 32px;'
+          + (k === 0 ? '' : 'border-top:1px solid var(--c-line);')
+          + ((!this.client && this.state.esec === 'timeline') ? 'cursor:pointer;' : ''),
+        badge: 'display:inline-flex;align-items:center;gap:8px;padding:6px 13px;border-radius:999px;white-space:nowrap;'
+          + 'background:var(--c-accent);color:var(--c-surface-3);font-size:9.5px;letter-spacing:0.18em;text-transform:uppercase;'
+          + (this.client ? '' : 'cursor:grab;'),
+        onDragStart: (e) => { if (e.dataTransfer) { e.dataTransfer.setData('text/plain', 'here'); e.dataTransfer.effectAllowed = 'move'; } },
+        onDragOver: this.client ? null : ((e) => { e.preventDefault(); }),
+        onDrop: this.client ? null : ((e) => { e.preventDefault(); this.setHere(k); }),
+        onClick: (this.client || this.state.esec !== 'timeline') ? null : (() => this.setHere(k))
+      }))
+    };
+  }
+}
+
+
+/* ---------- Step 2: floor plans, moodboard carousel, comment panels ---------- */
+const S2KEY = 'p86-step2-v2';
+const S2_STEPS = [
+  { num: '01', title: 'Mark up the plans', body: 'Add your comments beside each floor — circulation, room use, anything that feels off.' },
+  { num: '02', title: 'React to the moodboards', body: 'Tell me which board reads most like home, and what you would pull back on.' },
+  { num: '03', title: 'One revision round', body: 'I fold your notes into a revised plan and a single consolidated board.' },
+  { num: '04', title: 'Sign off to move to Step 3', body: 'Once concept is agreed, we begin furniture selection and sourcing room by room.' }
+];
+const S2_FL = [
+  { key: 'f1', num: 'Level 01', label: 'First floor', fallback: 'assets/floor-plan.png' },
+  { key: 'f2', num: 'Level 02', label: 'Second floor', fallback: '' }
+];
+const S2_BTN = 'appearance:none;cursor:pointer;padding:8px 14px;border-radius:999px;font-family:Jost,sans-serif;font-size:10.5px;letter-spacing:0.14em;text-transform:uppercase;white-space:nowrap;';
+const S2_SOFT = S2_BTN + 'border:1px solid var(--c-line-3);background:var(--c-surface);color:var(--c-accent-dark);';
+const S2_HARD = S2_BTN + 'border:1px solid var(--c-line-5);background:transparent;color:var(--c-ink);';
+const S2_PANEL = 'background:var(--c-surface);border:1px solid var(--c-line);border-radius:22px;padding:24px 22px;display:flex;flex-direction:column;gap:14px;';
+const S2_AREA = 'width:100%;box-sizing:border-box;resize:vertical;border:1px solid var(--c-line-3);border-radius:14px;background:var(--c-field);color:var(--c-ink);font-family:Jost,sans-serif;font-size:13.5px;line-height:1.65;padding:14px 16px;outline:none;border-radius:14px;min-height:110px;overflow-wrap:anywhere;';
+const S2_NAV = 'position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:999px;border:1px solid var(--c-line-3);background:rgba(251,247,241,0.92);color:var(--c-ink);font-size:22px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;';
+let s2uid = 0;
+const s2nid = () => 'n' + Date.now().toString(36) + (s2uid++);
+
+Object.assign(Component.prototype, {
+  s2: function () {
+    if (!this._s2) {
+      let saved = null;
+      try { saved = JSON.parse(localStorage.getItem(S2KEY) || 'null'); } catch (e) { saved = null; }
+      this._s2 = Object.assign({
+        imgs: { f1: '', f2: '' },
+        moods: [],
+        moodIdx: 0,
+        notes: { f1: [{ id: s2nid(), text: '' }], f2: [{ id: s2nid(), text: '' }], mood: [{ id: s2nid(), text: '' }] }
+      }, saved || {});
+      this._s2light = null;
+    }
+    return this._s2;
+  },
+  s2commit: function () {
+    try { localStorage.setItem(S2KEY, JSON.stringify(this._s2)); } catch (e) {}
+    this.forceUpdate();
+  },
+  s2read: function (files, cb) {
+    const out = []; let left = files.length;
+    if (!left) return;
+    files.forEach((f, i) => {
+      const r = new FileReader();
+      r.onload = () => { out[i] = r.result; if (--left === 0) cb(out.filter(Boolean)); };
+      r.onerror = () => { if (--left === 0) cb(out.filter(Boolean)); };
+      r.readAsDataURL(f);
+    });
+  },
+  s2flip: function (d) {
+    const s = this.s2(); const n = s.moods.length;
+    if (n < 2) return;
+    s.moodIdx = (s.moodIdx + d + n) % n;
+    if (this._s2light && this._s2light.kind === 'mood') this._s2light = { kind: 'mood', url: s.moods[s.moodIdx] };
+    this.s2commit();
+  },
+  s2notes: function (k, placeholder) {
+    const s = this.s2();
+    if (!this._noteEls) this._noteEls = {};
+    const cmd = (name, val) => {
+      try { document.execCommand('styleWithCSS', false, true); } catch (e) {}
+      try { document.execCommand(name, false, val === undefined ? null : val); } catch (e) {}
+    };
+    const grab = (id) => { const el = this._noteEls[id]; return el ? el.innerHTML : null; };
+    const store = (n, html) => {
+      if (html != null) n.text = html;
+      try { localStorage.setItem(S2KEY, JSON.stringify(this._s2)); } catch (e) {}
+    };
+    const toolBtn = 'appearance:none;cursor:pointer;min-width:34px;height:32px;padding:0 9px;border-radius:9px;border:1px solid var(--c-line-3);'
+      + 'background:var(--c-field);color:var(--c-ink);font-family:Jost,sans-serif;font-size:13px;line-height:1;display:inline-flex;align-items:center;justify-content:center;';
+    const swatches = [
+      { title: 'Ink', hex: '#3B342C' },
+      { title: 'Accent', hex: '#A98A5F' },
+      { title: 'Sage', hex: '#7A8A5E' },
+      { title: 'Chestnut', hex: '#7A4A2F' }
+    ];
+    return (s.notes[k] || []).map((n, i) => {
+      const act = (fn) => (e) => { e.preventDefault(); fn(); store(n, grab(n.id)); };
+      return {
+        id: n.id,
+        html: { __html: n.text || '' },
+        placeholder: i === 0 ? placeholder : 'Another note…',
+        shell: 'position:relative;display:flex;flex-direction:column;gap:0',
+        bar: 'display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:10px',
+        area: S2_AREA,
+        del: 'margin-left:auto;width:30px;height:30px;border:none;background:transparent;color:var(--c-ink-mute);font-size:17px;line-height:1;cursor:pointer;border-radius:9px',
+        ref: (el) => { if (el) this._noteEls[n.id] = el; },
+        tools: [
+          { title: 'Bold', label: 'B', style: toolBtn + 'font-weight:600;' },
+          { title: 'Italic', label: 'I', style: toolBtn + 'font-style:italic;' },
+          { title: 'Underline', label: 'U', style: toolBtn + 'text-decoration:underline;' },
+          { title: 'Bulleted list', label: '☰', style: toolBtn },
+          { title: 'Numbered list', label: '1.', style: toolBtn },
+          { title: 'Bigger text', label: 'A+', style: toolBtn },
+          { title: 'Smaller text', label: 'A−', style: toolBtn },
+          { title: 'Clear formatting', label: '⌫', style: toolBtn }
+        ].map((t, ti) => Object.assign({}, t, {
+          onDown: (e) => e.preventDefault(),
+          onClick: act(() => {
+            if (ti === 0) cmd('bold');
+            else if (ti === 1) cmd('italic');
+            else if (ti === 2) cmd('underline');
+            else if (ti === 3) cmd('insertUnorderedList');
+            else if (ti === 4) cmd('insertOrderedList');
+            else if (ti === 5) cmd('fontSize', '5');
+            else if (ti === 6) cmd('fontSize', '2');
+            else cmd('removeFormat');
+          })
+        })),
+        colors: swatches.map((c) => ({
+          title: c.title,
+          onDown: (e) => e.preventDefault(),
+          onClick: act(() => cmd('foreColor', c.hex)),
+          style: 'appearance:none;cursor:pointer;width:22px;height:22px;border-radius:999px;border:1px solid var(--c-line-3);background:' + c.hex + ';'
+        })),
+        onInput: (e) => {
+          const html = e.target.innerHTML;
+          clearTimeout(this['_nt' + n.id]);
+          this['_nt' + n.id] = setTimeout(() => store(n, html), 400);
+        },
+        onBlur: (e) => { store(n, e.target.innerHTML); this.forceUpdate(); },
+        onRemove: () => {
+          s.notes[k] = (s.notes[k] || []).filter((x) => x.id !== n.id);
+          if (!s.notes[k].length) s.notes[k] = [{ id: s2nid(), text: '' }];
+          delete this._noteEls[n.id];
+          this.s2commit();
+        }
+      };
+    });
+  },
+
+  step2Vals: function () {
+    const s = this.s2();
+    const moods = s.moods;
+    const cur = moods.length ? moods[Math.min(s.moodIdx, moods.length - 1)] : '';
+    const lt = this._s2light;
+    return {
+      floors: S2_FL.map((f, i) => {
+        const img = s.imgs[f.key] || RES(f.fallback);
+        return {
+          num: f.num, label: f.label, img: img, hasImg: !!img, empty: !img,
+          wrap: i === 0 ? '' : 'margin-top:56px;padding-top:56px;border-top:1px solid var(--c-line)',
+          upBtn: S2_SOFT,
+          upLabel: img ? 'Replace CAD' : 'Upload CAD',
+          exBtn: S2_HARD + (img ? '' : 'opacity:0.4;pointer-events:none;'),
+          frame: 'background:var(--c-surface);border:1px solid var(--c-line);border-radius:22px;aspect-ratio:4/3;max-height:780px;min-height:420px;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:22px;box-sizing:border-box;' + (img ? 'cursor:zoom-in' : ''),
+          panel: S2_PANEL,
+          addBtn: S2_SOFT + 'align-self:flex-start;margin-top:4px;',
+          notes: this.s2notes(f.key, 'Notes on this floor — circulation, room use, what to change…'),
+          onFile: (e) => {
+            const file = e.target.files && e.target.files[0];
+            if (file) this.s2read([file], (urls) => { s.imgs[f.key] = urls[0]; this.s2commit(); });
+            e.target.value = '';
+          },
+          onExpand: img ? (() => { this._s2light = { kind: 'plan', url: img }; this.forceUpdate(); }) : null,
+          onAdd: () => { s.notes[f.key] = (s.notes[f.key] || []).concat([{ id: s2nid(), text: '' }]); this.s2commit(); }
+        };
+      }),
+      mood: {
+        img: cur, hasImg: !!cur, empty: !cur,
+        count: moods.length ? (s.moodIdx + 1) + ' / ' + moods.length : '',
+        frame: 'position:relative;background:var(--c-surface);border:1px solid var(--c-line);border-radius:22px;aspect-ratio:4/3;max-height:760px;min-height:420px;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:26px;box-sizing:border-box',
+        prevBtn: S2_NAV + 'left:14px;' + (moods.length > 1 ? '' : 'display:none'),
+        nextBtn: S2_NAV + 'right:14px;' + (moods.length > 1 ? '' : 'display:none'),
+        counter: 'position:absolute;bottom:14px;left:50%;transform:translateX(-50%);font-size:10.5px;letter-spacing:0.16em;color:var(--c-ink-mute);background:rgba(251,247,241,0.9);padding:5px 12px;border-radius:999px;' + (moods.length ? '' : 'display:none'),
+        thumbs: moods.map((u, i) => ({
+          url: u,
+          onClick: () => { s.moodIdx = i; this.s2commit(); },
+          style: 'width:74px;height:56px;padding:3px;border-radius:12px;cursor:pointer;background:var(--c-surface);border:1px solid ' + (i === s.moodIdx ? 'var(--c-accent)' : 'var(--c-line)') + ';'
+        })),
+        upBtn: S2_SOFT,
+        exBtn: S2_HARD + (cur ? '' : 'opacity:0.4;pointer-events:none;'),
+        rmBtn: S2_BTN + 'border:1px solid var(--c-line-3);background:transparent;color:var(--c-ink-mute);',
+        panel: S2_PANEL,
+        addBtn: S2_SOFT + 'align-self:flex-start;margin-top:4px;',
+        notes: this.s2notes('mood', 'What feels right, what feels off — tone, materials, weight…'),
+        onFiles: (e) => {
+          const files = Array.from(e.target.files || []);
+          if (files.length) this.s2read(files, (urls) => { s.moodIdx = s.moods.length; s.moods = s.moods.concat(urls); this.s2commit(); });
+          e.target.value = '';
+        },
+        onPrev: () => this.s2flip(-1),
+        onNext: () => this.s2flip(1),
+        onRemove: () => {
+          if (!s.moods.length) return;
+          s.moods = s.moods.filter((u, i) => i !== s.moodIdx);
+          s.moodIdx = Math.min(s.moodIdx, Math.max(0, s.moods.length - 1));
+          this.s2commit();
+        },
+        onExpand: cur ? (() => { this._s2light = { kind: 'mood', url: cur }; this.forceUpdate(); }) : null,
+        onAdd: () => { s.notes.mood = (s.notes.mood || []).concat([{ id: s2nid(), text: '' }]); this.s2commit(); }
+      },
+      steps: S2_STEPS,
+      s2light: {
+        open: !!lt,
+        url: lt ? lt.url : '',
+        back: 'position:fixed;inset:0;z-index:130;background:rgba(35,30,25,0.93);display:flex;align-items:center;justify-content:center;padding:48px',
+        img: 'max-width:96vw;max-height:92vh;width:auto;height:auto;object-fit:contain;border-radius:10px;background:#fff',
+        prev: S2_NAV + 'left:26px;' + (lt && lt.kind === 'mood' && moods.length > 1 ? '' : 'display:none'),
+        next: S2_NAV + 'right:26px;' + (lt && lt.kind === 'mood' && moods.length > 1 ? '' : 'display:none'),
+        closeBtn: 'position:absolute;top:26px;right:26px;' + S2_BTN + 'border:1px solid rgba(255,255,255,0.4);background:transparent;color:#F4EDE4;',
+        onPrev: () => this.s2flip(-1),
+        onNext: () => this.s2flip(1),
+        close: () => { this._s2light = null; this.forceUpdate(); }
+      }
+    };
+  }
+});
+
+</script>
+</body>
+</html>

@@ -65,7 +65,19 @@ The app is static; no build step.
 3. In Firebase → Authentication → Settings → Authorized domains, add `arossler74-cmd.github.io`.
 4. Publish rules: `firebase deploy --only firestore:rules`.
 
-`.gitignore` should carry `firebase-config.js`; commit `firebase-config.example.js` instead. Firebase web keys are not secrets, but the real protection is the rules — review them before making the repo public.
+`firebase-config.js` is committed on purpose, not gitignored: Pages serves the app directly from
+the repo, so the deployed site can only reach Firebase if the config ships with it.
+`firebase-config.example.js` is kept alongside it as the template for a fresh Firebase project.
+
+The repository is public. That is fine for the config — Firebase web API keys are public
+identifiers, not secrets — but it means `firestore.rules` is world-readable and is the only thing
+actually guarding the data. Two consequences worth keeping in mind:
+
+- Review `firestore.rules` whenever roles or collections change, and deploy it immediately; an
+  unpublished fix protects nothing. A role check that compares against a value no user ever holds
+  silently passes for everyone — that exact bug shipped once already.
+- Keep the Authentication authorized-domains list tight, so the keys are only usable from the
+  studio's own origins.
 
 ## Next
 
