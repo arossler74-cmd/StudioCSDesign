@@ -384,11 +384,32 @@ export async function listCatalog() {
   return readLS().catalog || [];
 }
 
+// Best-effort: a photo removed or replaced in the editor otherwise stays in
+// Storage forever, since Firestore never references it again but nothing
+// ever deletes the file itself. Errors (already gone, not a Storage URL,
+// stale rules) are swallowed — cleanup should never block the save/delete
+// it rides along with.
+async function deleteStorageFileByUrl(url) {
+  if (mode !== 'firebase' || !url || !/^https?:\/\//i.test(url)) return;
+  if (!/firebasestorage\.googleapis\.com/i.test(url)) return;
+  try {
+    const { ref, deleteObject } = fb.S;
+    await deleteObject(ref(fb.storage, url));
+  } catch (e) { /* ignore */ }
+}
+
 export async function saveCatalogItem(item) {
   const rec = { ...item, updatedAt: nowISO() };
   if (mode === 'firebase') {
-    const { doc, setDoc, collection, addDoc } = fb.D;
-    if (rec.id) { await setDoc(doc(fb.db, 'catalog', rec.id), rec, { merge: true }); return rec; }
+    const { doc, setDoc, collection, addDoc, getDoc } = fb.D;
+    if (rec.id) {
+      const ref = doc(fb.db, 'catalog', rec.id);
+      const prev = await getDoc(ref);
+      const prevImage = prev.exists() ? prev.data().image : '';
+      await setDoc(ref, rec, { merge: true });
+      if (prevImage && prevImage !== rec.image) deleteStorageFileByUrl(prevImage);
+      return rec;
+    }
     rec.createdAt = nowISO();
     const r = await addDoc(collection(fb.db, 'catalog'), rec);
     return { ...rec, id: r.id };
@@ -402,7 +423,15 @@ export async function saveCatalogItem(item) {
 }
 
 export async function deleteCatalogItem(id) {
-  if (mode === 'firebase') { const { doc, deleteDoc } = fb.D; return deleteDoc(doc(fb.db, 'catalog', id)); }
+  if (mode === 'firebase') {
+    const { doc, deleteDoc, getDoc } = fb.D;
+    const ref = doc(fb.db, 'catalog', id);
+    const snap = await getDoc(ref);
+    const image = snap.exists() ? snap.data().image : '';
+    await deleteDoc(ref);
+    deleteStorageFileByUrl(image);
+    return;
+  }
   const s = readLS(); s.catalog = (s.catalog || []).filter((x) => x.id !== id); writeLS(s);
 }
 

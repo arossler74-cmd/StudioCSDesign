@@ -1195,6 +1195,7 @@ class Component extends DCLogic {
 
     if (v.showShare) return Object.assign(v, this.shareVals());
     if (v.showLogin) return Object.assign(v, this.loginVals());
+    if (!u) return v;
 
     Object.assign(v, {
       userName: u.name || u.email,

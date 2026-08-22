@@ -153,13 +153,7 @@ function extractProduct(html, pageUrl) {
 // is used as a descriptive-only fallback (never for its local-currency price)
 // when the US page can't be read at all. This runs server-side so it isn't
 // subject to the browser CORS restriction a client-side call would hit.
-async function crateAndBarrelFallback(inputUrl) {
-  const source = new URL(String(inputUrl || ''));
-  if (!/(^|\.)crateandbarrel\.com$/i.test(source.hostname)) return null;
-  const words = source.pathname.split('/').filter(Boolean).join(' ')
-    .replace(/^s\d+\s*/i, '').split('-').filter((word) => word && !/^(by|and|the|a|an|of)$/i.test(word));
-  const query = words.slice(0, 3).join(' ') || words[0];
-  if (!query) return null;
+async function crateAndBarrelSearch(query) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 10000);
   let res;
@@ -169,15 +163,42 @@ async function crateAndBarrelFallback(inputUrl) {
   } finally {
     clearTimeout(timer);
   }
-  if (!res.ok) return null;
+  if (!res.ok) return [];
   const data = await res.json();
-  const products = (((data || {}).resources || {}).results || {}).products || [];
+  return (((data || {}).resources || {}).results || {}).products || [];
+}
+
+async function crateAndBarrelFallback(inputUrl) {
+  const source = new URL(String(inputUrl || ''));
+  if (!/(^|\.)crateandbarrel\.com$/i.test(source.hostname)) return null;
+  // The path is "/handle/skucode" — joining with a space keeps them as separate
+  // words, but a hyphen-split token adjacent to that boundary (e.g. "sofa" next
+  // to "s327164") still ends up glued with a stray space, so each token is cut
+  // back to its first word below.
+  const words = source.pathname.split('/').filter(Boolean).join(' ').split('-')
+    .map((word) => word.trim().split(/\s+/)[0])
+    .filter((word) => word && word.length > 1 && !/^\d+$/.test(word) && !/^(by|and|the|a|an|of)$/i.test(word));
+  if (!words.length) return null;
+  // Their suggest endpoint wants a tight match, not a fuzzy relevance search —
+  // a 2-3 word phrase from a real product slug reliably returns nothing even
+  // when the single leading word (the product line name) finds it, so back off
+  // one word at a time until something comes back.
+  let products = [];
+  for (let take = Math.min(3, words.length); take >= 1 && !products.length; take--) {
+    products = await crateAndBarrelSearch(words.slice(0, take).join(' '));
+  }
   if (!products.length) return null;
   const expected = new Set(words.map((word) => word.toLowerCase()));
-  const product = products.map((item) => ({
+  const ranked = products.map((item) => ({
     item,
     score: String(item.title || '').toLowerCase().split(/[^a-z0-9]+/).reduce((sum, word) => sum + (expected.has(word) ? 1 : 0), 0)
-  })).sort((a, b) => b.score - a.score)[0].item;
+  })).sort((a, b) => b.score - a.score)[0];
+  // A zero-overlap top result means the query was too generic to find this
+  // specific product (e.g. "sectional sofa" alone matches whatever is
+  // trending) — better to report nothing than to fill the form with the
+  // wrong item.
+  if (ranked.score < 1) return null;
+  const product = ranked.item;
   const inferred = inferDetails(htmlText(product.body || ''));
   return {
     name: decode(product.title || ''),
