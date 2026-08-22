@@ -729,7 +729,7 @@
                 <div class="cs-inline-actions" style="display: flex; align-items: center; gap: 10px;">
                   <button type="button" onClick="{{ exportHtml }}" class="btn btn-secondary">{{ exportLabel }}</button>
                   <button type="button" onClick="{{ exportPdf }}" class="btn btn-ghost">Export PDF</button>
-                  <sc-if value="{{ hasDoc }}">
+                  <sc-if value="{{ hasDoc }}" hint-placeholder-val="{{ false }}">
                     <a class="btn btn-primary" href="{{ docHref }}" target="_top">Open document</a>
                   </sc-if>
                 </div>
@@ -737,7 +737,7 @@
               <sc-if value="{{ exportNote }}" hint-placeholder-val="{{ false }}">
                 <div class="card" style="padding: 12px 16px; margin-bottom: 18px; font-size: 13.5px; color: var(--color-accent-900);">{{ exportNote }}</div>
               </sc-if>
-              <sc-if value="{{ hasDoc }}">
+              <sc-if value="{{ hasDoc }}" hint-placeholder-val="{{ false }}">
                 <div style="border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--color-neutral-200); background: #fff; box-shadow: var(--shadow-md);">
                   <iframe src="{{ docHref }}" title="document" style="width: 100%; height: 720px; border: 0; display: block;"></iframe>
                 </div>
@@ -1218,16 +1218,17 @@ class Component extends DCLogic {
     });
 
     if (v.showDash) {
-      v.projCount = (s.projects || []).length === 1 ? '1 active project' : (s.projects || []).length + ' projects';
+      const dashProjects = (s.projects || []).filter(Boolean);
+      v.projCount = dashProjects.length === 1 ? '1 active project' : dashProjects.length + ' projects';
       v.summary = PHASES.map((f) => {
-        const inPhase = (s.projects || []).filter((p) => this.currentPhase(p).key === f.key);
+        const inPhase = dashProjects.filter((p) => this.currentPhase(p).key === f.key);
         return {
           label: f.title, color: this.color(f.key), count: inPhase.length,
           unit: inPhase.length === 1 ? 'project' : 'projects',
           names: inPhase.length ? inPhase.map((p) => p.name).join(', ') : f.when,
         };
       });
-      v.projects = (s.projects || []).map((p) => {
+      v.projects = dashProjects.map((p) => {
         const open = (p.reviews || []).filter((r) => !r.resolved).length;
         const cur = this.currentPhase(p);
         return {
@@ -1427,7 +1428,7 @@ class Component extends DCLogic {
 
   catalogVals(admin) {
     const s = this.state, api = s.api;
-    const all = s.catalog || [];
+    const all = (s.catalog || []).filter(Boolean);
     const rooms = [...new Set(all.flatMap(roomsOf).filter(Boolean))].sort();
     const types = [...new Set(all.map((c) => c.type).filter(Boolean))].sort();
     const stores = [...new Set(all.map((c) => c.retailer).filter(Boolean))].sort();
@@ -1440,7 +1441,7 @@ class Component extends DCLogic {
       const hay = [c.name, c.retailer, c.type, roomsOf(c).join(' '), c.color, c.finish, (c.tags || []).join(' ')].join(' ').toLowerCase();
       return qTokens.every((t) => hay.includes(t));
     });
-    const by = { name: (a, b) => a.name.localeCompare(b.name), store: (a, b) => (a.retailer || '').localeCompare(b.retailer || ''), type: (a, b) => (a.type || '').localeCompare(b.type || ''), price: (a, b) => (b.price || 0) - (a.price || 0), recent: (a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || '') };
+    const by = { name: (a, b) => (a.name || '').localeCompare(b.name || ''), store: (a, b) => (a.retailer || '').localeCompare(b.retailer || ''), type: (a, b) => (a.type || '').localeCompare(b.type || ''), price: (a, b) => (b.price || 0) - (a.price || 0), recent: (a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || '') };
     list = [...list].sort(by[s.sort] || by.recent);
 
     const v = {
@@ -1585,32 +1586,6 @@ class Component extends DCLogic {
     };
   }
 
-  async crateAndBarrelDetails(url) {
-    const source = new URL(url);
-    if (!/(^|\.)crateandbarrel\.com$/i.test(source.hostname)) return null;
-    const words = source.pathname.split('/').filter(Boolean).join(' ')
-      .replace(/^s\d+\s*/i, '').split('-').filter((word) => word && !/^(by|and|the|a|an|of)$/i.test(word));
-    const query = words.slice(0, 3).join(' ') || words[0];
-    if (!query) return null;
-    // The US storefront blocks browser bots. Their public Shopify catalogue in
-    // the Philippines exposes the same product specifications with CORS, so it
-    // is used only for descriptive fields — never for its local-currency price.
-    const res = await fetch('https://crateandbarrel.com.ph/search/suggest.json?q='
-      + encodeURIComponent(query) + '&resources%5Btype%5D=product');
-    if (!res.ok) throw new Error('Crate & Barrel product search returned ' + res.status);
-    const data = await res.json();
-    const products = (((data || {}).resources || {}).results || {}).products || [];
-    if (!products.length) return null;
-    const expected = new Set(words.map((word) => word.toLowerCase()));
-    const product = products.map((item) => ({
-      item,
-      score: String(item.title || '').toLowerCase().split(/[^a-z0-9]+/).reduce((sum, word) => sum + (expected.has(word) ? 1 : 0), 0)
-    })).sort((a, b) => b.score - a.score)[0].item;
-    const body = String(product.body || '').replace(/<[^>]*>/g, '\n').replace(/&quot;/g, '"').replace(/&amp;/g, '&');
-    const details = this.productDetailsFromText('Title: ' + (product.title || '') + '\nRetailer: Crate & Barrel\n' + body, url);
-    return { ...details, name: product.title || details.name, retailer: 'Crate & Barrel', image: product.image || (product.featured_image && product.featured_image.url) || '' };
-  }
-
   applyFetchedDetails(details) {
     const wanted = ['name', 'retailer', 'type', 'price', 'dimensions', 'finish', 'color'];
     const withType = { ...details, type: details.type || this.inferCatalogType(details.name) };
@@ -1650,11 +1625,6 @@ class Component extends DCLogic {
         }
       } catch (e) {
         failed.push('the browser could not access this retailer page directly');
-      }
-      if (!j || (!j.name && !j.price && !j.dimensions)) {
-        this.setState({ fetchProgress: 74, fetchNotice: 'Checking available product data…' });
-        try { j = await this.crateAndBarrelDetails(url); }
-        catch (e) { failed.push('no compatible product data was available'); }
       }
       if (!j || (!j.name && !j.price && !j.dimensions)) throw new Error('No readable product details found');
       this.applyFetchedDetails(j);

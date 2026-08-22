@@ -146,10 +146,55 @@ function extractProduct(html, pageUrl) {
   };
 }
 
+// Crate & Barrel's US storefront runs bot-mitigation that returns HTTP 403 to
+// any server-side request regardless of headers (verified directly — not a
+// solvable header/UA issue). Their public Philippines storefront exposes the
+// same product specifications through an unprotected search endpoint, so it
+// is used as a descriptive-only fallback (never for its local-currency price)
+// when the US page can't be read at all. This runs server-side so it isn't
+// subject to the browser CORS restriction a client-side call would hit.
+async function crateAndBarrelFallback(inputUrl) {
+  const source = new URL(String(inputUrl || ''));
+  if (!/(^|\.)crateandbarrel\.com$/i.test(source.hostname)) return null;
+  const words = source.pathname.split('/').filter(Boolean).join(' ')
+    .replace(/^s\d+\s*/i, '').split('-').filter((word) => word && !/^(by|and|the|a|an|of)$/i.test(word));
+  const query = words.slice(0, 3).join(' ') || words[0];
+  if (!query) return null;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 10000);
+  let res;
+  try {
+    res = await fetch('https://crateandbarrel.com.ph/search/suggest.json?q='
+      + encodeURIComponent(query) + '&resources%5Btype%5D=product', { signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+  if (!res.ok) return null;
+  const data = await res.json();
+  const products = (((data || {}).resources || {}).results || {}).products || [];
+  if (!products.length) return null;
+  const expected = new Set(words.map((word) => word.toLowerCase()));
+  const product = products.map((item) => ({
+    item,
+    score: String(item.title || '').toLowerCase().split(/[^a-z0-9]+/).reduce((sum, word) => sum + (expected.has(word) ? 1 : 0), 0)
+  })).sort((a, b) => b.score - a.score)[0].item;
+  const inferred = inferDetails(htmlText(product.body || ''));
+  return {
+    name: decode(product.title || ''),
+    retailer: 'Crate & Barrel',
+    dimensions: inferred.dimensions,
+    finish: inferred.finish,
+    color: inferred.color,
+    price: null,
+    image: product.image || (product.featured_image && product.featured_image.url) || ''
+  };
+}
+
 exports.fetchProductDetails = onRequest({ region: 'us-west1', timeoutSeconds: 30, memory: '256MiB' }, async (req, res) => {
   setCors(res);
   if (req.method === 'OPTIONS') return res.status(204).send('');
   if (req.method !== 'POST') return res.status(405).json({ error: 'Use POST.' });
+  const inputUrl = req.body && req.body.url;
   try {
     const token = String(req.get('authorization') || '').replace(/^Bearer\s+/i, '');
     if (!token) return res.status(401).json({ error: 'Sign in to fetch product details.' });
@@ -159,9 +204,19 @@ exports.fetchProductDetails = onRequest({ region: 'us-west1', timeoutSeconds: 30
     if (!(role === 'admin' || role === 'designer' || STUDIO_ADMINS.has(String(user.email || '').toLowerCase()))) {
       return res.status(403).json({ error: 'Only studio users can fetch product details.' });
     }
-    const page = await fetchPublicPage(req.body && req.body.url);
-    const product = extractProduct(page.html, page.url);
-    if (!product.name) return res.status(422).json({ error: 'No readable product details were found on this page.' });
+    let product = null;
+    let pageError = null;
+    try {
+      const page = await fetchPublicPage(inputUrl);
+      product = extractProduct(page.html, page.url);
+    } catch (error) {
+      pageError = error;
+    }
+    if (!product || !product.name) {
+      const fallback = await crateAndBarrelFallback(inputUrl).catch(() => null);
+      if (fallback && fallback.name) product = fallback;
+    }
+    if (!product || !product.name) throw pageError || new Error('No readable product details were found on this page.');
     return res.json({ product });
   } catch (error) {
     logger.warn('fetchProductDetails failed', { message: error && error.message });
