@@ -456,11 +456,14 @@
                 </div>
                 <div class="field" style="grid-column: span 3;"><label>Photo</label>
                   <div style="display: flex; align-items: center; gap: 14px;">
-                    <div style="width: 76px; height: 76px; border-radius: var(--radius-md); overflow: hidden; background: var(--color-neutral-100); flex: none;">
+                    <div tabindex="0" onPaste="{{ pasteImage }}" title="Click here and press Ctrl+V / ⌘V to paste an image" style="width: 76px; height: 76px; border-radius: var(--radius-md); overflow: hidden; background: var(--color-neutral-100); flex: none; outline: 2px dashed var(--color-neutral-300); outline-offset: 3px; cursor: copy;">
                       <img src="assets/piece-placeholder.png" data-img="{{ e_image }}" alt="" style="width: 100%; height: 100%; object-fit: cover;">
                     </div>
                     <input class="input" type="file" accept="image/*" onChange="{{ pickImage }}" style="padding: 8px 12px;">
+                    <button type="button" onClick="{{ pasteImage }}" class="btn btn-secondary">{{ pasteLabel }}</button>
                   </div>
+                  <div style="margin-top: 8px; font-size: 12.5px; color: var(--color-neutral-600);">Use Paste image, or click the preview and press Ctrl+V / ⌘V.</div>
+                  <sc-if value="{{ imageNotice }}"><div style="margin-top: 6px; font-size: 12.5px; color: var(--color-neutral-600);">{{ imageNotice }}</div></sc-if>
                 </div>
               </div>
               <div style="display: flex; gap: 10px; margin-top: 20px;">
@@ -1348,7 +1351,7 @@ class Component extends DCLogic {
 
   /* ---------- catalog ---------- */
   openCatalogEditor(form) {
-    this.setState({ form, fetching: false, fetchProgress: 0, fetchNotice: '', fetchMissing: [] });
+    this.setState({ form, fetching: false, fetchProgress: 0, fetchNotice: '', fetchMissing: [], imageUploading: false, imageNotice: '' });
     setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 0);
   }
 
@@ -1362,6 +1365,46 @@ class Component extends DCLogic {
     ];
     const match = types.find((entry) => entry[1].test(value));
     return match ? match[0] : '';
+  }
+
+  async uploadCatalogImage(file) {
+    if (!file || !String(file.type || '').startsWith('image/')) {
+      this.setState({ imageNotice: 'The clipboard does not contain an image. Copy an image, then try again.' });
+      return;
+    }
+    this.setState({ imageUploading: true, imageNotice: 'Uploading image…' });
+    try {
+      const url = await this.state.api.uploadFile('catalog', file);
+      this.setState({ form: { ...this.state.form, image: url }, imageUploading: false, imageNotice: 'Photo added.' });
+    } catch (e) {
+      this.setState({ imageUploading: false, imageNotice: 'Could not upload this image. Please try again or choose a file.' });
+    }
+  }
+
+  async pasteCatalogImage(event) {
+    if (event && event.clipboardData) {
+      event.preventDefault();
+      const files = Array.from(event.clipboardData.files || []);
+      const image = files.find((file) => String(file.type || '').startsWith('image/'));
+      return this.uploadCatalogImage(image);
+    }
+    if (!navigator.clipboard || !navigator.clipboard.read) {
+      this.setState({ imageNotice: 'Clipboard access is unavailable here. Click the preview and press Ctrl+V / ⌘V instead.' });
+      return;
+    }
+    this.setState({ imageNotice: 'Reading image from clipboard…' });
+    try {
+      const items = await navigator.clipboard.read();
+      for (const item of items) {
+        const type = item.types.find((value) => value.startsWith('image/'));
+        if (!type) continue;
+        const blob = await item.getType(type);
+        return this.uploadCatalogImage(new File([blob], 'clipboard-image.' + (type.split('/')[1] || 'png'), { type }));
+      }
+      this.setState({ imageNotice: 'The clipboard does not contain an image. Copy an image, then try again.' });
+    } catch (e) {
+      this.setState({ imageNotice: 'Clipboard permission was not granted. Click the preview and press Ctrl+V / ⌘V instead.' });
+    }
   }
 
   catalogVals(admin) {
@@ -1456,11 +1499,13 @@ class Component extends DCLogic {
         fetchNoticeDone: !s.fetching && !!s.fetchNotice,
         fetchMissingText: (s.fetchMissing || []).map((key) => ({ name: 'name', retailer: 'retailer', type: 'type', price: 'retail price', dimensions: 'dimensions', finish: 'finish / material', color: 'color' }[key] || key)).join(', '),
         fetchDetails: () => this.fetchDetails(),
+        pasteLabel: s.imageUploading ? 'Uploading…' : 'Paste image',
+        imageNotice: s.imageNotice || '',
+        pasteImage: (e) => this.pasteCatalogImage(e),
         pickImage: async (e) => {
           const file = e.target.files && e.target.files[0];
           if (!file) return;
-          const url = await api.uploadFile('catalog', file);
-          this.setState({ form: { ...this.state.form, image: url } });
+          await this.uploadCatalogImage(file);
         },
         savePiece: async () => {
           const f2 = this.state.form;
