@@ -451,7 +451,7 @@
                     <sc-for list="{{ tagChips }}" as="t" hint-placeholder-count="2">
                       <span class="tag tag-accent" style="display: inline-flex; align-items: center; gap: 6px;">{{ t.label }}<button type="button" onClick="{{ t.remove }}" title="Remove" style="border: 0; background: none; cursor: pointer; font: inherit; line-height: 1; padding: 0; color: inherit; opacity: .65;">×</button></span>
                     </sc-for>
-                    <input class="input" value="{{ e_tagDraft }}" onChange="{{ addTag }}" placeholder="add a tag, then Enter" style="width: 200px;">
+                    <input class="input" value="{{ e_tagDraft }}" onKeyDown="{{ addTag }}" placeholder="add a tag, then Enter" style="width: 200px;">
                   </div>
                 </div>
                 <div class="field" style="grid-column: span 3;"><label>Photo</label>
@@ -1422,13 +1422,14 @@ class Component extends DCLogic {
     const rooms = [...new Set(all.flatMap(roomsOf).filter(Boolean))].sort();
     const types = [...new Set(all.map((c) => c.type).filter(Boolean))].sort();
     const stores = [...new Set(all.map((c) => c.retailer).filter(Boolean))].sort();
-    const q = s.q.toLowerCase().trim();
+    const qTokens = s.q.toLowerCase().trim().split(/\s+/).filter(Boolean);
     let list = all.filter((c) => {
       if (s.fRoom && !roomsOf(c).includes(s.fRoom)) return false;
       if (s.fType && c.type !== s.fType) return false;
       if (s.fStore && c.retailer !== s.fStore) return false;
-      if (!q) return true;
-      return [c.name, c.retailer, c.type, roomsOf(c).join(' '), c.color, c.finish, (c.tags || []).join(' ')].join(' ').toLowerCase().includes(q);
+      if (!qTokens.length) return true;
+      const hay = [c.name, c.retailer, c.type, roomsOf(c).join(' '), c.color, c.finish, (c.tags || []).join(' ')].join(' ').toLowerCase();
+      return qTokens.every((t) => hay.includes(t));
     });
     const by = { name: (a, b) => a.name.localeCompare(b.name), store: (a, b) => (a.retailer || '').localeCompare(b.retailer || ''), type: (a, b) => (a.type || '').localeCompare(b.type || ''), price: (a, b) => (b.price || 0) - (a.price || 0), recent: (a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || '') };
     list = [...list].sort(by[s.sort] || by.recent);
@@ -1490,6 +1491,8 @@ class Component extends DCLogic {
             this.setState({ form: { ...this.state.form, tags: cur.filter((x) => x !== t) } });
           } })),
         addTag: (e) => {
+          if (e.key !== 'Enter') return;
+          e.preventDefault();
           const val = String(e.target.value || '').trim();
           e.target.value = '';
           if (!val) return;
