@@ -78,16 +78,25 @@ function seed() {
     projects: [
       {
         id: '86-residence',
-        name: '86 Residence', client: 'The 86 Residence family', location: 'Miami, FL',
+        name: '86 Residence', client: 'Maya Vander', location: 'Coral Gables, Miami',
         cover: 'assets/floor-plan.png', status: 'in progress', currency: 'USD',
+        tagline: 'A home that lives the way you do', scope: 'Five spaces', scopeNote: 'One layout each',
+        address: '5901 SW 86 Street', addressCity: 'Coral Gables, Miami', proposalSyncVersion: '2026-08-maya-concept',
         members: ['u-admin', 'u-cybelle'],
         createdAt: '2026-05-04T12:00:00.000Z', updatedAt: '2026-08-14T18:22:00.000Z',
         phases: {
-          discovery: { status: 'not-started', progress: 0, doc: null, note: 'Questionnaire was never run with this client.' },
-          concept: { status: 'in-progress', progress: 62, doc: '86 Residence - Simplified Proposal Generator.dc.html', note: 'Plans, moodboard and the first furniture selection.' },
-          design: { status: 'in-progress', progress: 78, doc: '86 Residence Design Proposal.dc.html', note: 'SketchUp elevations, full specification and investment.' },
+          discovery: { status: 'done', progress: 100, doc: null, note: 'Discovery completed; the client is now reviewing the concept direction.' },
+          concept: { status: 'review', progress: 100, doc: '86 Residence - Concept - Maya Vander.html', note: 'Concept package sent to Maya for review: direction, materials, plans and moodboards.' },
+          design: { status: 'not-started', progress: 0, doc: '86 Residence Design Proposal.dc.html', note: 'Begins after the concept is approved.' },
           styling: { status: 'not-started', progress: 0, doc: null, note: 'Delivery, placement and final styling — after the sourcing list is approved.' },
         },
+        fees: { lines: [
+          { roomId: 'r-family', name: 'Family Room', type: 'Primary living spaces', suggested: 1800, fee: 1800 },
+          { roomId: 'r-dining', name: 'Dining Room', type: 'Primary living spaces', suggested: 1800, fee: 1800 },
+          { roomId: 'r-breakfast', name: 'Breakfast Area', type: 'Primary living spaces', suggested: 1800, fee: 1800 },
+          { roomId: 'r-terrace', name: 'Terrace', type: 'Supporting space', suggested: 750, fee: 750 },
+          { roomId: 'r-primary', name: 'Primary Bedroom', type: 'Bedroom', suggested: 1200, fee: 1200 },
+        ], discountPct: 0, discountNote: '', note: '50% retainer to reserve the start date; balance due on delivery of the final concept. Furniture, trade labor, delivery and white-glove installation are billed separately.' },
         answers: {},
         plan: 'assets/floor-plan.png',
         materials: [
@@ -281,6 +290,35 @@ export async function saveProject(p) {
   return p;
 }
 
+// One-time reconciliation for the reference project sent to Maya in August
+// 2026. It is deliberately versioned, so it never overwrites later edits.
+export async function reconcile86Residence(p) {
+  if (!p || p.id !== '86-residence' || p.proposalSyncVersion === '2026-08-maya-concept') return p;
+  const phase = p.phases || {};
+  const fees = {
+    lines: [
+      { roomId: 'r-family', name: 'Family Room', type: 'Primary living spaces', suggested: 1800, fee: 1800 },
+      { roomId: 'r-dining', name: 'Dining Room', type: 'Primary living spaces', suggested: 1800, fee: 1800 },
+      { roomId: 'r-breakfast', name: 'Breakfast Area', type: 'Primary living spaces', suggested: 1800, fee: 1800 },
+      { roomId: 'r-terrace', name: 'Terrace', type: 'Supporting space', suggested: 750, fee: 750 },
+      { roomId: 'r-primary', name: 'Primary Bedroom', type: 'Bedroom', suggested: 1200, fee: 1200 },
+    ],
+    discountPct: 0, discountNote: '',
+    note: '50% retainer to reserve the start date; balance due on delivery of the final concept. Furniture, trade labor, delivery and white-glove installation are billed separately.',
+  };
+  return saveProject({
+    ...p, client: 'Maya Vander', location: 'Coral Gables, Miami', tagline: 'A home that lives the way you do',
+    scope: 'Five spaces', scopeNote: 'One layout each', address: '5901 SW 86 Street', addressCity: 'Coral Gables, Miami',
+    proposalSyncVersion: '2026-08-maya-concept', fees,
+    phases: {
+      ...phase,
+      discovery: { ...(phase.discovery || {}), status: 'done', progress: 100, note: 'Discovery completed; the client is now reviewing the concept direction.' },
+      concept: { ...(phase.concept || {}), status: 'review', progress: 100, doc: '86 Residence - Concept - Maya Vander.html', note: 'Concept package sent to Maya for review: direction, materials, plans and moodboards.' },
+      design: { ...(phase.design || {}), status: 'not-started', progress: 0, doc: '86 Residence Design Proposal.dc.html', note: 'Begins after the concept is approved.' },
+    },
+  });
+}
+
 /** A room as the app expects to find it: an id, the name, and the empty slots
  *  each phase fills in — cad for the 2D plan, moodboard for Concept, selected
  *  for the Design & sourcing list. Creating them up front means a new project
@@ -383,20 +421,20 @@ export function DEFAULT_RATES() {
   return {
     currency: 'USD',
     perRoom: [
-      { room: 'Living room', fee: 3200 },
-      { room: 'Family room', fee: 3200 },
-      { room: 'Dining room', fee: 2400 },
-      { room: 'Breakfast area', fee: 1600 },
-      { room: 'Kitchen', fee: 3800 },
-      { room: 'Primary bedroom', fee: 2800 },
-      { room: 'Bedroom', fee: 2000 },
-      { room: 'Home office', fee: 2200 },
-      { room: 'Entry / hallway', fee: 1400 },
-      { room: 'Bathroom', fee: 1800 },
-      { room: 'Outdoor / terrace', fee: 2200 },
-      { room: 'Any room', fee: 2000 },
+      { room: 'Living room', fee: 1800 },
+      { room: 'Family room', fee: 1800 },
+      { room: 'Dining room', fee: 1800 },
+      { room: 'Breakfast area', fee: 1800 },
+      { room: 'Kitchen', fee: 750 },
+      { room: 'Primary bedroom', fee: 1200 },
+      { room: 'Bedroom', fee: 1200 },
+      { room: 'Home office', fee: 1200 },
+      { room: 'Entry / hallway', fee: 750 },
+      { room: 'Bathroom', fee: 750 },
+      { room: 'Outdoor / terrace', fee: 750 },
+      { room: 'Any room', fee: 750 },
     ],
-    fallback: 2000,
+    fallback: 750,
     note: 'Design fee per space — concept, space plan, sourcing list and styling direction.',
   };
 }
@@ -492,8 +530,16 @@ export function shareUrl(token) {
   return base + '#share=' + token;
 }
 
-export async function createShare(project, clientName, phases) {
-  const share = { token: uid() + uid(), clientName, phases: phases || ['concept'], createdAt: nowISO(), views: 0 };
+function phaseOf(share) {
+  if (share.phase) return share.phase;
+  return (share.phases || []).includes('design') ? 'design' : 'concept';
+}
+
+export async function createShare(project, clientName, phase) {
+  // A link now represents one intentional client moment, rather than a growing
+  // bundle of work. Keep phases for older links and existing records.
+  const chosen = Array.isArray(phase) ? (phase.includes('design') ? 'design' : phase[0]) : (phase || 'concept');
+  const share = { token: uid() + uid(), clientName, phase: chosen, phases: [chosen], createdAt: nowISO(), views: 0 };
   const p = { ...project, shares: [...(project.shares || []), share] };
   await saveProject(p);
   if (mode === 'firebase') await publishShare(p, share);
@@ -505,11 +551,13 @@ async function publishShare(project, share) {
   const { doc, setDoc } = fb.D;
   const cat = await listCatalog();
   const find = (id) => cat.find((c) => c.id === id) || {};
-  const showDesign = share.phases.includes('design');
+  const phase = phaseOf(share);
+  const questionnaire = phase === 'discovery' ? await getQuestionnaire() : [];
+  const showDocument = phase === 'concept' || phase === 'design';
   const payload = {
     token: share.token, projectId: project.id, projectName: project.name,
-    clientName: share.clientName, phases: share.phases,
-    doc: showDesign ? (project.phases.design || {}).doc || null : (project.phases.concept || {}).doc || null,
+    clientName: share.clientName, phase, phases: [phase], questionnaire,
+    doc: showDocument ? (project.phases[phase] || {}).doc || null : null,
     rooms: (project.rooms || []).map((r) => ({
       id: r.id, name: r.name,
       items: (r.selected || []).map((e) => {
@@ -545,14 +593,17 @@ export async function findByShare(token) {
     const d = snap.data();
     return {
       public: true,
-      share: { token, clientName: d.clientName, phases: d.phases || ['concept'] },
-      project: { id: d.projectId, name: d.projectName, rooms: d.rooms || [], phases: {} },
+      share: { token, clientName: d.clientName, phase: d.phase || phaseOf(d), phases: d.phases || ['concept'] },
+      project: { id: d.projectId, name: d.projectName, rooms: d.rooms || [], phases: {}, questionnaire: d.questionnaire || [] },
       doc: d.doc || null,
     };
   }
   for (const p of readLS().projects) {
     const sh = (p.shares || []).find((s) => s.token === token);
-    if (sh) return { project: p, share: sh, doc: (sh.phases.includes('design') ? p.phases.design : p.phases.concept || {}).doc || null };
+    if (sh) {
+      const phase = phaseOf(sh);
+      return { project: { ...p, questionnaire: phase === 'discovery' ? readLS().questionnaire : [] }, share: { ...sh, phase }, doc: (p.phases[phase] || {}).doc || null };
+    }
   }
   return null;
 }
@@ -715,7 +766,7 @@ export async function uploadFile(projectId, file) {
   if (mode === 'firebase') {
     const { ref, uploadBytes, getDownloadURL } = fb.S;
     const r = ref(fb.storage, `${projectId || 'catalog'}/${Date.now()}-${file.name}`);
-    await uploadBytes(r, file);
+    await uploadBytes(r, file, { contentType: file.type || 'application/octet-stream' });
     return getDownloadURL(r);
   }
   return new Promise((res) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.readAsDataURL(file); });

@@ -1,0 +1,39 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    function signedIn() { return request.auth != null; }
+    function isAdmin() {
+      return signedIn()
+        && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    function canWorkOn(projectId) {
+      return signedIn() && (isAdmin()
+        || request.auth.uid in firestore.get(/databases/(default)/documents/projects/$(projectId)).data.members);
+    }
+    function isImageUpload() {
+      return request.resource.size < 10 * 1024 * 1024
+        // Firebase's resumable web uploader can send its initial create request
+        // as application/octet-stream, even when the selected File is an image.
+        // The UI still accepts image/* only; this keeps the server-side size and
+        // studio-membership protections without rejecting that handshake.
+        && (request.resource.contentType.matches('image/.*')
+          || request.resource.contentType == 'application/octet-stream');
+    }
+
+    // Catalog images are studio-wide and can only be changed by an admin.
+    match /catalog/{allPaths=**} {
+      allow read: if signedIn();
+      allow create, update: if isAdmin() && isImageUpload();
+      allow delete: if isAdmin();
+    }
+
+    // Project imagery stays scoped to the people assigned to that project.
+    // Client links receive explicit download URLs from the share payload.
+    match /{projectId}/{allPaths=**} {
+      allow read: if canWorkOn(projectId);
+      allow create, update: if canWorkOn(projectId) && isImageUpload();
+      allow delete: if canWorkOn(projectId);
+    }
+  }
+}
