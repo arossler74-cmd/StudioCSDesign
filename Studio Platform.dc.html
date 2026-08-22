@@ -1456,14 +1456,43 @@ class Component extends DCLogic {
     const title = field('title|product name|name') || (heading ? heading[1].replace(/[*_]/g, '').trim() : '');
     const priceText = field('price|sale price|regular price') || (clean.match(/(?:USD\s*|\$)\s*([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{2})?)/i) || [])[1] || '';
     const price = Number(String(priceText).replace(/[^0-9.]/g, ''));
+    const inferredDimensions = (clean.match(/\b\d+(?:\.\d+)?\s*(?:["”]|\bin\.?)?\s*[Ww]\s*[×x]\s*\d+(?:\.\d+)?\s*(?:["”]|\bin\.?)?\s*[Dd]\s*[×x]\s*\d+(?:\.\d+)?\s*(?:["”]|\bin\.?)?\s*[Hh]\b/) || [])[0] || '';
+    const inferredMaterial = (clean.match(/\b(?:travertine|marble|wood|oak|walnut|burl|veneer|leather|linen|boucl[eé]|brass|bronze|steel|glass|ceramic|rattan|wool)\b[^\n.]{0,110}/i) || [])[0] || '';
+    const inferredColor = (clean.match(/\b(?:ivory|cream|white|beige|natural|oak|walnut|brown|black|grey|gray|blue|green|sage|brass|bronze)\b[^\n.]{0,60}/i) || [])[0] || '';
     return {
       name: title,
       retailer: field('retailer|brand|vendor') || (host ? host.charAt(0).toUpperCase() + host.slice(1) : ''),
-      dimensions: field('dimensions?|overall dimensions?|size'),
-      finish: field('finish|material|materials'),
-      color: field('colou?r'),
+      dimensions: field('dimensions?|overall dimensions?|size') || inferredDimensions,
+      finish: field('finish|material|materials') || inferredMaterial,
+      color: field('colou?r') || inferredColor,
       price: Number.isFinite(price) && price > 0 ? price : null
     };
+  }
+
+  async crateAndBarrelDetails(url) {
+    const source = new URL(url);
+    if (!/(^|\.)crateandbarrel\.com$/i.test(source.hostname)) return null;
+    const words = source.pathname.split('/').filter(Boolean).join(' ')
+      .replace(/^s\d+\s*/i, '').split('-').filter((word) => word && !/^(by|and|the|a|an|of)$/i.test(word));
+    const query = words.slice(0, 3).join(' ') || words[0];
+    if (!query) return null;
+    // The US storefront blocks browser bots. Their public Shopify catalogue in
+    // the Philippines exposes the same product specifications with CORS, so it
+    // is used only for descriptive fields — never for its local-currency price.
+    const res = await fetch('https://crateandbarrel.com.ph/search/suggest.json?q='
+      + encodeURIComponent(query) + '&resources%5Btype%5D=product');
+    if (!res.ok) throw new Error('Crate & Barrel product search returned ' + res.status);
+    const data = await res.json();
+    const products = (((data || {}).resources || {}).results || {}).products || [];
+    if (!products.length) return null;
+    const expected = new Set(words.map((word) => word.toLowerCase()));
+    const product = products.map((item) => ({
+      item,
+      score: String(item.title || '').toLowerCase().split(/[^a-z0-9]+/).reduce((sum, word) => sum + (expected.has(word) ? 1 : 0), 0)
+    })).sort((a, b) => b.score - a.score)[0].item;
+    const body = String(product.body || '').replace(/<[^>]*>/g, '\n').replace(/&quot;/g, '"').replace(/&amp;/g, '&');
+    const details = this.productDetailsFromText('Title: ' + (product.title || '') + '\nRetailer: Crate & Barrel\n' + body, url);
+    return { ...details, name: product.title || details.name, retailer: 'Crate & Barrel', image: product.image || (product.featured_image && product.featured_image.url) || '' };
   }
 
   async fetchDetails() {
@@ -1472,17 +1501,18 @@ class Component extends DCLogic {
     if (!/^https?:\/\//i.test(url)) return this.setState({ fetchNotice: 'Paste a complete product URL, beginning with https://.' });
     this.setState({ fetching: true, fetchNotice: 'Reading product details…' });
     try {
-      // Retail sites normally block direct browser requests. Jina Reader reads
-      // the public product page server-side and returns CORS-safe plain text.
-      const readerUrl = 'https://r.jina.ai/http://' + url.replace(/^https?:\/\//i, '');
-      const res = await fetch(readerUrl, { headers: { Accept: 'text/plain' } });
-      if (!res.ok) throw new Error('Reader returned ' + res.status);
-      const j = this.productDetailsFromText(await res.text(), url);
+      let j = null;
+      try {
+        const res = await fetch(url, { headers: { Accept: 'text/html' } });
+        if (res.ok) j = this.productDetailsFromText(await res.text(), url);
+      } catch (e) {}
+      if (!j || (!j.name && !j.price && !j.dimensions)) j = await this.crateAndBarrelDetails(url);
       if (!j.name && !j.price && !j.dimensions) throw new Error('No readable product details found');
-      this.setState({ fetching: false, fetchNotice: 'Details added where available. Review before saving.', form: { ...this.state.form,
+      this.setState({ fetching: false, fetchNotice: j.price ? 'Details added where available. Review before saving.' : 'Product details added. Confirm the current price before saving.', form: { ...this.state.form,
         name: this.state.form.name || j.name || '', retailer: this.state.form.retailer || j.retailer || '',
         dimensions: this.state.form.dimensions || j.dimensions || '', finish: this.state.form.finish || j.finish || '',
-        color: this.state.form.color || j.color || '', price: this.state.form.price || (j.price == null ? '' : String(j.price)) } });
+        color: this.state.form.color || j.color || '', image: this.state.form.image || j.image || '',
+        price: this.state.form.price || (j.price == null ? '' : String(j.price)) } });
     } catch (e) {
       this.setState({ fetching: false, fetchNotice: 'Could not read this retailer page automatically. Add the product details manually and save them.' });
     }
