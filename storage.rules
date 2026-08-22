@@ -21,13 +21,15 @@ service firebase.storage {
           && firestore.exists(/databases/(default)/documents/users/$(request.auth.uid))
           && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin');
     }
+    function isDesigner() {
+      return signedIn()
+        && firestore.exists(/databases/(default)/documents/users/$(request.auth.uid))
+        && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'designer';
+    }
     function canWorkOn(projectId) {
       return signedIn() && firestore.exists(/databases/(default)/documents/projects/$(projectId))
-        && (isAdmin()
-          || request.auth.uid in firestore.get(/databases/(default)/documents/projects/$(projectId)).data.members
-          || (request.auth.token.email_verified == true
-            && ('designerEmails' in firestore.get(/databases/(default)/documents/projects/$(projectId)).data)
-            && request.auth.token.email in firestore.get(/databases/(default)/documents/projects/$(projectId)).data.designerEmails));
+        && (isAdmin() || isDesigner()
+          || request.auth.uid in firestore.get(/databases/(default)/documents/projects/$(projectId)).data.members);
     }
     function isImageUpload() {
       return request.resource.size < 10 * 1024 * 1024

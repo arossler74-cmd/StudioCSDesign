@@ -29,13 +29,10 @@ service cloud.firestore {
         ];
     }
     function isAdmin() { return isBootstrapAdmin() || role() == 'admin'; }
-    function isAssignedDesigner(project) {
-      return isSignedIn()
-        && role() == 'designer'
-        && request.auth.token.email_verified == true
-        && ('designerEmails' in project)
-        && request.auth.token.email in project.designerEmails;
-    }
+    // Until per-project assignments are introduced, every studio designer can
+    // work on every project. The designerEmails field remains reserved for the
+    // future refinement, and designers cannot change it themselves.
+    function isDesigner() { return isSignedIn() && role() == 'designer'; }
     function isProjectClient(project) {
       return isSignedIn()
         && role() == 'client'
@@ -44,7 +41,7 @@ service cloud.firestore {
         && request.auth.token.email == project.clientEmail;
     }
     function canReadProject(project) {
-      return isAdmin() || isAssignedDesigner(project) || isProjectClient(project);
+      return isAdmin() || isDesigner() || isProjectClient(project);
     }
     function assignmentIsUnchanged() {
       return !request.resource.data.diff(resource.data).affectedKeys()
@@ -98,17 +95,16 @@ service cloud.firestore {
 
     match /projects/{projectId} {
       allow get: if canReadProject(resource.data);
-      // Firestore evaluates this per returned document, so the app's queries
-      // must prove either the assigned designer or the one client email.
+      // Clients query by their one assigned email; studio roles can list all.
       allow list: if isAdmin() || (request.query.limit <= 200 && canReadProject(resource.data));
       allow create: if isAdmin();
-      // Designers can change the project work, not client/staff assignment.
-      allow update: if isAdmin() || (isAssignedDesigner(resource.data) && assignmentIsUnchanged());
+      // Designers can change project work, not client/staff assignment.
+      allow update: if isAdmin() || (isDesigner() && assignmentIsUnchanged());
       allow delete: if isAdmin();
 
       match /{sub=**} {
         allow read: if canReadProject(get(/databases/$(database)/documents/projects/$(projectId)).data);
-        allow write: if isAdmin() || isAssignedDesigner(get(/databases/$(database)/documents/projects/$(projectId)).data);
+        allow write: if isAdmin() || isDesigner();
       }
     }
   }

@@ -560,8 +560,9 @@
                 <div style="font-family: var(--font-heading); font-size: 22px; color: var(--color-accent-900); margin-bottom: 16px;">The client</div>
                 <div class="cs-details-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
                   <div class="field"><label>Client name</label><input class="input" value="{{ d_client }}" onChange="{{ setd_client }}" placeholder="Maya Vander"></div>
-                  <div class="field"><label>Client access email (one client)</label><input class="input" type="email" value="{{ d_clientEmail }}" onChange="{{ setd_clientEmail }}" placeholder="name@email.com"></div>
-                  <div class="field" style="grid-column: span 2;"><label>Designer access</label><input class="input" value="{{ d_designerEmails }}" onChange="{{ setd_designerEmails }}" placeholder="designer@email.com, another@email.com"></div>
+                  <sc-if value="{{ isAdmin }}">
+                    <div class="field"><label>Client access email (one client)</label><input class="input" type="email" value="{{ d_clientEmail }}" onChange="{{ setd_clientEmail }}" placeholder="name@email.com"></div>
+                  </sc-if>
                   <div class="field" style="grid-column: span 2;"><label>Address</label><input class="input" value="{{ d_address }}" onChange="{{ setd_address }}" placeholder="5901 SW 86 Street"></div>
                   <div class="field" style="grid-column: span 2;"><label>City / region</label><input class="input" value="{{ d_addressCity }}" onChange="{{ setd_addressCity }}" placeholder="Coral Gables, Miami"></div>
                 </div>
@@ -1646,12 +1647,12 @@ class Component extends DCLogic {
       Object.assign(v, {
         d_name: dr.name || '', d_location: dr.location || '', d_tagline: dr.tagline || '',
         d_scope: dr.scope || '', d_scopeNote: dr.scopeNote || '', d_startDate: (dr.startDate || '').slice(0, 10),
-        d_currency: dr.currency || 'USD', d_client: dr.client || '', d_clientEmail: dr.clientEmail || '', d_designerEmails: (dr.designerEmails || []).join(', '),
+        d_currency: dr.currency || 'USD', d_client: dr.client || '', d_clientEmail: dr.clientEmail || '',
         d_address: dr.address || '', d_addressCity: dr.addressCity || '', d_hero: dr.hero || dr.cover || PLACEHOLDER,
         detailsNotice: s.detailsNotice || '',
         setd_name: setd('name'), setd_location: setd('location'), setd_tagline: setd('tagline'),
         setd_scope: setd('scope'), setd_scopeNote: setd('scopeNote'), setd_startDate: setd('startDate'),
-        setd_currency: setd('currency'), setd_client: setd('client'), setd_clientEmail: setd('clientEmail'), setd_designerEmails: setd('designerEmails'),
+        setd_currency: setd('currency'), setd_client: setd('client'), setd_clientEmail: setd('clientEmail'),
         setd_address: setd('address'), setd_addressCity: setd('addressCity'),
         detailsLabel: s.detailsSaving ? 'Saving…' : 'Save details',
         pickHero: async (e) => {

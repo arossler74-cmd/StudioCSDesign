@@ -258,19 +258,16 @@ export async function listProjects(user) {
     const { collection, getDocs, query, where } = fb.D;
     const ref = collection(fb.db, 'projects');
     const email = String((user && user.email) || '').trim().toLowerCase();
-    const snap = user && user.role === 'admin'
+    const snap = user && (user.role === 'admin' || user.role === 'designer')
       ? await getDocs(ref)
-      : user && user.role === 'designer'
-        ? await getDocs(query(ref, where('designerEmails', 'array-contains', email)))
-        : await getDocs(query(ref, where('clientEmail', '==', email)));
+      : await getDocs(query(ref, where('clientEmail', '==', email)));
     all = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
     all.sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''));
     return all;
   }
   all = [...readLS().projects];
   all.sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''));
-  if (user && user.role === 'admin') return all;
-  if (user && user.role === 'designer') return all.filter((p) => (p.designerEmails || []).map((x) => String(x).toLowerCase()).includes(String(user.email || '').toLowerCase()));
+  if (user && (user.role === 'admin' || user.role === 'designer')) return all;
   return all.filter((p) => String(p.clientEmail || '').toLowerCase() === String((user && user.email) || '').toLowerCase());
 }
 
