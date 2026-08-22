@@ -441,6 +441,15 @@
                   </sc-if>
                   <sc-if value="{{ fetchNoticeDone }}"><div style="margin-top: 7px; font-size: 12.5px; color: var(--color-neutral-600);">{{ fetchNotice }}</div></sc-if>
                   <sc-if value="{{ fetchMissingText }}"><div style="margin-top: 9px; font-size: 12.5px; color: var(--color-accent-700);">Manual entry needed: {{ fetchMissingText }}. Highlighted fields will clear as you complete them.</div></sc-if>
+                  <sc-if value="{{ showPasteToggle }}">
+                    <button type="button" onClick="{{ togglePaste }}" class="btn btn-ghost" style="margin-top: 8px; font-size: 12.5px; padding: 2px 0;">{{ pasteToggleLabel }}</button>
+                    <sc-if value="{{ pasteOpen }}">
+                      <div style="margin-top: 8px;">
+                        <textarea class="input" rows="5" value="{{ pasteText }}" onChange="{{ setPasteText }}" placeholder="Open the product page yourself, select all the text (Ctrl/⌘+A), copy, and paste it here." style="resize: vertical; font-family: var(--font-body); border-radius: var(--radius-md);"></textarea>
+                        <button type="button" onClick="{{ parsePasted }}" class="btn btn-secondary" style="margin-top: 8px;">Fill from pasted text</button>
+                      </div>
+                    </sc-if>
+                  </sc-if>
                 </div>
                 <div class="field"><label>Dimensions</label><input class="input" value="{{ e_dimensions }}" onChange="{{ set_dimensions }}" style="{{ e_dimensionsStyle }}"></div>
                 <div class="field"><label>Finish / material</label><input class="input" value="{{ e_finish }}" onChange="{{ set_finish }}" style="{{ e_finishStyle }}"></div>
@@ -1356,7 +1365,7 @@ class Component extends DCLogic {
 
   /* ---------- catalog ---------- */
   openCatalogEditor(form) {
-    this.setState({ form, fetching: false, fetchProgress: 0, fetchNotice: '', fetchMissing: [], imageUploading: false, imageNotice: '', imageNoticeKind: 'status' });
+    this.setState({ form, fetching: false, fetchProgress: 0, fetchNotice: '', fetchMissing: [], imageUploading: false, imageNotice: '', imageNoticeKind: 'status', pasteOpen: false, pasteText: '' });
     setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 0);
   }
 
@@ -1511,6 +1520,13 @@ class Component extends DCLogic {
         fetchNoticeDone: !s.fetching && !!s.fetchNotice,
         fetchMissingText: (s.fetchMissing || []).map((key) => ({ name: 'name', retailer: 'retailer', type: 'type', price: 'retail price', dimensions: 'dimensions', finish: 'finish / material', color: 'color' }[key] || key)).join(', '),
         fetchDetails: () => this.fetchDetails(),
+        showPasteToggle: !s.fetching && !!s.fetchMissingText,
+        pasteOpen: !!s.pasteOpen,
+        pasteToggleLabel: s.pasteOpen ? 'Hide paste box' : 'Paste the page text instead',
+        togglePaste: () => this.setState({ pasteOpen: !this.state.pasteOpen }),
+        pasteText: s.pasteText || '',
+        setPasteText: (e) => this.setState({ pasteText: e.target.value }),
+        parsePasted: () => this.parsePastedText(),
         fileLabel: s.imageUploading ? 'Uploading…' : 'Choose file',
         pasteLabel: s.imageUploading ? 'Uploading…' : 'Paste image',
         imageUploading: !!s.imageUploading,
@@ -1595,6 +1611,20 @@ class Component extends DCLogic {
     return { ...details, name: product.title || details.name, retailer: 'Crate & Barrel', image: product.image || (product.featured_image && product.featured_image.url) || '' };
   }
 
+  applyFetchedDetails(details) {
+    const wanted = ['name', 'retailer', 'type', 'price', 'dimensions', 'finish', 'color'];
+    const withType = { ...details, type: details.type || this.inferCatalogType(details.name) };
+    const missing = wanted.filter((key) => !withType[key]);
+    const form = { ...this.state.form,
+      name: this.state.form.name || withType.name || '', retailer: this.state.form.retailer || withType.retailer || '',
+      type: withType.type || this.state.form.type || '', dimensions: this.state.form.dimensions || withType.dimensions || '',
+      finish: this.state.form.finish || withType.finish || '', color: this.state.form.color || withType.color || '',
+      image: this.state.form.image || withType.image || '',
+      price: this.state.form.price || (withType.price == null ? '' : String(withType.price)) };
+    this.setState({ fetching: false, fetchProgress: 100, fetchMissing: missing, pasteOpen: false, pasteText: '',
+      fetchNotice: missing.length ? 'Details added. Some information still needs your review.' : 'All available product details were added. Review before saving.', form });
+  }
+
   async fetchDetails() {
     const f = this.state.form;
     const url = (f && f.url || '').trim();
@@ -1610,7 +1640,7 @@ class Component extends DCLogic {
         j = await this.state.api.fetchProductDetails(url);
         this.setState({ fetchProgress: 58, fetchNotice: 'Reading the product details…' });
       } catch (e) {
-        failed.push('the secure reader could not access this retailer page');
+        failed.push((e && e.message) || 'the secure reader could not access this retailer page');
       }
       try {
         if (!j) {
@@ -1619,7 +1649,7 @@ class Component extends DCLogic {
           if (res.ok) j = this.productDetailsFromText(await res.text(), url);
         }
       } catch (e) {
-        failed.push('the browser could not access this retailer page');
+        failed.push('the browser could not access this retailer page directly');
       }
       if (!j || (!j.name && !j.price && !j.dimensions)) {
         this.setState({ fetchProgress: 74, fetchNotice: 'Checking available product data…' });
@@ -1627,20 +1657,23 @@ class Component extends DCLogic {
         catch (e) { failed.push('no compatible product data was available'); }
       }
       if (!j || (!j.name && !j.price && !j.dimensions)) throw new Error('No readable product details found');
-      const details = { ...j, type: j.type || this.inferCatalogType(j.name) };
-      const missing = wanted.filter((key) => !details[key]);
-      const form = { ...this.state.form,
-        name: this.state.form.name || details.name || '', retailer: this.state.form.retailer || details.retailer || '',
-        type: details.type || this.state.form.type || '', dimensions: this.state.form.dimensions || details.dimensions || '',
-        finish: this.state.form.finish || details.finish || '', color: this.state.form.color || details.color || '',
-        image: this.state.form.image || details.image || '',
-        price: this.state.form.price || (details.price == null ? '' : String(details.price)) };
-      this.setState({ fetching: false, fetchProgress: 100, fetchMissing: missing,
-        fetchNotice: missing.length ? 'Details added. Some information still needs your review.' : 'All available product details were added. Review before saving.', form });
+      this.applyFetchedDetails(j);
     } catch (e) {
       this.setState({ fetching: false, fetchProgress: 0, fetchMissing: wanted,
-        fetchNotice: 'Automatic fetch could not finish: ' + (failed[0] || 'this retailer did not provide readable product data') + '. Add the highlighted details manually.' });
+        fetchNotice: 'Automatic fetch could not finish: ' + (failed[0] || 'this retailer did not provide readable product data')
+          + '. Add the details manually, or open the page yourself and use "Paste the page text instead" below.' });
     }
+  }
+
+  parsePastedText() {
+    const text = String(this.state.pasteText || '').trim();
+    if (!text) return this.setState({ fetchNotice: 'Paste the product page text first.' });
+    const url = (this.state.form && this.state.form.url) || '';
+    const details = this.productDetailsFromText(text, url);
+    if (!details.name && !details.price && !details.dimensions) {
+      return this.setState({ fetchNotice: 'Could not find product details in that text. Try copying more of the page, including the title and price.' });
+    }
+    this.applyFetchedDetails(details);
   }
 
   /* ---------- project ---------- */

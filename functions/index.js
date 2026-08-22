@@ -124,13 +124,20 @@ function extractProduct(html, pageUrl) {
   const product = productJsonLd(html);
   const offers = Array.isArray(product.offers) ? product.offers[0] : (product.offers || {});
   const description = htmlText(product.description || meta(html, 'description') || meta(html, 'og:description'));
-  const title = decode(product.name || meta(html, 'og:title') || meta(html, 'twitter:title') || (html.match(/<title[^>]*>([\s\S]*?)<\/title>/i) || [])[1]);
-  const image = Array.isArray(product.image) ? product.image[0] : (product.image || meta(html, 'og:image'));
-  const price = Number(product.price || offers.price || '');
+  const h1 = htmlText((html.match(/<h1[^>]*>([\s\S]*?)<\/h1>/i) || [])[1] || '');
+  const title = decode(product.name || meta(html, 'og:title') || meta(html, 'twitter:title')
+    || (html.match(/<title[^>]*>([\s\S]*?)<\/title>/i) || [])[1] || h1);
+  const image = Array.isArray(product.image) ? product.image[0]
+    : (product.image || meta(html, 'og:image') || meta(html, 'twitter:image'));
+  const priceText = product.price || offers.price || offers.lowPrice
+    || meta(html, 'product:price:amount') || meta(html, 'og:price:amount')
+    || (description.match(/(?:USD\s*|\$)\s*([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{2})?)/i) || [])[1] || '';
+  const price = Number(String(priceText).replace(/[^0-9.]/g, ''));
   const inferred = inferDetails(description + '\n' + htmlText(product.additionalProperty || ''));
   return {
     name: title,
-    retailer: decode(product.brand && (product.brand.name || product.brand)) || new URL(pageUrl).hostname.replace(/^www\./, ''),
+    retailer: decode(product.brand && (product.brand.name || product.brand)) || meta(html, 'og:site_name')
+      || new URL(pageUrl).hostname.replace(/^www\./, ''),
     dimensions: decode(product.dimensions || product.size) || inferred.dimensions,
     finish: decode(product.material) || inferred.finish,
     color: decode(product.color) || inferred.color,
