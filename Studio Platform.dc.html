@@ -410,13 +410,13 @@
           </div>
 
           <sc-if value="{{ editing }}">
-            <div class="card elev-md" style="padding: 26px 28px; margin-bottom: 28px;">
+            <div id="catalog-editor" class="card elev-md" style="padding: 26px 28px; margin-bottom: 28px;">
               <div style="font-family: var(--font-heading); font-size: 22px; color: var(--color-accent-900); margin-bottom: 18px;">{{ editTitle }}</div>
               <div class="cs-edit-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;">
-                <div class="field" style="grid-column: span 2;"><label>Name</label><input class="input" value="{{ e_name }}" onChange="{{ set_name }}"></div>
-                <div class="field"><label>Retailer</label><input class="input" value="{{ e_retailer }}" onChange="{{ set_retailer }}"></div>
+                <div class="field" style="grid-column: span 2;"><label>Name</label><input class="input" value="{{ e_name }}" onChange="{{ set_name }}" style="{{ e_nameStyle }}"></div>
+                <div class="field"><label>Retailer</label><input class="input" value="{{ e_retailer }}" onChange="{{ set_retailer }}" style="{{ e_retailerStyle }}"></div>
                 <div class="field"><label>Type</label>
-                  <select class="input" value="{{ e_type }}" onChange="{{ set_type }}">
+                  <select class="input" value="{{ e_type }}" onChange="{{ set_type }}" style="{{ e_typeStyle }}">
                     <sc-for list="{{ typeOptions }}" as="o" hint-placeholder-count="6"><option value="{{ o }}">{{ o }}</option></sc-for>
                   </select>
                 </div>
@@ -427,17 +427,24 @@
                     </sc-for>
                   </div>
                 </div>
-                <div class="field"><label>Retail price (USD)</label><input class="input" value="{{ e_price }}" onChange="{{ set_price }}" placeholder="0.00"></div>
+                <div class="field"><label>Retail price (USD)</label><input class="input" value="{{ e_price }}" onChange="{{ set_price }}" placeholder="0.00" style="{{ e_priceStyle }}"></div>
                 <div class="field" style="grid-column: span 3;"><label>Product URL</label>
                   <div style="display: flex; gap: 10px;">
                     <input class="input" value="{{ e_url }}" onChange="{{ set_url }}" placeholder="https://" style="flex: 1;">
                     <button type="button" onClick="{{ fetchDetails }}" class="btn btn-secondary">{{ fetchLabel }}</button>
                   </div>
-                  <sc-if value="{{ fetchNotice }}"><div style="margin-top: 7px; font-size: 12.5px; color: var(--color-neutral-600);">{{ fetchNotice }}</div></sc-if>
+                  <sc-if value="{{ fetchActive }}">
+                    <div style="margin-top: 9px; font-size: 12.5px; color: var(--color-neutral-700);">
+                      <div style="display: flex; justify-content: space-between; gap: var(--space-3);"><span>{{ fetchNotice }}</span><strong>{{ fetchProgress }}%</strong></div>
+                      <div style="margin-top: 6px; height: 5px; border-radius: 99px; overflow: hidden; background: var(--color-neutral-200);"><div style="height: 100%; width: {{ fetchProgress }}%; background: var(--color-accent); transition: width .25s ease;"></div></div>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ fetchNoticeDone }}"><div style="margin-top: 7px; font-size: 12.5px; color: var(--color-neutral-600);">{{ fetchNotice }}</div></sc-if>
+                  <sc-if value="{{ fetchMissingText }}"><div style="margin-top: 9px; font-size: 12.5px; color: var(--color-accent-700);">Manual entry needed: {{ fetchMissingText }}. Highlighted fields will clear as you complete them.</div></sc-if>
                 </div>
-                <div class="field"><label>Dimensions</label><input class="input" value="{{ e_dimensions }}" onChange="{{ set_dimensions }}"></div>
-                <div class="field"><label>Finish / material</label><input class="input" value="{{ e_finish }}" onChange="{{ set_finish }}"></div>
-                <div class="field"><label>Color</label><input class="input" value="{{ e_color }}" onChange="{{ set_color }}"></div>
+                <div class="field"><label>Dimensions</label><input class="input" value="{{ e_dimensions }}" onChange="{{ set_dimensions }}" style="{{ e_dimensionsStyle }}"></div>
+                <div class="field"><label>Finish / material</label><input class="input" value="{{ e_finish }}" onChange="{{ set_finish }}" style="{{ e_finishStyle }}"></div>
+                <div class="field"><label>Color</label><input class="input" value="{{ e_color }}" onChange="{{ set_color }}" style="{{ e_colorStyle }}"></div>
                 <div class="field" style="grid-column: span 2;"><label>Notes</label><input class="input" value="{{ e_notes }}" onChange="{{ set_notes }}"></div>
                 <div class="field" style="grid-column: span 3;"><label>Tags</label>
                   <div style="display: flex; flex-wrap: wrap; gap: 7px; align-items: center;">
@@ -1340,6 +1347,23 @@ class Component extends DCLogic {
   }
 
   /* ---------- catalog ---------- */
+  openCatalogEditor(form) {
+    this.setState({ form, fetching: false, fetchProgress: 0, fetchNotice: '', fetchMissing: [] });
+    setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 0);
+  }
+
+  inferCatalogType(name) {
+    const value = String(name || '').toLowerCase();
+    const types = [
+      ['Sectional', /sectional/], ['Coffee table', /coffee table/], ['Dining table', /dining table/],
+      ['Side table', /side table|end table/], ['Dining chair', /dining chair/], ['Armchair', /armchair|accent chair/],
+      ['Sofa', /sofa|settee/], ['Bed', /\bbed\b/], ['Nightstand', /nightstand|bedside/], ['Rug', /\brug\b/],
+      ['Lighting', /lamp|pendant|chandelier|sconce|lighting/], ['Mirror', /\bmirror\b/], ['Desk', /\bdesk\b/]
+    ];
+    const match = types.find((entry) => entry[1].test(value));
+    return match ? match[0] : '';
+  }
+
   catalogVals(admin) {
     const s = this.state, api = s.api;
     const all = s.catalog || [];
@@ -1369,25 +1393,34 @@ class Component extends DCLogic {
       setFType: (e) => this.setState({ fType: e.target.value }),
       setFStore: (e) => this.setState({ fStore: e.target.value }),
       setSort: (e) => this.setState({ sort: e.target.value }),
-      newPiece: () => this.setState({ form: { name: '', type: 'Sofa', room: 'Any room', retailer: '', url: '', image: '', dimensions: '', finish: '', color: '', price: '', notes: '', tags: '' } }),
+      newPiece: () => this.openCatalogEditor({ name: '', type: 'Sofa', room: 'Any room', retailer: '', url: '', image: '', dimensions: '', finish: '', color: '', price: '', notes: '', tags: '' }),
       catalog: list.map((c) => ({
         name: c.name, retailer: c.retailer || '—', room: roomsOf(c).join(' · ') || '—', type: c.type || '—',
         roomPills: roomsOf(c), tagPills: (c.tags || []),
         image: c.image || PLACEHOLDER,
         spec: [c.dimensions, c.color].filter(Boolean).join(' · ') || ' ',
         price: this.money(c.price),
-        edit: () => this.setState({ form: { ...c, price: c.price == null ? '' : String(c.price), tags: (c.tags || []).join(', ') } }),
+        edit: () => this.openCatalogEditor({ ...c, price: c.price == null ? '' : String(c.price), tags: (c.tags || []).join(', ') }),
       })),
       editing: !!s.form,
     };
 
     if (s.form) {
       const f = s.form;
-      const set = (k) => (e) => this.setState({ form: { ...this.state.form, [k]: e.target.value } });
+      const pending = new Set(s.fetchMissing || []);
+      const manualStyle = (key) => pending.has(key)
+        ? 'border-color: var(--color-accent); background: var(--color-accent-100); box-shadow: 0 0 0 2px rgba(196, 111, 48, .12);'
+        : '';
+      const set = (k) => (e) => this.setState({
+        form: { ...this.state.form, [k]: e.target.value },
+        fetchMissing: (this.state.fetchMissing || []).filter((key) => key !== k)
+      });
       Object.assign(v, {
         editTitle: f.id ? 'Edit piece' : 'New piece',
         e_name: f.name, e_retailer: f.retailer, e_type: f.type, e_price: f.price,
         e_url: f.url, e_dimensions: f.dimensions, e_finish: f.finish, e_color: f.color, e_notes: f.notes,
+        e_nameStyle: manualStyle('name'), e_retailerStyle: manualStyle('retailer'), e_typeStyle: manualStyle('type'),
+        e_priceStyle: manualStyle('price'), e_dimensionsStyle: manualStyle('dimensions'), e_finishStyle: manualStyle('finish'), e_colorStyle: manualStyle('color'),
         e_image: f.image || PLACEHOLDER, e_tagDraft: '',
         roomChips: ((api && api.ROOM_TYPES) || rooms).map((r) => {
           const on = roomsOf(f).includes(r);
@@ -1418,6 +1451,10 @@ class Component extends DCLogic {
         canDelete: !!f.id,
         fetchLabel: s.fetching ? 'Fetching…' : 'Fetch details',
         fetchNotice: s.fetchNotice || '',
+        fetchActive: !!s.fetching,
+        fetchProgress: s.fetchProgress || 0,
+        fetchNoticeDone: !s.fetching && !!s.fetchNotice,
+        fetchMissingText: (s.fetchMissing || []).map((key) => ({ name: 'name', retailer: 'retailer', type: 'type', price: 'retail price', dimensions: 'dimensions', finish: 'finish / material', color: 'color' }[key] || key)).join(', '),
         fetchDetails: () => this.fetchDetails(),
         pickImage: async (e) => {
           const file = e.target.files && e.target.files[0];
@@ -1498,23 +1535,40 @@ class Component extends DCLogic {
   async fetchDetails() {
     const f = this.state.form;
     const url = (f && f.url || '').trim();
-    if (!/^https?:\/\//i.test(url)) return this.setState({ fetchNotice: 'Paste a complete product URL, beginning with https://.' });
-    this.setState({ fetching: true, fetchNotice: 'Reading product details…' });
+    const wanted = ['name', 'retailer', 'type', 'price', 'dimensions', 'finish', 'color'];
+    if (!/^https?:\/\//i.test(url)) return this.setState({
+      fetchNotice: 'Paste a complete product URL, beginning with https://.', fetchMissing: []
+    });
+    const failed = [];
+    this.setState({ fetching: true, fetchProgress: 12, fetchNotice: 'Connecting to the product page…', fetchMissing: [] });
     try {
       let j = null;
       try {
+        this.setState({ fetchProgress: 45, fetchNotice: 'Reading the retailer page…' });
         const res = await fetch(url, { headers: { Accept: 'text/html' } });
         if (res.ok) j = this.productDetailsFromText(await res.text(), url);
-      } catch (e) {}
-      if (!j || (!j.name && !j.price && !j.dimensions)) j = await this.crateAndBarrelDetails(url);
-      if (!j.name && !j.price && !j.dimensions) throw new Error('No readable product details found');
-      this.setState({ fetching: false, fetchNotice: j.price ? 'Details added where available. Review before saving.' : 'Product details added. Confirm the current price before saving.', form: { ...this.state.form,
-        name: this.state.form.name || j.name || '', retailer: this.state.form.retailer || j.retailer || '',
-        dimensions: this.state.form.dimensions || j.dimensions || '', finish: this.state.form.finish || j.finish || '',
-        color: this.state.form.color || j.color || '', image: this.state.form.image || j.image || '',
-        price: this.state.form.price || (j.price == null ? '' : String(j.price)) } });
+      } catch (e) {
+        failed.push('the browser could not access this retailer page');
+      }
+      if (!j || (!j.name && !j.price && !j.dimensions)) {
+        this.setState({ fetchProgress: 74, fetchNotice: 'Checking available product data…' });
+        try { j = await this.crateAndBarrelDetails(url); }
+        catch (e) { failed.push('no compatible product data was available'); }
+      }
+      if (!j || (!j.name && !j.price && !j.dimensions)) throw new Error('No readable product details found');
+      const details = { ...j, type: j.type || this.inferCatalogType(j.name) };
+      const missing = wanted.filter((key) => !details[key]);
+      const form = { ...this.state.form,
+        name: this.state.form.name || details.name || '', retailer: this.state.form.retailer || details.retailer || '',
+        type: details.type || this.state.form.type || '', dimensions: this.state.form.dimensions || details.dimensions || '',
+        finish: this.state.form.finish || details.finish || '', color: this.state.form.color || details.color || '',
+        image: this.state.form.image || details.image || '',
+        price: this.state.form.price || (details.price == null ? '' : String(details.price)) };
+      this.setState({ fetching: false, fetchProgress: 100, fetchMissing: missing,
+        fetchNotice: missing.length ? 'Details added. Some information still needs your review.' : 'All available product details were added. Review before saving.', form });
     } catch (e) {
-      this.setState({ fetching: false, fetchNotice: 'Could not read this retailer page automatically. Add the product details manually and save them.' });
+      this.setState({ fetching: false, fetchProgress: 0, fetchMissing: wanted,
+        fetchNotice: 'Automatic fetch could not finish: ' + (failed[0] || 'this retailer did not provide readable product data') + '. Add the highlighted details manually.' });
     }
   }
 
