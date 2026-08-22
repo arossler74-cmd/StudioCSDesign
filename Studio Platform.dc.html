@@ -455,15 +455,20 @@
                   </div>
                 </div>
                 <div class="field" style="grid-column: span 3;"><label>Photo</label>
-                  <div style="display: flex; align-items: center; gap: 14px;">
-                    <div tabindex="0" onPaste="{{ pasteImage }}" title="Click here and press Ctrl+V / ⌘V to paste an image" style="width: 76px; height: 76px; border-radius: var(--radius-md); overflow: hidden; background: var(--color-neutral-100); flex: none; outline: 2px dashed var(--color-neutral-300); outline-offset: 3px; cursor: copy;">
+                  <div style="display: flex; align-items: flex-start; gap: 16px;">
+                    <div tabindex="0" onPaste="{{ pasteImage }}" title="Click here and press Ctrl+V / ⌘V to paste an image" style="width: 96px; height: 96px; border-radius: var(--radius-md); overflow: hidden; background: var(--color-neutral-100); flex: none; outline: 2px dashed {{ imageOutline }}; outline-offset: 3px; cursor: copy; box-shadow: var(--shadow-md); transition: outline-color .18s ease;">
                       <img src="assets/piece-placeholder.png" data-img="{{ e_image }}" alt="" style="width: 100%; height: 100%; object-fit: cover;">
                     </div>
-                    <input class="input" type="file" accept="image/*" onChange="{{ pickImage }}" style="padding: 8px 12px;">
-                    <button type="button" onClick="{{ pasteImage }}" class="btn btn-secondary">{{ pasteLabel }}</button>
+                    <div style="display: flex; flex-direction: column; gap: 10px; padding-top: 2px;">
+                      <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                        <label class="btn btn-secondary" style="cursor: pointer;">{{ fileLabel }}<input type="file" accept="image/*" onChange="{{ pickImage }}" disabled="{{ imageUploading }}" style="display: none;"></label>
+                        <button type="button" onClick="{{ pasteImage }}" class="btn btn-secondary" disabled="{{ imageUploading }}">{{ pasteLabel }}</button>
+                        <sc-if value="{{ hasImage }}"><button type="button" onClick="{{ removeImage }}" class="btn btn-ghost" disabled="{{ imageUploading }}">Remove photo</button></sc-if>
+                      </div>
+                      <div style="font-size: 12.5px; color: var(--color-neutral-600);">Choose a file, use Paste image, or click the preview and press Ctrl+V / ⌘V.</div>
+                      <sc-if value="{{ imageNotice }}"><div style="font-size: 12.5px; color: {{ imageNoticeColor }};">{{ imageNotice }}</div></sc-if>
+                    </div>
                   </div>
-                  <div style="margin-top: 8px; font-size: 12.5px; color: var(--color-neutral-600);">Use Paste image, or click the preview and press Ctrl+V / ⌘V.</div>
-                  <sc-if value="{{ imageNotice }}"><div style="margin-top: 6px; font-size: 12.5px; color: var(--color-neutral-600);">{{ imageNotice }}</div></sc-if>
                 </div>
               </div>
               <div style="display: flex; gap: 10px; margin-top: 20px;">
@@ -1351,7 +1356,7 @@ class Component extends DCLogic {
 
   /* ---------- catalog ---------- */
   openCatalogEditor(form) {
-    this.setState({ form, fetching: false, fetchProgress: 0, fetchNotice: '', fetchMissing: [], imageUploading: false, imageNotice: '' });
+    this.setState({ form, fetching: false, fetchProgress: 0, fetchNotice: '', fetchMissing: [], imageUploading: false, imageNotice: '', imageNoticeKind: 'status' });
     setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 0);
   }
 
@@ -1369,15 +1374,15 @@ class Component extends DCLogic {
 
   async uploadCatalogImage(file) {
     if (!file || !String(file.type || '').startsWith('image/')) {
-      this.setState({ imageNotice: 'The clipboard does not contain an image. Copy an image, then try again.' });
+      this.setState({ imageNotice: 'The clipboard does not contain an image. Copy an image, then try again.', imageNoticeKind: 'error' });
       return;
     }
-    this.setState({ imageUploading: true, imageNotice: 'Uploading image…' });
+    this.setState({ imageUploading: true, imageNotice: 'Uploading image…', imageNoticeKind: 'status' });
     try {
       const url = await this.state.api.uploadFile('catalog', file);
-      this.setState({ form: { ...this.state.form, image: url }, imageUploading: false, imageNotice: 'Photo added.' });
+      this.setState({ form: { ...this.state.form, image: url }, imageUploading: false, imageNotice: 'Photo added.', imageNoticeKind: 'status' });
     } catch (e) {
-      this.setState({ imageUploading: false, imageNotice: 'Could not upload this image. Please try again or choose a file.' });
+      this.setState({ imageUploading: false, imageNotice: 'Could not upload this image. Please try again or choose a file.', imageNoticeKind: 'error' });
     }
   }
 
@@ -1389,10 +1394,10 @@ class Component extends DCLogic {
       return this.uploadCatalogImage(image);
     }
     if (!navigator.clipboard || !navigator.clipboard.read) {
-      this.setState({ imageNotice: 'Clipboard access is unavailable here. Click the preview and press Ctrl+V / ⌘V instead.' });
+      this.setState({ imageNotice: 'Clipboard access is unavailable here. Click the preview and press Ctrl+V / ⌘V instead.', imageNoticeKind: 'error' });
       return;
     }
-    this.setState({ imageNotice: 'Reading image from clipboard…' });
+    this.setState({ imageNotice: 'Reading image from clipboard…', imageNoticeKind: 'status' });
     try {
       const items = await navigator.clipboard.read();
       for (const item of items) {
@@ -1401,10 +1406,14 @@ class Component extends DCLogic {
         const blob = await item.getType(type);
         return this.uploadCatalogImage(new File([blob], 'clipboard-image.' + (type.split('/')[1] || 'png'), { type }));
       }
-      this.setState({ imageNotice: 'The clipboard does not contain an image. Copy an image, then try again.' });
+      this.setState({ imageNotice: 'The clipboard does not contain an image. Copy an image, then try again.', imageNoticeKind: 'error' });
     } catch (e) {
-      this.setState({ imageNotice: 'Clipboard permission was not granted. Click the preview and press Ctrl+V / ⌘V instead.' });
+      this.setState({ imageNotice: 'Clipboard permission was not granted. Click the preview and press Ctrl+V / ⌘V instead.', imageNoticeKind: 'error' });
     }
+  }
+
+  removeCatalogImage() {
+    this.setState({ form: { ...this.state.form, image: '' }, imageNotice: 'Photo removed.', imageNoticeKind: 'status' });
   }
 
   catalogVals(admin) {
@@ -1499,14 +1508,20 @@ class Component extends DCLogic {
         fetchNoticeDone: !s.fetching && !!s.fetchNotice,
         fetchMissingText: (s.fetchMissing || []).map((key) => ({ name: 'name', retailer: 'retailer', type: 'type', price: 'retail price', dimensions: 'dimensions', finish: 'finish / material', color: 'color' }[key] || key)).join(', '),
         fetchDetails: () => this.fetchDetails(),
+        fileLabel: s.imageUploading ? 'Uploading…' : 'Choose file',
         pasteLabel: s.imageUploading ? 'Uploading…' : 'Paste image',
+        imageUploading: !!s.imageUploading,
         imageNotice: s.imageNotice || '',
+        imageNoticeColor: s.imageNoticeKind === 'error' ? 'var(--color-accent-700)' : 'var(--color-neutral-600)',
+        hasImage: !!f.image,
+        imageOutline: f.image ? 'transparent' : 'var(--color-neutral-300)',
         pasteImage: (e) => this.pasteCatalogImage(e),
         pickImage: async (e) => {
           const file = e.target.files && e.target.files[0];
           if (!file) return;
           await this.uploadCatalogImage(file);
         },
+        removeImage: () => this.removeCatalogImage(),
         savePiece: async () => {
           const f2 = this.state.form;
           const rooms = roomsOf(f2);
