@@ -2,7 +2,7 @@
 // Firebase (Auth + Firestore + Storage) when firebase-config.js has real keys; localStorage otherwise.
 // Same API either way, so the app never branches.
 
-const ADMIN_BOOTSTRAP = ['arossler74@gmail.com', 'cybelle@cybellesampaio.com'];
+const ADMIN_BOOTSTRAP = ['arossler74@gmail.com', 'cybellesampaio77@gmail.com'];
 const LS = 'cs-platform-v5';
 const SEED_VERSION = 5;
 const R = 'refs/';
@@ -81,7 +81,7 @@ function seed() {
         name: '86 Residence', client: 'Maya Vander', location: 'Coral Gables, Miami',
         cover: 'assets/floor-plan.png', status: 'in progress', currency: 'USD',
         tagline: 'A home that lives the way you do', scope: 'Five spaces', scopeNote: 'One layout each',
-        address: '5901 SW 86 Street', addressCity: 'Coral Gables, Miami', proposalSyncVersion: '2026-08-maya-concept',
+        address: '5901 SW 86 Street', addressCity: 'Coral Gables, Miami', clientEmail: '', designerEmails: [], proposalSyncVersion: '2026-08-maya-concept',
         members: ['u-admin', 'u-cybelle'],
         createdAt: '2026-05-04T12:00:00.000Z', updatedAt: '2026-08-14T18:22:00.000Z',
         phases: {
@@ -226,6 +226,9 @@ export async function signUpEmail(email, password, name) {
   if (mode !== 'firebase') return localSignIn(email, name);
   const cred = await fb.A.createUserWithEmailAndPassword(fb.auth, email, password);
   if (name) await fb.A.updateProfile(cred.user, { displayName: name });
+  // Client project access is tied to a verified account email. Google accounts
+  // already satisfy this; email/password accounts receive this confirmation.
+  if (!cred.user.emailVerified) await fb.A.sendEmailVerification(cred.user);
   await ensureUserDoc(cred.user);
 }
 export async function resetPassword(email) {
@@ -253,18 +256,22 @@ export async function listProjects(user) {
   let all;
   if (mode === 'firebase') {
     const { collection, getDocs, query, where } = fb.D;
-    // rules reject an unfiltered list for non-admins, so scope the query itself
     const ref = collection(fb.db, 'projects');
+    const email = String((user && user.email) || '').trim().toLowerCase();
     const snap = user && user.role === 'admin'
       ? await getDocs(ref)
-      : await getDocs(query(ref, where('members', 'array-contains', user.id)));
+      : user && user.role === 'designer'
+        ? await getDocs(query(ref, where('designerEmails', 'array-contains', email)))
+        : await getDocs(query(ref, where('clientEmail', '==', email)));
     all = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
     all.sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''));
     return all;
   }
   all = [...readLS().projects];
   all.sort((a, b) => (b.updatedAt || '').localeCompare(a.updatedAt || ''));
-  return user && user.role === 'admin' ? all : all.filter((p) => (p.members || []).includes(user.id));
+  if (user && user.role === 'admin') return all;
+  if (user && user.role === 'designer') return all.filter((p) => (p.designerEmails || []).map((x) => String(x).toLowerCase()).includes(String(user.email || '').toLowerCase()));
+  return all.filter((p) => String(p.clientEmail || '').toLowerCase() === String((user && user.email) || '').toLowerCase());
 }
 
 export async function getProject(id) {
@@ -277,6 +284,8 @@ export async function getProject(id) {
 }
 
 export async function saveProject(p) {
+  if (p && p.clientEmail != null) p.clientEmail = String(p.clientEmail).trim().toLowerCase();
+  if (p && p.designerEmails != null) p.designerEmails = Array.from(new Set((Array.isArray(p.designerEmails) ? p.designerEmails : String(p.designerEmails).split(',')).map((x) => String(x).trim().toLowerCase()).filter(Boolean)));
   p.updatedAt = nowISO();
   if (mode === 'firebase') {
     const { doc, setDoc } = fb.D;
@@ -293,7 +302,11 @@ export async function saveProject(p) {
 // One-time reconciliation for the reference project sent to Maya in August
 // 2026. It is deliberately versioned, so it never overwrites later edits.
 export async function reconcile86Residence(p) {
-  if (!p || p.id !== '86-residence' || p.proposalSyncVersion === '2026-08-maya-concept') return p;
+  if (!p || p.id !== '86-residence') return p;
+  if (p.proposalSyncVersion === '2026-08-maya-concept') {
+    if (Object.prototype.hasOwnProperty.call(p, 'clientEmail') && Array.isArray(p.designerEmails)) return p;
+    return saveProject({ ...p, clientEmail: p.clientEmail || '', designerEmails: Array.isArray(p.designerEmails) ? p.designerEmails : [] });
+  }
   const phase = p.phases || {};
   const fees = {
     lines: [
@@ -342,7 +355,7 @@ export async function createProject(name, client, user, opts) {
   const p = {
     id: (name || 'project').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + uid().slice(0, 4),
     name: name || 'New project', client: client || '', location: o.location || '',
-    tagline: '', scope: '', scopeNote: '', address: '', addressCity: '', clientEmail: '',
+    tagline: '', scope: '', scopeNote: '', address: '', addressCity: '', clientEmail: '', designerEmails: [],
     hero: '', cover: '', startDate: '', status: 'draft', currency: o.currency || 'USD',
     members: [user.id], createdAt: nowISO(), updatedAt: nowISO(),
     phases: {
@@ -521,19 +534,33 @@ export async function setUserRole(id, role, isInvite = false) {
   const s = readLS(); const u = s.users.find((x) => x.id === id); if (u) u.role = role; writeLS(s);
 }
 
-export async function removeUser(id, isInvite = false) {
+export async function removeUser(id, isInvite = false, email = '') {
   if (mode === 'firebase') {
-    const { doc, deleteDoc, collection, getDocs, query, where, updateDoc, arrayRemove } = fb.D;
-    // An active account may be assigned to projects. Revoke those memberships
-    // before deleting its profile, otherwise a cached Auth session could still
-    // satisfy project-member rules.
+    const { doc, deleteDoc, collection, getDocs, updateDoc, arrayRemove } = fb.D;
+    const normalizedEmail = String(email || '').trim().toLowerCase();
+    // Revoke every kind of project assignment before deleting an active
+    // account: legacy UID membership, designer access and the one client slot.
     if (!isInvite) {
-      const assigned = await getDocs(query(collection(fb.db, 'projects'), where('members', 'array-contains', id)));
-      await Promise.all(assigned.docs.map((p) => updateDoc(p.ref, { members: arrayRemove(id) })));
+      const assigned = await getDocs(collection(fb.db, 'projects'));
+      await Promise.all(assigned.docs.map((p) => {
+        const data = p.data(), update = {};
+        if ((data.members || []).includes(id)) update.members = arrayRemove(id);
+        if (normalizedEmail && (data.designerEmails || []).map((x) => String(x).toLowerCase()).includes(normalizedEmail)) update.designerEmails = arrayRemove(normalizedEmail);
+        if (normalizedEmail && String(data.clientEmail || '').toLowerCase() === normalizedEmail) update.clientEmail = '';
+        return Object.keys(update).length ? updateDoc(p.ref, update) : Promise.resolve();
+      }));
     }
     return deleteDoc(doc(fb.db, isInvite ? 'invites' : 'users', id));
   }
-  const s = readLS(); s.users = s.users.filter((x) => x.id !== id); writeLS(s);
+  const s = readLS(), normalizedEmail = String(email || '').trim().toLowerCase();
+  s.users = s.users.filter((x) => x.id !== id);
+  s.projects = (s.projects || []).map((p) => ({
+    ...p,
+    members: (p.members || []).filter((member) => member !== id),
+    designerEmails: (p.designerEmails || []).filter((x) => String(x).toLowerCase() !== normalizedEmail),
+    clientEmail: String(p.clientEmail || '').toLowerCase() === normalizedEmail ? '' : p.clientEmail,
+  }));
+  writeLS(s);
 }
 
 /* ---------------- client share links ---------------- */

@@ -263,7 +263,9 @@
           </button>
           <div class="cs-spacer" style="flex: 1;"></div>
           <button type="button" onClick="{{ goDash }}" class="btn btn-secondary" style="white-space: nowrap; flex: none;">Projects</button>
-          <button type="button" onClick="{{ goCatalog }}" class="btn btn-ghost" style="white-space: nowrap; flex: none;">Library</button>
+          <sc-if value="{{ canUseCatalog }}">
+            <button type="button" onClick="{{ goCatalog }}" class="btn btn-ghost" style="white-space: nowrap; flex: none;">Library</button>
+          </sc-if>
           <sc-if value="{{ isAdmin }}">
             <button type="button" onClick="{{ goStudio }}" class="btn btn-ghost" style="white-space: nowrap; flex: none;">Studio</button>
           </sc-if>
@@ -289,7 +291,9 @@
                 <p style="margin: 6px 0 0; font-size: 13.5px; color: var(--color-accent-800);">{{ loadError }}</p>
               </sc-if>
             </div>
-            <button type="button" onClick="{{ newProject }}" class="btn btn-primary">New project</button>
+            <sc-if value="{{ canCreateProject }}">
+              <button type="button" onClick="{{ newProject }}" class="btn btn-primary">New project</button>
+            </sc-if>
           </div>
 
           <sc-if value="{{ showNew }}" hint-placeholder-val="{{ false }}">
@@ -556,7 +560,8 @@
                 <div style="font-family: var(--font-heading); font-size: 22px; color: var(--color-accent-900); margin-bottom: 16px;">The client</div>
                 <div class="cs-details-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
                   <div class="field"><label>Client name</label><input class="input" value="{{ d_client }}" onChange="{{ setd_client }}" placeholder="Maya Vander"></div>
-                  <div class="field"><label>Email</label><input class="input" value="{{ d_clientEmail }}" onChange="{{ setd_clientEmail }}" placeholder="name@email.com"></div>
+                  <div class="field"><label>Client access email (one client)</label><input class="input" type="email" value="{{ d_clientEmail }}" onChange="{{ setd_clientEmail }}" placeholder="name@email.com"></div>
+                  <div class="field" style="grid-column: span 2;"><label>Designer access</label><input class="input" value="{{ d_designerEmails }}" onChange="{{ setd_designerEmails }}" placeholder="designer@email.com, another@email.com"></div>
                   <div class="field" style="grid-column: span 2;"><label>Address</label><input class="input" value="{{ d_address }}" onChange="{{ setd_address }}" placeholder="5901 SW 86 Street"></div>
                   <div class="field" style="grid-column: span 2;"><label>City / region</label><input class="input" value="{{ d_addressCity }}" onChange="{{ setd_addressCity }}" placeholder="Coral Gables, Miami"></div>
                 </div>
@@ -1084,13 +1089,14 @@ class Component extends DCLogic {
       this._loadErr = { label, code: (e && e.code) || '', msg: (e && e.message) || String(e) };
       return fallback;
     });
+    const studioUser = user.role === 'admin' || user.role === 'designer';
     let [projects, sections, catalog] = await Promise.all([
       settle('projects', api.listProjects(user), []),
-      settle('questionnaire', api.getQuestionnaire(), null),
-      settle('catalog', api.listCatalog(), []),
+      studioUser ? settle('questionnaire', api.getQuestionnaire(), null) : Promise.resolve(null),
+      studioUser ? settle('catalog', api.listCatalog(), []) : Promise.resolve([]),
     ]);
     const reference = projects.find((p) => p.id === '86-residence');
-    if (reference) {
+    if (reference && user.role === 'admin') {
       try {
         const synced = await api.reconcile86Residence(reference);
         projects = projects.map((p) => p.id === synced.id ? synced : p);
@@ -1108,7 +1114,10 @@ class Component extends DCLogic {
 
   async refresh() {
     const { api, user } = this.state;
-    const [projects, catalog] = await Promise.all([api.listProjects(user), api.listCatalog()]);
+    const [projects, catalog] = await Promise.all([
+      api.listProjects(user),
+      user && user.role !== 'client' ? api.listCatalog() : Promise.resolve([]),
+    ]);
     this.setState({ projects, catalog });
   }
 
@@ -1166,6 +1175,8 @@ class Component extends DCLogic {
       userName: u.name || u.email,
       userRole: ({ admin: 'Admin', designer: 'Designer', client: 'Client' }[u.role] || u.role),
       initials: String(u.name || u.email).trim().split(/\s+/).slice(0, 2).map((x) => x[0].toUpperCase()).join(''),
+      canUseCatalog: u.role === 'admin' || u.role === 'designer',
+      canCreateProject: u.role === 'admin',
       out: async () => { await api.signOut(); this.setState({ user: null, proj: null, view: 'dash', fPw: '' }); },
       goDash: () => this.setState({ view: 'dash', proj: null }),
       goCatalog: () => this.setState({ view: 'catalog', form: null }),
@@ -1635,12 +1646,12 @@ class Component extends DCLogic {
       Object.assign(v, {
         d_name: dr.name || '', d_location: dr.location || '', d_tagline: dr.tagline || '',
         d_scope: dr.scope || '', d_scopeNote: dr.scopeNote || '', d_startDate: (dr.startDate || '').slice(0, 10),
-        d_currency: dr.currency || 'USD', d_client: dr.client || '', d_clientEmail: dr.clientEmail || '',
+        d_currency: dr.currency || 'USD', d_client: dr.client || '', d_clientEmail: dr.clientEmail || '', d_designerEmails: (dr.designerEmails || []).join(', '),
         d_address: dr.address || '', d_addressCity: dr.addressCity || '', d_hero: dr.hero || dr.cover || PLACEHOLDER,
         detailsNotice: s.detailsNotice || '',
         setd_name: setd('name'), setd_location: setd('location'), setd_tagline: setd('tagline'),
         setd_scope: setd('scope'), setd_scopeNote: setd('scopeNote'), setd_startDate: setd('startDate'),
-        setd_currency: setd('currency'), setd_client: setd('client'), setd_clientEmail: setd('clientEmail'),
+        setd_currency: setd('currency'), setd_client: setd('client'), setd_clientEmail: setd('clientEmail'), setd_designerEmails: setd('designerEmails'),
         setd_address: setd('address'), setd_addressCity: setd('addressCity'),
         detailsLabel: s.detailsSaving ? 'Saving…' : 'Save details',
         pickHero: async (e) => {
@@ -1664,8 +1675,11 @@ class Component extends DCLogic {
           const d = this.state.details || this.state.proj;
           this.setState({ detailsSaving: true });
           try {
-            const next = await api.saveProject({ ...this.state.proj, ...d });
-            this.setState({ proj: next || { ...this.state.proj, ...d }, details: null, detailsSaving: false, detailsNotice: 'Details saved.' });
+            const clean = { ...this.state.proj, ...d,
+              clientEmail: String(d.clientEmail || '').trim().toLowerCase(),
+              designerEmails: Array.from(new Set((Array.isArray(d.designerEmails) ? d.designerEmails : String(d.designerEmails || '').split(',')).map((x) => String(x).trim().toLowerCase()).filter(Boolean))) };
+            const next = await api.saveProject(clean);
+            this.setState({ proj: next || clean, details: null, detailsSaving: false, detailsNotice: 'Details saved.' });
             await this.refresh();
           } catch (err) {
             this.setState({ detailsSaving: false, detailsNotice: 'Could not save: ' + (err.message || err) });
@@ -1930,7 +1944,7 @@ class Component extends DCLogic {
           const email = s.invEmail.trim().toLowerCase();
           await api.inviteUser(email, s.invRole);
           const subject = encodeURIComponent('You are invited to Cybelle Sampaio Studio');
-          const body = encodeURIComponent('Hello,\n\nYou have been invited to Cybelle Sampaio Studio as a ' + s.invRole + '.\n\nOpen the studio platform and sign in with this email address:\n' + location.href.split('#')[0] + '\n\nCybelle Sampaio Studio');
+          const body = encodeURIComponent('Hello,\n\nYou have been invited to Cybelle Sampaio Studio as a ' + s.invRole + '.\n\nOpen the studio platform and sign in with this email address:\n' + location.href.split('#')[0] + '\n\nIf you create a password, confirm the Firebase verification email before opening your project.\n\nCybelle Sampaio Studio');
           this.setState({ users: await api.listUsers(), invEmail: '', inviteDraft: 'mailto:' + email + '?subject=' + subject + '&body=' + body, inviteMsg: 'Invite recorded. Use “Open email draft” below to send the invitation.' });
         } catch (e) { this.setState({ inviteMsg: 'Could not record this invite: ' + ((e && e.message) || 'permission denied') }); }
       },
@@ -1945,7 +1959,7 @@ class Component extends DCLogic {
             catch (err) { this.setState({ inviteMsg: 'Could not change the role: ' + ((err && err.message) || 'permission denied') }); }
           },
           remove: async () => {
-            try { await api.removeUser(x.id, x.invite); this.setState({ users: await api.listUsers(), inviteMsg: (x.email || x.name) + ' was removed.' }); }
+            try { await api.removeUser(x.id, x.invite, x.email); this.setState({ users: await api.listUsers(), inviteMsg: (x.email || x.name) + ' was removed.' }); }
             catch (err) { this.setState({ inviteMsg: 'Could not remove this person: ' + ((err && err.message) || 'permission denied') }); }
           },
         };

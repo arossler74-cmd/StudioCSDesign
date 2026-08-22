@@ -25,30 +25,58 @@ service cloud.firestore {
         && request.auth.token.email_verified == true
         && request.auth.token.email in [
           'arossler74@gmail.com',
-          'cybelle@cybellesampaio.com'
+          'cybellesampaio77@gmail.com'
         ];
     }
     function isAdmin() { return isBootstrapAdmin() || role() == 'admin'; }
-    function isMember(project) { return isSignedIn() && request.auth.uid in project.members; }
+    function isAssignedDesigner(project) {
+      return isSignedIn()
+        && role() == 'designer'
+        && request.auth.token.email_verified == true
+        && ('designerEmails' in project)
+        && request.auth.token.email in project.designerEmails;
+    }
+    function isProjectClient(project) {
+      return isSignedIn()
+        && role() == 'client'
+        && request.auth.token.email_verified == true
+        && ('clientEmail' in project)
+        && request.auth.token.email == project.clientEmail;
+    }
+    function canReadProject(project) {
+      return isAdmin() || isAssignedDesigner(project) || isProjectClient(project);
+    }
+    function assignmentIsUnchanged() {
+      return !request.resource.data.diff(resource.data).affectedKeys()
+        .hasAny(['members', 'designerEmails', 'clientEmail']);
+    }
 
     match /users/{uid} {
-      allow read: if isSignedIn();
+      // A client must not be able to enumerate the studio team.
+      allow get: if isAdmin() || (isSignedIn() && request.auth.uid == uid);
+      allow list: if isAdmin();
       allow create: if isSignedIn() && request.auth.uid == uid;
       allow update: if isAdmin() || (request.auth.uid == uid && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']));
       allow delete: if isAdmin();
     }
 
     match /invites/{id} {
-      allow read, write: if isAdmin();
+      // An invited person may read only the invite addressed to their verified
+      // email, so their first login can safely receive the assigned role.
+      allow get, list: if isAdmin()
+        || (isSignedIn()
+          && request.auth.token.email_verified == true
+          && request.auth.token.email == resource.data.email);
+      allow create, update, delete: if isAdmin();
     }
 
     match /catalog/{id} {
-      allow read: if isSignedIn();
+      allow read: if isAdmin() || role() == 'designer';
       allow write: if isAdmin();
     }
 
     match /settings/{doc} {
-      allow read: if isSignedIn();
+      allow read: if isAdmin() || role() == 'designer';
       allow write: if isAdmin();
     }
 
@@ -56,8 +84,7 @@ service cloud.firestore {
     // The token is a 16-char random id and is the only way in — nothing here is listable.
     match /shares/{token} {
       allow get: if true;
-      allow list: if isSignedIn();
-      allow write: if isSignedIn();
+      allow list, write: if isAdmin() || role() == 'designer';
 
       // client feedback: write-only for visitors, readable by the studio
       match /reviews/{id} {
@@ -70,16 +97,18 @@ service cloud.firestore {
     }
 
     match /projects/{projectId} {
-      allow get: if isAdmin() || isMember(resource.data);
-      // list queries must be scoped: non-admins query members array-contains their uid
-      allow list: if isAdmin() || (isSignedIn() && request.query.limit <= 200);
-      allow create: if isAdmin() || role() == 'designer';
-      allow update: if isAdmin() || isMember(resource.data);
+      allow get: if canReadProject(resource.data);
+      // Firestore evaluates this per returned document, so the app's queries
+      // must prove either the assigned designer or the one client email.
+      allow list: if isAdmin() || (request.query.limit <= 200 && canReadProject(resource.data));
+      allow create: if isAdmin();
+      // Designers can change the project work, not client/staff assignment.
+      allow update: if isAdmin() || (isAssignedDesigner(resource.data) && assignmentIsUnchanged());
       allow delete: if isAdmin();
 
       match /{sub=**} {
-        allow read: if isAdmin() || isMember(get(/databases/$(database)/documents/projects/$(projectId)).data);
-        allow write: if isAdmin() || (isMember(get(/databases/$(database)/documents/projects/$(projectId)).data) && role() != 'client');
+        allow read: if canReadProject(get(/databases/$(database)/documents/projects/$(projectId)).data);
+        allow write: if isAdmin() || isAssignedDesigner(get(/databases/$(database)/documents/projects/$(projectId)).data);
       }
     }
   }

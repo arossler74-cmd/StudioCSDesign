@@ -12,7 +12,7 @@ service firebase.storage {
         && request.auth.token.email_verified == true
         && request.auth.token.email in [
           'arossler74@gmail.com',
-          'cybelle@cybellesampaio.com'
+          'cybellesampaio77@gmail.com'
         ];
     }
     function isAdmin() {
@@ -22,8 +22,12 @@ service firebase.storage {
           && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin');
     }
     function canWorkOn(projectId) {
-      return signedIn() && (isAdmin()
-        || request.auth.uid in firestore.get(/databases/(default)/documents/projects/$(projectId)).data.members);
+      return signedIn() && firestore.exists(/databases/(default)/documents/projects/$(projectId))
+        && (isAdmin()
+          || request.auth.uid in firestore.get(/databases/(default)/documents/projects/$(projectId)).data.members
+          || (request.auth.token.email_verified == true
+            && ('designerEmails' in firestore.get(/databases/(default)/documents/projects/$(projectId)).data)
+            && request.auth.token.email in firestore.get(/databases/(default)/documents/projects/$(projectId)).data.designerEmails));
     }
     function isImageUpload() {
       return request.resource.size < 10 * 1024 * 1024
