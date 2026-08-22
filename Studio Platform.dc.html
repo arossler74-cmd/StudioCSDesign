@@ -1544,9 +1544,17 @@ class Component extends DCLogic {
     try {
       let j = null;
       try {
-        this.setState({ fetchProgress: 45, fetchNotice: 'Reading the retailer page…' });
-        const res = await fetch(url, { headers: { Accept: 'text/html' } });
-        if (res.ok) j = this.productDetailsFromText(await res.text(), url);
+        j = await this.state.api.fetchProductDetails(url);
+        this.setState({ fetchProgress: 58, fetchNotice: 'Reading the product details…' });
+      } catch (e) {
+        failed.push('the secure reader could not access this retailer page');
+      }
+      try {
+        if (!j) {
+          this.setState({ fetchProgress: 45, fetchNotice: 'Trying the retailer page directly…' });
+          const res = await fetch(url, { headers: { Accept: 'text/html' } });
+          if (res.ok) j = this.productDetailsFromText(await res.text(), url);
+        }
       } catch (e) {
         failed.push('the browser could not access this retailer page');
       }

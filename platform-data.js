@@ -9,6 +9,7 @@ const R = 'refs/';
 
 let mode = 'local';
 let fb = null;
+let productFetchEndpoint = '';
 
 export const isFirebase = () => mode === 'firebase';
 export const bootstrapAdmins = ADMIN_BOOTSTRAP;
@@ -183,6 +184,7 @@ export async function init() {
     ]);
     const a = app.initializeApp(cfg);
     fb = { app: a, auth: auth.getAuth(a), db: db.getFirestore(a), storage: st.getStorage(a), A: auth, D: db, S: st };
+    productFetchEndpoint = 'https://us-west1-' + cfg.projectId + '.cloudfunctions.net/fetchProductDetails';
     mode = 'firebase';
   } catch (e) { console.warn('Firebase unavailable, running local:', e); mode = 'local'; }
   return mode;
@@ -558,6 +560,19 @@ export async function removeUser(id, isInvite = false, email = '') {
     clientEmail: String(p.clientEmail || '').toLowerCase() === normalizedEmail ? '' : p.clientEmail,
   }));
   writeLS(s);
+}
+
+export async function fetchProductDetails(url) {
+  if (mode !== 'firebase' || !fb || !fb.auth.currentUser || !productFetchEndpoint) throw new Error('Product fetch is available after signing in to Firebase.');
+  const token = await fb.auth.currentUser.getIdToken();
+  const response = await fetch(productFetchEndpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+    body: JSON.stringify({ url })
+  });
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(body.error || ('Product reader returned ' + response.status));
+  return body.product || null;
 }
 
 /* ---------------- client share links ---------------- */
