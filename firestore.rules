@@ -17,7 +17,18 @@ service cloud.firestore {
     // written yet rather than simply treating it as unprivileged.
     function hasProfile() { return isSignedIn() && exists(profile()); }
     function role() { return hasProfile() ? get(profile()).data.role : ''; }
-    function isAdmin() { return role() == 'admin'; }
+    // Keep the two studio owners working during an Auth UID/profile migration.
+    // The verified email check is deliberately narrow; everyone else still
+    // needs an admin role on their users/{uid} profile.
+    function isBootstrapAdmin() {
+      return isSignedIn()
+        && request.auth.token.email_verified == true
+        && request.auth.token.email in [
+          'arossler74@gmail.com',
+          'cybelle@cybellesampaio.com'
+        ];
+    }
+    function isAdmin() { return isBootstrapAdmin() || role() == 'admin'; }
     function isMember(project) { return isSignedIn() && request.auth.uid in project.members; }
 
     match /users/{uid} {

@@ -2,7 +2,7 @@
 // Firebase (Auth + Firestore + Storage) when firebase-config.js has real keys; localStorage otherwise.
 // Same API either way, so the app never branches.
 
-const ADMIN_BOOTSTRAP = ['arossler74@gmail.com'];
+const ADMIN_BOOTSTRAP = ['arossler74@gmail.com', 'cybelle@cybellesampaio.com'];
 const LS = 'cs-platform-v5';
 const SEED_VERSION = 5;
 const R = 'refs/';
@@ -513,13 +513,26 @@ export async function inviteUser(email, role, name) {
   const s = readLS(); const u = { id: 'u-' + uid(), ...rec }; s.users.push(u); writeLS(s); return u;
 }
 
-export async function setUserRole(id, role) {
-  if (mode === 'firebase') { const { doc, setDoc } = fb.D; return setDoc(doc(fb.db, 'users', id), { role }, { merge: true }); }
+export async function setUserRole(id, role, isInvite = false) {
+  if (mode === 'firebase') {
+    const { doc, setDoc } = fb.D;
+    return setDoc(doc(fb.db, isInvite ? 'invites' : 'users', id), { role }, { merge: true });
+  }
   const s = readLS(); const u = s.users.find((x) => x.id === id); if (u) u.role = role; writeLS(s);
 }
 
-export async function removeUser(id) {
-  if (mode === 'firebase') { const { doc, deleteDoc } = fb.D; return deleteDoc(doc(fb.db, 'users', id)); }
+export async function removeUser(id, isInvite = false) {
+  if (mode === 'firebase') {
+    const { doc, deleteDoc, collection, getDocs, query, where, updateDoc, arrayRemove } = fb.D;
+    // An active account may be assigned to projects. Revoke those memberships
+    // before deleting its profile, otherwise a cached Auth session could still
+    // satisfy project-member rules.
+    if (!isInvite) {
+      const assigned = await getDocs(query(collection(fb.db, 'projects'), where('members', 'array-contains', id)));
+      await Promise.all(assigned.docs.map((p) => updateDoc(p.ref, { members: arrayRemove(id) })));
+    }
+    return deleteDoc(doc(fb.db, isInvite ? 'invites' : 'users', id));
+  }
   const s = readLS(); s.users = s.users.filter((x) => x.id !== id); writeLS(s);
 }
 

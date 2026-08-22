@@ -429,6 +429,7 @@
                     <input class="input" value="{{ e_url }}" onChange="{{ set_url }}" placeholder="https://" style="flex: 1;">
                     <button type="button" onClick="{{ fetchDetails }}" class="btn btn-secondary">{{ fetchLabel }}</button>
                   </div>
+                  <sc-if value="{{ fetchNotice }}"><div style="margin-top: 7px; font-size: 12.5px; color: var(--color-neutral-600);">{{ fetchNotice }}</div></sc-if>
                 </div>
                 <div class="field"><label>Dimensions</label><input class="input" value="{{ e_dimensions }}" onChange="{{ set_dimensions }}"></div>
                 <div class="field"><label>Finish / material</label><input class="input" value="{{ e_finish }}" onChange="{{ set_finish }}"></div>
@@ -971,10 +972,13 @@
                   <option value="client">Client</option>
                 </select>
               </div>
-              <button type="button" onClick="{{ invite }}" class="btn btn-primary">Send invite</button>
+              <button type="button" onClick="{{ invite }}" class="btn btn-primary">Create invitation</button>
             </div>
             <sc-if value="{{ inviteMsg }}">
               <div style="margin-top: 14px; font-size: 14px; color: var(--color-accent-2-800);">{{ inviteMsg }}</div>
+            </sc-if>
+            <sc-if value="{{ inviteDraft }}">
+              <button type="button" onClick="{{ openInviteDraft }}" class="btn btn-secondary" style="margin-top: 12px;">Open email draft</button>
             </sc-if>
           </div>
           <div class="cs-table-wrap"><table class="table">
@@ -1401,6 +1405,7 @@ class Component extends DCLogic {
         set_color: set('color'), set_notes: set('notes'),
         canDelete: !!f.id,
         fetchLabel: s.fetching ? 'Fetching…' : 'Fetch details',
+        fetchNotice: s.fetchNotice || '',
         fetchDetails: () => this.fetchDetails(),
         pickImage: async (e) => {
           const file = e.target.files && e.target.files[0];
@@ -1428,19 +1433,47 @@ class Component extends DCLogic {
     return v;
   }
 
+  productDetailsFromText(text, url) {
+    const clean = String(text || '').replace(/\r/g, '');
+    const field = (labels) => {
+      const m = clean.match(new RegExp('(?:^|\\n)\\s*(?:' + labels + ')\\s*[:\\-]\\s*([^\\n]{1,180})', 'i'));
+      return m ? m[1].replace(/[*_]/g, '').trim() : '';
+    };
+    const host = (() => { try { return new URL(url).hostname.replace(/^www\./, '').split('.')[0]; } catch (e) { return ''; } })();
+    const heading = clean.match(/^\s*#\s+([^\n#]{2,160})/m);
+    const title = field('title|product name|name') || (heading ? heading[1].replace(/[*_]/g, '').trim() : '');
+    const priceText = field('price|sale price|regular price') || (clean.match(/(?:USD\s*|\$)\s*([0-9]{1,3}(?:,[0-9]{3})*(?:\.[0-9]{2})?)/i) || [])[1] || '';
+    const price = Number(String(priceText).replace(/[^0-9.]/g, ''));
+    return {
+      name: title,
+      retailer: field('retailer|brand|vendor') || (host ? host.charAt(0).toUpperCase() + host.slice(1) : ''),
+      dimensions: field('dimensions?|overall dimensions?|size'),
+      finish: field('finish|material|materials'),
+      color: field('colou?r'),
+      price: Number.isFinite(price) && price > 0 ? price : null
+    };
+  }
+
   async fetchDetails() {
     const f = this.state.form;
     const url = (f && f.url || '').trim();
-    if (!url || !window.claude || !window.claude.complete) return;
-    this.setState({ fetching: true });
+    if (!/^https?:\/\//i.test(url)) return this.setState({ fetchNotice: 'Paste a complete product URL, beginning with https://.' });
+    this.setState({ fetching: true, fetchNotice: 'Reading product details…' });
     try {
-      const out = await window.claude.complete('Return ONLY JSON {"name":string,"retailer":string,"dimensions":string,"finish":string,"color":string,"price":number|null} describing the furniture product at this URL: ' + url);
-      const j = JSON.parse(String(out).replace(/```json|```/g, '').trim());
-      this.setState({ fetching: false, form: { ...this.state.form,
+      // Retail sites normally block direct browser requests. Jina Reader reads
+      // the public product page server-side and returns CORS-safe plain text.
+      const readerUrl = 'https://r.jina.ai/http://' + url.replace(/^https?:\/\//i, '');
+      const res = await fetch(readerUrl, { headers: { Accept: 'text/plain' } });
+      if (!res.ok) throw new Error('Reader returned ' + res.status);
+      const j = this.productDetailsFromText(await res.text(), url);
+      if (!j.name && !j.price && !j.dimensions) throw new Error('No readable product details found');
+      this.setState({ fetching: false, fetchNotice: 'Details added where available. Review before saving.', form: { ...this.state.form,
         name: this.state.form.name || j.name || '', retailer: this.state.form.retailer || j.retailer || '',
         dimensions: this.state.form.dimensions || j.dimensions || '', finish: this.state.form.finish || j.finish || '',
         color: this.state.form.color || j.color || '', price: this.state.form.price || (j.price == null ? '' : String(j.price)) } });
-    } catch (e) { this.setState({ fetching: false }); }
+    } catch (e) {
+      this.setState({ fetching: false, fetchNotice: 'Could not read this retailer page automatically. Add the product details manually and save them.' });
+    }
   }
 
   /* ---------- project ---------- */
@@ -1888,21 +1921,33 @@ class Component extends DCLogic {
   teamVals() {
     const s = this.state, api = s.api, u = s.user;
     return {
-      invEmail: s.invEmail, invRole: s.invRole, inviteMsg: s.inviteMsg,
+      invEmail: s.invEmail, invRole: s.invRole, inviteMsg: s.inviteMsg, inviteDraft: s.inviteDraft,
       setInvEmail: (e) => this.setState({ invEmail: e.target.value }),
       setInvRole: (e) => this.setState({ invRole: e.target.value }),
       invite: async () => {
         if (!/.+@.+\..+/.test(s.invEmail)) return this.setState({ inviteMsg: 'That email does not look right.' });
-        await api.inviteUser(s.invEmail, s.invRole);
-        this.setState({ users: await api.listUsers(), invEmail: '', inviteMsg: 'Invite recorded for ' + s.invEmail + '. They sign in with Google or create a password using that address.' });
+        try {
+          const email = s.invEmail.trim().toLowerCase();
+          await api.inviteUser(email, s.invRole);
+          const subject = encodeURIComponent('You are invited to Cybelle Sampaio Studio');
+          const body = encodeURIComponent('Hello,\n\nYou have been invited to Cybelle Sampaio Studio as a ' + s.invRole + '.\n\nOpen the studio platform and sign in with this email address:\n' + location.href.split('#')[0] + '\n\nCybelle Sampaio Studio');
+          this.setState({ users: await api.listUsers(), invEmail: '', inviteDraft: 'mailto:' + email + '?subject=' + subject + '&body=' + body, inviteMsg: 'Invite recorded. Use “Open email draft” below to send the invitation.' });
+        } catch (e) { this.setState({ inviteMsg: 'Could not record this invite: ' + ((e && e.message) || 'permission denied') }); }
       },
+      openInviteDraft: () => { if (s.inviteDraft) location.href = s.inviteDraft; },
       users: (s.users || []).map((x) => {
         const locked = (api.bootstrapAdmins || []).includes(String(x.email).toLowerCase());
         return {
-          name: x.name || x.email, email: x.email, role: x.role, status: x.status || 'active', locked,
+          name: x.name || x.email, email: x.email, role: x.role, status: x.status || 'active', locked, invite: !!x.invite,
           removable: !locked && x.id !== u.id,
-          setRole: async (e) => { await api.setUserRole(x.id, e.target.value); this.setState({ users: await api.listUsers() }); },
-          remove: async () => { await api.removeUser(x.id); this.setState({ users: await api.listUsers() }); },
+          setRole: async (e) => {
+            try { await api.setUserRole(x.id, e.target.value, x.invite); this.setState({ users: await api.listUsers() }); }
+            catch (err) { this.setState({ inviteMsg: 'Could not change the role: ' + ((err && err.message) || 'permission denied') }); }
+          },
+          remove: async () => {
+            try { await api.removeUser(x.id, x.invite); this.setState({ users: await api.listUsers(), inviteMsg: (x.email || x.name) + ' was removed.' }); }
+            catch (err) { this.setState({ inviteMsg: 'Could not remove this person: ' + ((err && err.message) || 'permission denied') }); }
+          },
         };
       }),
     };
