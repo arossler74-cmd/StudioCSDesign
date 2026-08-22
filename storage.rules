@@ -3,9 +3,23 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
     function signedIn() { return request.auth != null; }
-    function isAdmin() {
+    // Bootstrap studio administrators by their verified Firebase Auth email as
+    // well as their Firestore role.  This keeps Storage usable on the first
+    // login (or after a legacy profile migration) when the Auth UID does not
+    // yet match a users/{uid} record.
+    function isBootstrapAdmin() {
       return signedIn()
-        && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
+        && request.auth.token.email_verified == true
+        && request.auth.token.email in [
+          'arossler74@gmail.com',
+          'cybelle@cybellesampaio.com'
+        ];
+    }
+    function isAdmin() {
+      return isBootstrapAdmin()
+        || (signedIn()
+          && firestore.exists(/databases/(default)/documents/users/$(request.auth.uid))
+          && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin');
     }
     function canWorkOn(projectId) {
       return signedIn() && (isAdmin()
