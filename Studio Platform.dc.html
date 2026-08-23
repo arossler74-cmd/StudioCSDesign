@@ -190,7 +190,7 @@
   <sc-if value="{{ showShare }}">
     <div class="cs-share-page" style="max-width: 1100px; margin: 0 auto; padding: 56px 32px 96px; animation: csFade .4s var(--ease-spring) both;">
       <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 40px;">
-        <img src="assets/cybelle-logo-header.png" alt="Cybelle Sampaio Studio" style="height: 84px; width: auto; display: block;">
+        <img src="assets/cybelle-logo-header.png" alt="Cybelle Sampaio Studio" style="height: 126px; width: auto; display: block;">
       </div>
       <div style="margin-bottom: 40px;">
         <div style="font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--color-accent-700); margin-bottom: 10px;">{{ sharePhaseLabel }} · For {{ shareClient }}</div>
@@ -1238,7 +1238,7 @@ const PHASES = [
   { key: 'design', n: '3', title: 'Design & sourcing', short: 'Design', tagline: 'Plans, renderings, sourcing list', when: 'Weeks 4–6' },
   { key: 'styling', n: '4', title: 'Styling & reveal', short: 'Styling', tagline: 'Delivery, placement, final styling', when: 'By arrangement' },
 ];
-const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review': 'In review', 'done': 'Done' };
+const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review': 'In review', 'done': 'Done', 'answered': 'Feedback received' };
 const TABS = [
   // Details comes first: it is the brief the client report's cover page is
   // built from, so it is filled in before any phase work starts.
@@ -1400,7 +1400,7 @@ class Component extends DCLogic {
 
   openProject(p) {
     this.setState({ proj: p, view: 'proj', tab: 'discovery', answers: p.answers || {}, saved: '', pick: null, inbox: [], qEdit: false, qDraft: null });
-    this.state.api.shareReviews(p).then((inbox) => this.setState({ inbox })).catch(() => {});
+    this.state.api.shareReviews(p).then((inbox) => { this.setState({ inbox }); this.syncDiscoveryStatus(); }).catch(() => {});
   }
 
   async persist(patch) {
@@ -1444,6 +1444,32 @@ class Component extends DCLogic {
       if (!prev || (r.at || '') > (prev.at || '')) out[qid] = { value: r.answer, by: r.by, at: r.at };
     }
     return out;
+  }
+
+  // Keeps the Discovery phase's status/progress (shown on the phase cards and
+  // the dashboard project card) in sync with what's actually answered —
+  // including client answers pulled from share links — without waiting on
+  // the designer to press "Save answers". Marked "answered" (client feedback
+  // received) rather than plain "done" whenever a client answered anything,
+  // since that's a distinct, more useful milestone than the designer having
+  // filled the form in themselves.
+  async syncDiscoveryStatus() {
+    const p = this.state.proj;
+    if (!p) return;
+    const secs = this.questionnaire();
+    const clientAns = this.clientAnswers();
+    const isFilled = (v) => Array.isArray(v) ? v.length : (v || '').toString().trim();
+    let total = 0, done = 0;
+    secs.forEach((sec) => (sec.questions || []).forEach((q) => {
+      total++;
+      if (isFilled((p.answers || {})[q.id]) || clientAns[q.id]) done++;
+    }));
+    const prog = total ? Math.round((done / total) * 100) : 0;
+    const hasClientAnswers = Object.keys(clientAns).length > 0;
+    const status = done === 0 ? 'not-started' : hasClientAnswers ? 'answered' : (prog === 100 ? 'done' : 'in-progress');
+    const cur = (p.phases && p.phases.discovery) || {};
+    if (cur.progress === prog && cur.status === status) return;
+    await this.persist({ phases: { ...p.phases, discovery: { ...cur, progress: prog, status } } });
   }
 
   renderVals() {
@@ -2285,7 +2311,7 @@ class Component extends DCLogic {
       const discoveryShares = (p.shares || []).filter((sh) => (sh.phase || (sh.phases || []).slice(-1)[0]) === 'discovery');
       const clientAns = this.clientAnswers();
       const answeredEntries = Object.values(clientAns);
-      v.refreshClientAnswers = async () => { this.setState({ inbox: await api.shareReviews(p) }); };
+      v.refreshClientAnswers = async () => { this.setState({ inbox: await api.shareReviews(p) }); await this.syncDiscoveryStatus(); };
       if (answeredEntries.length) {
         const latest = answeredEntries.slice().sort((a, b) => (a.at || '').localeCompare(b.at || '')).slice(-1)[0];
         v.discoveryStatus = (latest.by || 'The client') + ' answered ' + answeredEntries.length + ' question' + (answeredEntries.length === 1 ? '' : 's')
@@ -2324,9 +2350,8 @@ class Component extends DCLogic {
       v.answeredLabel = done === 0 ? 'Not answered yet — ' + total + ' questions' : done + ' of ' + total + ' answered';
       v.saveLabel = s.saved || 'Save answers';
       v.saveAnswers = async () => {
-        const prog = total ? Math.round((done / total) * 100) : 0;
-        const phases = { ...p.phases, discovery: { ...(p.phases.discovery || {}), progress: prog, status: prog === 0 ? 'not-started' : prog === 100 ? 'done' : 'in-progress' } };
-        await this.persist({ answers: merged, phases });
+        await this.persist({ answers: merged });
+        await this.syncDiscoveryStatus();
         this.setState({ saved: 'Saved' });
         setTimeout(() => this.setState({ saved: '' }), 1600);
       };
