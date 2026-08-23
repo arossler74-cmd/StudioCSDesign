@@ -44,7 +44,7 @@ export function DEFAULT_QUESTIONNAIRE() {
   return [
     { id: 's1', title: 'Project overview', questions: [
       { id: 'q_scope', label: 'What kind of project is this?', type: 'choice', options: ['Renovation', 'Decorating only', 'Not sure — guide me'] },
-      { id: 'q_spaces', label: 'Spaces included', type: 'multi', options: ['Living room', 'Dining room', 'Primary bedroom', 'Home office', 'Family room', 'Entry / hallway', 'Outdoor / patio', 'Open-concept', 'Guest room', 'Kids room'] },
+      { id: 'q_spaces', label: 'Which spaces would you like us to work on?', type: 'spaces' },
     ] },
     { id: 's2', title: 'Your style', questions: [
       { id: 'q_style', label: 'Your style — pick up to 3', type: 'multi', options: ['Minimalist', 'Modern', 'Classic', 'Bohemian', 'Coastal', 'Cozy / warm', 'Eclectic', 'Help me define it'] },
@@ -364,6 +364,7 @@ export async function createProject(name, client, user, opts) {
       styling: { status: 'not-started', progress: 0, doc: null, note: '' },
     },
     answers: {}, rooms: (o.rooms || []).map(blankRoom), reviews: [], shares: [],
+    questionnaire: DEFAULT_QUESTIONNAIRE(),
   };
   return saveProject(p);
 }
@@ -633,7 +634,7 @@ async function publishShare(project, share) {
   const cat = await listCatalog();
   const find = (id) => cat.find((c) => c.id === id) || {};
   const phase = phaseOf(share);
-  const questionnaire = phase === 'discovery' ? await getQuestionnaire() : [];
+  const questionnaire = phase !== 'discovery' ? [] : (Array.isArray(project.questionnaire) && project.questionnaire.length ? project.questionnaire : await getQuestionnaire());
   const showDocument = phase === 'concept' || phase === 'design';
   const payload = {
     token: share.token, projectId: project.id, projectName: project.name,
@@ -683,7 +684,8 @@ export async function findByShare(token) {
     const sh = (p.shares || []).find((s) => s.token === token);
     if (sh) {
       const phase = phaseOf(sh);
-      return { project: { ...p, questionnaire: phase === 'discovery' ? readLS().questionnaire : [] }, share: { ...sh, phase }, doc: (p.phases[phase] || {}).doc || null };
+      const questionnaire = phase !== 'discovery' ? [] : (Array.isArray(p.questionnaire) && p.questionnaire.length ? p.questionnaire : readLS().questionnaire);
+      return { project: { ...p, questionnaire }, share: { ...sh, phase }, doc: (p.phases[phase] || {}).doc || null };
     }
   }
   return null;

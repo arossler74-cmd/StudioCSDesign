@@ -795,36 +795,87 @@
                   <div style="color: var(--color-neutral-600); font-size: 14px;">{{ answeredLabel }}</div>
                 </div>
                 <div class="cs-inline-actions" style="display: flex; gap: 10px;">
-                  <button type="button" onClick="{{ saveAnswers }}" class="btn btn-primary">{{ saveLabel }}</button>
+                  <sc-if value="{{ qFill }}" hint-placeholder-val="{{ true }}">
+                    <button type="button" onClick="{{ sendToClient }}" class="btn btn-secondary">Send to client</button>
+                    <button type="button" onClick="{{ saveAnswers }}" class="btn btn-primary">{{ saveLabel }}</button>
+                  </sc-if>
+                  <button type="button" onClick="{{ toggleQEdit }}" class="btn btn-ghost">{{ qEditLabel }}</button>
                 </div>
               </div>
-              <div style="display: flex; flex-direction: column; gap: 20px;">
-                <sc-for list="{{ sections }}" as="s" hint-placeholder-count="4">
-                  <div class="card" style="padding: 26px 28px;">
-                    <div style="display: flex; align-items: baseline; gap: 12px; margin-bottom: 18px;">
-                      <span style="font-family: var(--font-heading); color: var(--color-accent); font-size: 15px;">{{ s.n }}</span>
-                      <h3 style="font-family: var(--font-heading); font-size: 22px; margin: 0; color: var(--color-accent-900);">{{ s.title }}</h3>
+
+              <sc-if value="{{ qFill }}" hint-placeholder-val="{{ true }}">
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                  <sc-for list="{{ sections }}" as="s" hint-placeholder-count="4">
+                    <div class="card" style="padding: 26px 28px;">
+                      <div style="display: flex; align-items: baseline; gap: 12px; margin-bottom: 18px;">
+                        <span style="font-family: var(--font-heading); color: var(--color-accent); font-size: 15px;">{{ s.n }}</span>
+                        <h3 style="font-family: var(--font-heading); font-size: 22px; margin: 0; color: var(--color-accent-900);">{{ s.title }}</h3>
+                      </div>
+                      <div style="display: flex; flex-direction: column; gap: 20px;">
+                        <sc-for list="{{ s.questions }}" as="q" hint-placeholder-count="3">
+                          <div style="display: flex; flex-direction: column; gap: 9px;">
+                            <label style="font-size: 14.5px; font-weight: 600; color: var(--color-neutral-800);">{{ q.label }}</label>
+                            <sc-if value="{{ q.isText }}" hint-placeholder-val="{{ true }}">
+                              <textarea class="input" rows="3" value="{{ q.value }}" onChange="{{ q.setValue }}" placeholder="Client's answer" style="resize: vertical; font-family: var(--font-body); border-radius: var(--radius-md);"></textarea>
+                            </sc-if>
+                            <sc-if value="{{ q.isPick }}" hint-placeholder-val="{{ false }}">
+                              <div style="display: flex; flex-wrap: wrap; gap: 9px;">
+                                <sc-for list="{{ q.choices }}" as="o" hint-placeholder-count="4">
+                                  <button type="button" onClick="{{ o.pick }}" class="btn btn-ghost" style="border: 1px solid {{ o.ring }}; background: {{ o.bg }}; color: {{ o.fg }}; padding: 7px 16px; font-size: 13.5px;">{{ o.label }}</button>
+                                </sc-for>
+                              </div>
+                            </sc-if>
+                          </div>
+                        </sc-for>
+                      </div>
                     </div>
-                    <div style="display: flex; flex-direction: column; gap: 20px;">
-                      <sc-for list="{{ s.questions }}" as="q" hint-placeholder-count="3">
-                        <div style="display: flex; flex-direction: column; gap: 9px;">
-                          <label style="font-size: 14.5px; font-weight: 600; color: var(--color-neutral-800);">{{ q.label }}</label>
-                          <sc-if value="{{ q.isText }}" hint-placeholder-val="{{ true }}">
-                            <textarea class="input" rows="3" value="{{ q.value }}" onChange="{{ q.setValue }}" placeholder="Client's answer" style="resize: vertical; font-family: var(--font-body); border-radius: var(--radius-md);"></textarea>
-                          </sc-if>
-                          <sc-if value="{{ q.isPick }}" hint-placeholder-val="{{ false }}">
-                            <div style="display: flex; flex-wrap: wrap; gap: 9px;">
-                              <sc-for list="{{ q.choices }}" as="o" hint-placeholder-count="4">
-                                <button type="button" onClick="{{ o.pick }}" class="btn btn-ghost" style="border: 1px solid {{ o.ring }}; background: {{ o.bg }}; color: {{ o.fg }}; padding: 7px 16px; font-size: 13.5px;">{{ o.label }}</button>
-                              </sc-for>
+                  </sc-for>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ qEdit }}" hint-placeholder-val="{{ false }}">
+                <div class="card" style="padding: 12px 16px; margin-bottom: 18px; font-size: 13.5px; color: var(--color-neutral-600);">
+                  Changes here apply to this project only — the studio's default template is untouched. Any discovery link already sent updates automatically.
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                  <sc-for list="{{ qBuildSections }}" as="sec" hint-placeholder-count="3">
+                    <div class="card" style="padding: 22px 24px;">
+                      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                        <input class="input" value="{{ sec.title }}" onChange="{{ sec.setTitle }}" style="font-family: var(--font-heading); font-size: 19px; max-width: 340px; border: 0; background: transparent; padding: 2px 0;">
+                        <div style="flex: 1;"></div>
+                        <button type="button" onClick="{{ sec.addQuestion }}" class="btn btn-ghost" style="font-size: 13px;">+ Add question</button>
+                        <button type="button" onClick="{{ sec.removeSection }}" class="btn btn-ghost" style="font-size: 13px;">Remove section</button>
+                      </div>
+                      <div style="display: flex; flex-direction: column; gap: 14px;">
+                        <sc-for list="{{ sec.questions }}" as="q" hint-placeholder-count="2">
+                          <div style="border: 1px solid var(--color-neutral-200); border-radius: var(--radius-md); padding: 14px 16px; display: flex; flex-direction: column; gap: 10px;">
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                              <input class="input" value="{{ q.label }}" onChange="{{ q.setLabel }}" placeholder="Question" style="flex: 1;">
+                              <select class="input" value="{{ q.type }}" onChange="{{ q.setType }}" style="max-width: 160px;">
+                                <option value="short">Short answer</option>
+                                <option value="long">Long answer</option>
+                                <option value="choice">Pick one</option>
+                                <option value="multi">Pick many</option>
+                                <option value="spaces">Spaces (rooms)</option>
+                              </select>
+                              <button type="button" onClick="{{ q.remove }}" class="btn btn-ghost" style="font-size: 13px;">×</button>
                             </div>
-                          </sc-if>
-                        </div>
-                      </sc-for>
+                            <sc-if value="{{ q.showOptions }}" hint-placeholder-val="{{ false }}">
+                              <textarea class="input" rows="3" value="{{ q.optionsText }}" onChange="{{ q.setOptions }}" placeholder="One option per line" style="resize: vertical; font-family: var(--font-body);"></textarea>
+                            </sc-if>
+                          </div>
+                        </sc-for>
+                      </div>
                     </div>
-                  </div>
-                </sc-for>
-              </div>
+                  </sc-for>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                  <button type="button" onClick="{{ qAddSection }}" class="btn btn-secondary">+ Add section</button>
+                  <button type="button" onClick="{{ qReset }}" class="btn btn-ghost">Reset to studio template</button>
+                  <div style="flex: 1;"></div>
+                  <button type="button" onClick="{{ qSave }}" class="btn btn-primary">{{ qSaveLabel }}</button>
+                </div>
+              </sc-if>
             </div>
           </sc-if>
 
@@ -983,6 +1034,9 @@
                       </sc-if>
                     </div>
                     <div style="padding: 5px 13px; border-radius: 999px; font-size: 12px; font-weight: 600; color: #fff; background: {{ r.badgeBg }};">{{ r.badge }}</div>
+                    <sc-if value="{{ r.showApplyRooms }}" hint-placeholder-val="{{ false }}">
+                      <button type="button" onClick="{{ r.applyRooms }}" class="btn btn-secondary" style="font-size: 13px;">{{ r.applyRoomsLabel }}</button>
+                    </sc-if>
                     <sc-if value="{{ r.open }}" hint-placeholder-val="{{ true }}">
                       <button type="button" onClick="{{ r.resolve }}" class="btn btn-ghost" style="font-size: 13px;">Mark handled</button>
                     </sc-if>
@@ -1226,7 +1280,7 @@ function findCanonical(value, pool) {
 
 class Component extends DCLogic {
   state = { booting: true, api: null, mode: 'local', user: null, view: 'dash', projects: [], proj: null, catalog: [],
-    tab: 'discovery', answers: {}, saved: '', users: [], sections: null,
+    tab: 'discovery', answers: {}, saved: '', users: [], sections: null, qEdit: false, qDraft: null,
     fEmail: '', fPw: '', fName: '', signup: false, authError: '',
     invEmail: '', invRole: 'designer', inviteMsg: '',
     q: '', fRoom: '', fType: '', fStore: '', sort: 'recent', form: null, fetching: false,
@@ -1334,7 +1388,7 @@ class Component extends DCLogic {
   cat(id) { return (this.state.catalog || []).find((c) => c.id === id) || null; }
 
   openProject(p) {
-    this.setState({ proj: p, view: 'proj', tab: 'discovery', answers: p.answers || {}, saved: '', pick: null, inbox: [] });
+    this.setState({ proj: p, view: 'proj', tab: 'discovery', answers: p.answers || {}, saved: '', pick: null, inbox: [], qEdit: false, qDraft: null });
     this.state.api.shareReviews(p).then((inbox) => this.setState({ inbox })).catch(() => {});
   }
 
@@ -1349,6 +1403,19 @@ class Component extends DCLogic {
 
   async setRooms(rooms) {
     await this.persist({ rooms });
+    try { await this.state.api.refreshShares(this.state.proj); } catch (e) {}
+  }
+
+  // A project's own questionnaire once it has one; the studio-wide template
+  // (loaded at boot) otherwise, so projects created before this existed keep
+  // working with no migration.
+  questionnaire() {
+    const own = this.state.proj && this.state.proj.questionnaire;
+    return (Array.isArray(own) && own.length) ? own : (this.state.sections || []);
+  }
+
+  async setQuestionnaire(sections) {
+    await this.persist({ questionnaire: sections });
     try { await this.state.api.refreshShares(this.state.proj); } catch (e) {}
   }
 
@@ -2179,9 +2246,21 @@ class Component extends DCLogic {
     }
 
     if (v.tabDiscovery) {
-      const secs = s.sections || [];
+      const qEdit = !!s.qEdit;
+      v.qEdit = qEdit;
+      v.qFill = !qEdit;
+      v.qEditLabel = qEdit ? 'Done editing' : 'Edit questionnaire';
+      v.toggleQEdit = () => {
+        if (qEdit) this.setState({ qEdit: false, qDraft: null });
+        else this.setState({ qEdit: true, qDraft: JSON.parse(JSON.stringify(this.questionnaire())) });
+      };
+      v.sendToClient = () => this.setState({ tab: 'sharing', sharePhase: 'discovery' });
+    }
+
+    if (v.tabDiscovery && !s.qEdit) {
+      const secs = this.questionnaire();
       let total = 0, done = 0;
-      secs.forEach((sec) => sec.questions.forEach((q) => { total++; const a = s.answers[q.id]; if (Array.isArray(a) ? a.length : (a || '').trim()) done++; }));
+      secs.forEach((sec) => (sec.questions || []).forEach((q) => { total++; const a = s.answers[q.id]; if (Array.isArray(a) ? a.length : (a || '').trim()) done++; }));
       v.answeredLabel = done === 0 ? 'Not answered yet — ' + total + ' questions' : done + ' of ' + total + ' answered';
       v.saveLabel = s.saved || 'Save answers';
       v.saveAnswers = async () => {
@@ -2193,15 +2272,17 @@ class Component extends DCLogic {
       };
       v.sections = secs.map((sec, i) => ({
         n: String(i + 1).padStart(2, '0'), title: sec.title,
-        questions: sec.questions.map((q) => {
+        questions: (sec.questions || []).map((q) => {
           const val = s.answers[q.id];
-          const isPick = q.type === 'choice' || q.type === 'multi';
+          const isSpaces = q.type === 'spaces';
+          const isPick = q.type === 'choice' || q.type === 'multi' || isSpaces;
+          const optionList = isSpaces ? (api.ROOM_TYPES || []) : (q.options || []);
           return {
             label: q.label, isText: !isPick, isPick,
             value: typeof val === 'string' ? val : '',
             setValue: (e) => this.setState({ answers: { ...this.state.answers, [q.id]: e.target.value } }),
-            choices: (q.options || []).map((o) => {
-              const on = q.type === 'multi' ? (Array.isArray(val) && val.includes(o)) : val === o;
+            choices: optionList.map((o) => {
+              const on = (q.type === 'multi' || isSpaces) ? (Array.isArray(val) && val.includes(o)) : val === o;
               return {
                 label: o,
                 ring: on ? 'var(--color-accent)' : 'var(--color-neutral-300)',
@@ -2210,7 +2291,7 @@ class Component extends DCLogic {
                 pick: () => {
                   const cur = this.state.answers[q.id];
                   let next;
-                  if (q.type === 'multi') {
+                  if (q.type === 'multi' || isSpaces) {
                     const arr = Array.isArray(cur) ? [...cur] : [];
                     const i2 = arr.indexOf(o);
                     if (i2 >= 0) arr.splice(i2, 1); else arr.push(o);
@@ -2223,6 +2304,46 @@ class Component extends DCLogic {
           };
         }),
       }));
+    }
+
+    if (v.tabDiscovery && s.qEdit) {
+      const draft = s.qDraft || [];
+      const setDraft = (next) => this.setState({ qDraft: next });
+      v.qSaveLabel = s.qSaving ? 'Saving…' : 'Save questionnaire';
+      v.qSave = async () => {
+        this.setState({ qSaving: true });
+        await this.setQuestionnaire(this.state.qDraft || []);
+        this.setState({ qSaving: false, qEdit: false, qDraft: null });
+      };
+      v.qReset = () => setDraft(JSON.parse(JSON.stringify(api.DEFAULT_QUESTIONNAIRE())));
+      v.qAddSection = () => setDraft([...draft, { id: 'sec-' + Math.random().toString(36).slice(2, 8), title: 'New section', questions: [] }]);
+      v.qBuildSections = draft.map((sec, si) => {
+        const setSection = (patch) => { const next = draft.slice(); next[si] = { ...sec, ...patch }; setDraft(next); };
+        return {
+          title: sec.title,
+          setTitle: (e) => setSection({ title: e.target.value }),
+          removeSection: () => setDraft(draft.filter((_, i) => i !== si)),
+          addQuestion: () => setSection({ questions: (sec.questions || []).concat([{ id: 'q-' + Math.random().toString(36).slice(2, 8), label: 'New question', type: 'short', options: [] }]) }),
+          questions: (sec.questions || []).map((q, qi) => {
+            const qs = sec.questions || [];
+            const setQ = (patch) => {
+              const next = qs.slice();
+              next[qi] = { ...q, ...patch };
+              setSection({ questions: next });
+            };
+            const type = q.type || 'short';
+            return {
+              label: q.label, type,
+              setLabel: (e) => setQ({ label: e.target.value }),
+              setType: (e) => setQ({ type: e.target.value }),
+              showOptions: type === 'choice' || type === 'multi',
+              optionsText: (q.options || []).join('\n'),
+              setOptions: (e) => setQ({ options: e.target.value.split('\n').map((x) => x.trim()).filter(Boolean) }),
+              remove: () => setSection({ questions: qs.filter((_, i) => i !== qi) }),
+            };
+          }),
+        };
+      });
     }
 
     if (v.tabSelection) {
@@ -2285,11 +2406,20 @@ class Component extends DCLogic {
         this.setState({ inbox: await api.shareReviews(p) });
       };
       v.reviewSub = open ? open + ' open · ' + rs.length + ' total' : rs.length + ' items, all handled';
+      const questionType = (itemId) => {
+        const qid = String(itemId || '').startsWith('question:') ? itemId.slice(9) : null;
+        if (!qid) return null;
+        for (const sec of this.questionnaire()) { const q = (sec.questions || []).find((x) => x.id === qid); if (q) return q.type; }
+        return null;
+      };
       v.reviews = rs.map((r) => {
         const c = this.cat(r.itemId) || {};
         const room = this.rooms().find((x) => x.id === r.roomId);
         const isQuestionnaire = r.kind === 'questionnaire';
         const isMessage = r.kind === 'message';
+        const isSpacesAnswer = isQuestionnaire && questionType(r.itemId) === 'spaces';
+        const spaceNames = isSpacesAnswer ? String(r.answer || '').split(',').map((x) => x.trim()).filter(Boolean) : [];
+        const newSpaces = spaceNames.filter((n) => !this.rooms().some((rm) => rm.name === n));
         return {
           name: isQuestionnaire ? (r.question || 'Questionnaire response') : isMessage ? 'Client note' : (c.name || 'Piece'),
           image: isQuestionnaire || isMessage ? PLACEHOLDER : (c.image || PLACEHOLDER),
@@ -2298,6 +2428,9 @@ class Component extends DCLogic {
           badge: isQuestionnaire ? 'Answered' : isMessage ? 'Note' : r.verdict === 'up' ? 'Loved' : 'Reconsider',
           badgeBg: isQuestionnaire ? 'var(--color-accent-2)' : isMessage ? 'var(--color-accent-700)' : r.verdict === 'up' ? 'var(--color-accent-2)' : 'var(--color-accent-700)',
           dim: r.resolved ? '.55' : '1', open: !r.resolved,
+          showApplyRooms: newSpaces.length > 0,
+          applyRoomsLabel: 'Add ' + newSpaces.length + ' room' + (newSpaces.length === 1 ? '' : 's'),
+          applyRooms: async () => { await this.setRooms([...this.rooms(), ...newSpaces.map((n) => api.blankRoom(n))]); },
           resolve: async () => {
             if ((p.reviews || []).some((x) => x.id === r.id)) { const np = await api.resolveReview(p, r.id); this.setState({ proj: np }); this.refresh(); }
             else this.setState({ inbox: (this.state.inbox || []).map((x) => x.id === r.id ? { ...x, resolved: true } : x) });
@@ -2416,18 +2549,20 @@ class Component extends DCLogic {
       shareQuestionnaire: questionnaire.map((sec) => ({
         title: sec.title,
         questions: (sec.questions || []).map((q) => {
-          const value = answers[q.id] || (q.type === 'multi' ? [] : '');
+          const isSpaces = q.type === 'spaces';
+          const value = answers[q.id] || (q.type === 'multi' || isSpaces ? [] : '');
+          const optionList = isSpaces ? (api.ROOM_TYPES || []) : (q.options || []);
           const pick = (option) => {
-            const next = q.type === 'multi'
+            const next = (q.type === 'multi' || isSpaces)
               ? (value.includes(option) ? value.filter((x) => x !== option) : value.concat(option))
               : (value === option ? '' : option);
             this.setState({ shareAnswers: { ...this.state.shareAnswers, [q.id]: next } });
           };
           return {
             label: q.label, value: Array.isArray(value) ? value.join(', ') : value,
-            isText: q.type === 'long' || q.type === 'short', isPick: q.type === 'choice' || q.type === 'multi',
+            isText: q.type === 'long' || q.type === 'short', isPick: q.type === 'choice' || q.type === 'multi' || isSpaces,
             setValue: (e) => this.setState({ shareAnswers: { ...this.state.shareAnswers, [q.id]: e.target.value } }),
-            choices: (q.options || []).map((option) => {
+            choices: optionList.map((option) => {
               const on = Array.isArray(value) ? value.includes(option) : value === option;
               return { label: option, pick: () => pick(option), ring: on ? 'var(--color-accent-2)' : 'var(--color-neutral-300)', bg: on ? 'var(--color-accent-2-200)' : 'transparent', fg: on ? 'var(--color-accent-2-900)' : 'var(--color-text)' };
             }),
