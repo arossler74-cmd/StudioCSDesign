@@ -26,10 +26,15 @@ service firebase.storage {
         && firestore.exists(/databases/(default)/documents/users/$(request.auth.uid))
         && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'designer';
     }
+    // isBootstrapAdmin() is checked first and needs no Firestore lookup at
+    // all, so the two studio owners are never at the mercy of the
+    // Storage-to-Firestore cross-service read below (that call has proven
+    // unreliable in this project — it denied a real bootstrap admin outright).
     function canWorkOn(projectId) {
-      return signedIn() && firestore.exists(/databases/(default)/documents/projects/$(projectId))
-        && (isAdmin() || isDesigner()
-          || request.auth.uid in firestore.get(/databases/(default)/documents/projects/$(projectId)).data.members);
+      return isBootstrapAdmin()
+        || (signedIn() && firestore.exists(/databases/(default)/documents/projects/$(projectId))
+          && (isAdmin() || isDesigner()
+            || request.auth.uid in firestore.get(/databases/(default)/documents/projects/$(projectId)).data.members));
     }
     function isImageUpload() {
       return request.resource.size < 10 * 1024 * 1024

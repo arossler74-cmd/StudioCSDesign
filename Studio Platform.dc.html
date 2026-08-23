@@ -793,6 +793,12 @@
                 <div>
                   <h2 style="font-family: var(--font-heading); font-size: 32px; margin: 0; color: var(--color-accent-900);">Discovery</h2>
                   <div style="color: var(--color-neutral-600); font-size: 14px;">{{ answeredLabel }}</div>
+                  <sc-if value="{{ qFill }}" hint-placeholder-val="{{ true }}">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                      <span style="font-size: 13px; font-weight: 600; color: var(--color-accent-700);">{{ discoveryStatus }}</span>
+                      <button type="button" onClick="{{ refreshClientAnswers }}" class="btn btn-ghost" style="font-size: 12px; padding: 2px 8px;">Refresh</button>
+                    </div>
+                  </sc-if>
                 </div>
                 <div class="cs-inline-actions" style="display: flex; gap: 10px;">
                   <sc-if value="{{ qFill }}" hint-placeholder-val="{{ true }}">
@@ -824,6 +830,9 @@
                                   <button type="button" onClick="{{ o.pick }}" class="btn btn-ghost" style="border: 1px solid {{ o.ring }}; background: {{ o.bg }}; color: {{ o.fg }}; padding: 7px 16px; font-size: 13.5px;">{{ o.label }}</button>
                                 </sc-for>
                               </div>
+                            </sc-if>
+                            <sc-if value="{{ q.hasClientAnswer }}" hint-placeholder-val="{{ false }}">
+                              <div style="font-size: 12.5px; color: var(--color-neutral-700); background: var(--color-neutral-100); padding: 7px 11px; border-radius: var(--radius-sm);">{{ q.clientAnswerLine }}</div>
                             </sc-if>
                           </div>
                         </sc-for>
@@ -1417,6 +1426,22 @@ class Component extends DCLogic {
   async setQuestionnaire(sections) {
     await this.persist({ questionnaire: sections });
     try { await this.state.api.refreshShares(this.state.proj); } catch (e) {}
+  }
+
+  // Latest client-submitted answer per question id, from both the project's
+  // own reviews and whatever's been pulled from active share links —
+  // whichever arrived most recently wins if a client answered more than once.
+  clientAnswers() {
+    const p = this.state.proj;
+    const rs = [...((p && p.reviews) || []), ...(this.state.inbox || [])];
+    const out = {};
+    for (const r of rs) {
+      if (r.kind !== 'questionnaire' || !r.itemId || !r.itemId.startsWith('question:')) continue;
+      const qid = r.itemId.slice(9);
+      const prev = out[qid];
+      if (!prev || (r.at || '') > (prev.at || '')) out[qid] = { value: r.answer, by: r.by, at: r.at };
+    }
+    return out;
   }
 
   renderVals() {
@@ -2255,10 +2280,24 @@ class Component extends DCLogic {
         else this.setState({ qEdit: true, qDraft: JSON.parse(JSON.stringify(this.questionnaire())) });
       };
       v.sendToClient = () => this.setState({ tab: 'sharing', sharePhase: 'discovery' });
+      const discoveryShares = (p.shares || []).filter((sh) => (sh.phase || (sh.phases || []).slice(-1)[0]) === 'discovery');
+      const clientAns = this.clientAnswers();
+      const answeredEntries = Object.values(clientAns);
+      v.refreshClientAnswers = async () => { this.setState({ inbox: await api.shareReviews(p) }); };
+      if (answeredEntries.length) {
+        const latest = answeredEntries.slice().sort((a, b) => (a.at || '').localeCompare(b.at || '')).slice(-1)[0];
+        v.discoveryStatus = (latest.by || 'The client') + ' answered ' + answeredEntries.length + ' question' + (answeredEntries.length === 1 ? '' : 's')
+          + (latest.at ? ' · ' + new Date(latest.at).toLocaleDateString('en-US') : '');
+      } else if (discoveryShares.length) {
+        v.discoveryStatus = 'Sent to ' + (discoveryShares[discoveryShares.length - 1].clientName || 'the client') + ' — waiting on their answers';
+      } else {
+        v.discoveryStatus = 'Not sent to the client yet';
+      }
     }
 
     if (v.tabDiscovery && !s.qEdit) {
       const secs = this.questionnaire();
+      const clientAns = this.clientAnswers();
       let total = 0, done = 0;
       secs.forEach((sec) => (sec.questions || []).forEach((q) => { total++; const a = s.answers[q.id]; if (Array.isArray(a) ? a.length : (a || '').trim()) done++; }));
       v.answeredLabel = done === 0 ? 'Not answered yet — ' + total + ' questions' : done + ' of ' + total + ' answered';
@@ -2277,8 +2316,11 @@ class Component extends DCLogic {
           const isSpaces = q.type === 'spaces';
           const isPick = q.type === 'choice' || q.type === 'multi' || isSpaces;
           const optionList = isSpaces ? (api.ROOM_TYPES || []) : (q.options || []);
+          const ca = clientAns[q.id];
           return {
             label: q.label, isText: !isPick, isPick,
+            hasClientAnswer: !!ca,
+            clientAnswerLine: ca ? ((ca.by || 'Client') + ' answered: ' + (ca.value || '')) : '',
             value: typeof val === 'string' ? val : '',
             setValue: (e) => this.setState({ answers: { ...this.state.answers, [q.id]: e.target.value } }),
             choices: optionList.map((o) => {
