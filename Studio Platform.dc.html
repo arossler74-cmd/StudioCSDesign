@@ -104,19 +104,20 @@
   .cs-catalog-group + .cs-catalog-group { margin-top: 34px; }
   .cs-catalog-group-header { display: flex; align-items: baseline; gap: 10px; }
   .cs-catalog-group-header h2 { font-family: var(--font-heading); font-size: 24px; margin: 0; color: var(--color-accent-900); }
-  .cs-catalog-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 14px; }
-  .cs-catalog-card { padding: 0; overflow: hidden; transition: transform .16s var(--ease-spring), box-shadow .16s var(--ease-spring); }
+  .cs-catalog-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 18px; }
+  .cs-catalog-card { position: relative; padding: 0; overflow: hidden; transition: transform .16s var(--ease-spring), box-shadow .16s var(--ease-spring); }
   .cs-catalog-card:hover { box-shadow: var(--shadow-sm); }
-  .cs-catalog-card.cs-row-dragging { box-shadow: var(--shadow-lg); cursor: grabbing; }
+  .cs-catalog-card.cs-row-dragging { box-shadow: var(--shadow-lg); }
   .cs-catalog-card.cs-row-drop-target { outline: 2px solid var(--color-accent); outline-offset: -2px; }
-  .cs-catalog-card-photo { position: relative; aspect-ratio: 1 / 1; background: var(--color-neutral-100); }
-  .cs-catalog-card-photo img { width: 100%; height: 100%; object-fit: contain; }
-  .cs-catalog-card-body { padding: 9px 10px 10px; display: flex; flex-direction: column; gap: 3px; }
-  .cs-catalog-card-body .cs-row-title { font-weight: 600; font-size: 13px; line-height: 1.25; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .cs-drag-handle { touch-action: none; cursor: grab; border: 0; background: none; padding: 4px; flex: none; color: var(--color-neutral-400); display: flex; align-items: center; border-radius: 6px; transition: color .15s ease, background-color .15s ease; }
-  .cs-drag-handle:hover { color: var(--color-neutral-600); background: color-mix(in srgb, var(--color-text) 6%, transparent); }
-  .cs-drag-handle:active { cursor: grabbing; color: var(--color-accent-700); }
-  .cs-drag-handle-float { position: absolute; top: 6px; right: 6px; background: color-mix(in srgb, var(--color-surface) 88%, transparent); backdrop-filter: blur(4px); box-shadow: var(--shadow-sm); }
+  /* the whole photo is the drag surface -- a corner icon alone is too small
+     a target once cards are this compact, so it's a visual hint only */
+  .cs-catalog-card-photo { position: relative; aspect-ratio: 1 / 1; background: var(--color-neutral-100); cursor: grab; touch-action: none; }
+  .cs-catalog-card.cs-row-dragging .cs-catalog-card-photo { cursor: grabbing; }
+  .cs-catalog-card-photo img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+  .cs-catalog-card-body { padding: 11px 13px 13px; display: flex; flex-direction: column; gap: 5px; }
+  .cs-catalog-card-body .cs-row-title { font-weight: 600; font-size: 14px; line-height: 1.3; }
+  .cs-drag-handle { touch-action: none; cursor: grab; border: 0; background: none; padding: 4px; flex: none; color: var(--color-neutral-400); display: flex; align-items: center; border-radius: 6px; transition: color .15s ease, background-color .15s ease; pointer-events: none; }
+  .cs-drag-handle-float { position: absolute; top: 7px; right: 7px; background: color-mix(in srgb, var(--color-surface) 88%, transparent); backdrop-filter: blur(4px); box-shadow: var(--shadow-sm); }
 
   /* smart suggestion dropdowns (retailer / tags) */
   .cs-suggest-wrap { position: relative; }
@@ -169,7 +170,7 @@
     .cs-table-wrap table { min-width: 580px; }
     .cs-share-page h1 { font-size: 42px !important; }
     .cs-client-section { padding: 20px !important; }
-    .cs-catalog-cards { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+    .cs-catalog-cards { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
   }
 </style>
 </helmet>
@@ -590,25 +591,30 @@
                 <div class="cs-catalog-cards" data-group-list="{{ g.type }}">
                   <sc-for list="{{ g.items }}" as="c" hint-placeholder-count="4">
                     <div class="card cs-catalog-card" data-row-id="{{ c.id }}">
-                      <div class="cs-catalog-card-photo">
+                      <div class="cs-catalog-card-photo" onPointerDown="{{ c.dragStart }}">
                         <img src="assets/piece-placeholder.png" data-img="{{ c.image }}" alt="">
                         <sc-if value="{{ c.canDrag }}">
-                          <button type="button" class="cs-drag-handle cs-drag-handle-float" onPointerDown="{{ c.dragStart }}" title="Drag to reorder" aria-label="Drag to reorder">
+                          <span class="cs-drag-handle cs-drag-handle-float" title="Drag the photo to reorder">
                             <svg width="12" height="18" viewBox="0 0 12 18" fill="currentColor" aria-hidden="true">
                               <circle cx="3" cy="3" r="1.5"></circle><circle cx="9" cy="3" r="1.5"></circle>
                               <circle cx="3" cy="9" r="1.5"></circle><circle cx="9" cy="9" r="1.5"></circle>
                               <circle cx="3" cy="15" r="1.5"></circle><circle cx="9" cy="15" r="1.5"></circle>
                             </svg>
-                          </button>
+                          </span>
                         </sc-if>
                       </div>
                       <div class="cs-catalog-card-body">
                         <div class="cs-row-title">{{ c.name }}</div>
-                        <div style="font-size: 12px; color: var(--color-neutral-600); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ c.retailer }}</div>
-                        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 2px;">
-                          <span style="font-weight: 600; font-size: 12.5px; color: var(--color-accent-800);">{{ c.price }}</span>
+                        <div style="font-size: 12.5px; color: var(--color-neutral-600);">{{ c.retailer }}</div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 5px;">
+                          <sc-for list="{{ c.roomPills }}" as="r" hint-placeholder-count="1"><span class="tag" style="font-size: 10.5px; padding: 3px 8px;">{{ r }}</span></sc-for>
+                          <sc-for list="{{ c.tagPills }}" as="t" hint-placeholder-count="1"><span class="tag tag-accent" style="font-size: 10.5px; padding: 3px 8px;">{{ t }}</span></sc-for>
+                        </div>
+                        <div style="font-size: 12px; color: var(--color-neutral-500);">{{ c.spec }}</div>
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 3px;">
+                          <span style="font-weight: 600; font-size: 13.5px; color: var(--color-accent-800);">{{ c.price }}</span>
                           <sc-if value="{{ c.canEdit }}">
-                            <button type="button" onClick="{{ c.edit }}" class="btn btn-ghost" style="font-size: 11.5px; padding: 3px 8px;">Edit</button>
+                            <button type="button" onClick="{{ c.edit }}" class="btn btn-ghost" style="font-size: 12px; padding: 3px 9px;">Edit</button>
                           </sc-if>
                         </div>
                       </div>
@@ -1617,7 +1623,7 @@ class Component extends DCLogic {
   // whichever one the pointer ended up closest to.
   startCardDrag(e, id, groupIds) {
     if (e.button !== undefined && e.button !== 0) return;
-    const cardEl = e.currentTarget.closest('[data-row-id]');
+    const cardEl = e.target.closest('[data-row-id]');
     const container = cardEl && cardEl.closest('[data-group-list]');
     if (!cardEl || !container) return;
     e.preventDefault();
@@ -1627,7 +1633,7 @@ class Component extends DCLogic {
       const r = el.getBoundingClientRect();
       return { id: gid, el, cx: r.left + r.width / 2, cy: r.top + r.height / 2 };
     }).filter(Boolean);
-    try { cardEl.setPointerCapture(e.pointerId); } catch (err) {}
+    try { e.target.setPointerCapture(e.pointerId); } catch (err) {}
     this._drag = { id, cardEl, container, groupIds: groupIds.slice(), siblings, startX: e.clientX, startY: e.clientY, hoverId: null };
     cardEl.style.zIndex = '5';
     cardEl.style.boxShadow = 'var(--shadow-lg)';
@@ -1681,12 +1687,15 @@ class Component extends DCLogic {
   };
 
   catalogRowVal(c, groupIds, dragEnabled, admin) {
+    const canDrag = dragEnabled && admin;
     return {
       id: c.id, name: c.name, retailer: c.retailer || '—',
+      roomPills: roomsOf(c), tagPills: (c.tags || []),
+      spec: [c.dimensions, c.color].filter(Boolean).join(' · ') || ' ',
       image: c.image || PLACEHOLDER,
       price: this.money(c.price),
-      canDrag: dragEnabled && admin,
-      dragStart: (e) => this.startCardDrag(e, c.id, groupIds),
+      canDrag,
+      dragStart: (e) => { if (canDrag) this.startCardDrag(e, c.id, groupIds); },
       canEdit: admin,
       edit: () => this.openCatalogEditor({ ...c, price: c.price == null ? '' : String(c.price), tags: (c.tags || []).join(', ') }),
     };
@@ -2342,10 +2351,10 @@ class Component extends DCLogic {
   // center -- direction + distance/velocity at release just decides the vote.
   startReviewDrag(e, setVerdict) {
     if (e.button !== undefined && e.button !== 0) return;
-    const cardEl = e.currentTarget.closest('[data-review-card]');
+    const cardEl = e.target.closest('[data-review-card]');
     if (!cardEl) return;
     e.preventDefault();
-    try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
+    try { e.target.setPointerCapture(e.pointerId); } catch (err) {}
     this._swipe = { cardEl, setVerdict, startX: e.clientX, hintDir: null, history: [[e.clientX, performance.now()]] };
     cardEl.style.transition = 'none';
     cardEl.classList.add('cs-review-dragging');
