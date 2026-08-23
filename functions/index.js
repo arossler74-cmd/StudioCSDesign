@@ -1,5 +1,6 @@
 const { onRequest } = require('firebase-functions/v2/https');
 const { logger } = require('firebase-functions');
+const { defineSecret } = require('firebase-functions/params');
 const { initializeApp } = require('firebase-admin/app');
 const { getAuth } = require('firebase-admin/auth');
 const { getFirestore } = require('firebase-admin/firestore');
@@ -9,6 +10,7 @@ initializeApp();
 
 const MAX_RESPONSE_BYTES = 2 * 1024 * 1024;
 const STUDIO_ADMINS = new Set(['arossler74@gmail.com', 'cybellesampaio77@gmail.com']);
+const openAiApiKey = defineSecret('OPENAI_API_KEY');
 
 function setCors(res) {
   res.set('Access-Control-Allow-Origin', '*');
@@ -146,6 +148,78 @@ function extractProduct(html, pageUrl) {
   };
 }
 
+function responseText(response) {
+  if (typeof response.output_text === 'string') return response.output_text;
+  return (response.output || [])
+    .filter((item) => item && item.type === 'message')
+    .flatMap((item) => item.content || [])
+    .filter((item) => item && item.type === 'output_text')
+    .map((item) => item.text || '')
+    .join('');
+}
+
+// Retailers sometimes deny server requests or return bot-challenge HTML. In
+// that case, use OpenAI's server-side web-search tool to locate public product
+// information. This is deliberately a fallback: direct product metadata is
+// faster, more precise, and does not consume an AI/web-search request.
+async function openAiProductFallback(pageUrl) {
+  const apiKey = openAiApiKey.value();
+  if (!apiKey) return null;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 25000);
+  try {
+    const response = await fetch('https://api.openai.com/v1/responses', {
+      method: 'POST',
+      signal: controller.signal,
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + apiKey },
+      body: JSON.stringify({
+        model: 'gpt-5.4',
+        tools: [{ type: 'web_search_preview', search_context_size: 'medium' }],
+        tool_choice: 'required',
+        store: false,
+        max_output_tokens: 500,
+        text: {
+          format: {
+            type: 'json_schema',
+            name: 'product_details',
+            strict: true,
+            schema: {
+              type: 'object',
+              additionalProperties: false,
+              properties: {
+                found: { type: 'boolean' },
+                name: { type: 'string' },
+                retailer: { type: 'string' },
+                dimensions: { type: 'string' },
+                finish: { type: 'string' },
+                color: { type: 'string' },
+                price: { type: ['number', 'null'] },
+                image: { type: 'string' }
+              },
+              required: ['found', 'name', 'retailer', 'dimensions', 'finish', 'color', 'price', 'image']
+            }
+          }
+        },
+        input: 'Find the product at this exact URL: ' + pageUrl + '\n'
+          + 'Use web search. Return details only when they clearly match this URL or its product SKU. '
+          + 'Do not guess. Use empty strings for unavailable text fields, null for unavailable price, '
+          + 'and found=false when the product cannot be confidently matched. Preserve dimensions and price exactly.'
+      })
+    });
+    if (!response.ok) throw new Error('OpenAI fallback returned HTTP ' + response.status + '.');
+    const result = JSON.parse(responseText(await response.json()));
+    if (!result || !result.found || !result.name) return null;
+    return {
+      name: decode(result.name), retailer: decode(result.retailer), dimensions: decode(result.dimensions),
+      finish: decode(result.finish), color: decode(result.color),
+      price: Number.isFinite(result.price) && result.price > 0 ? result.price : null,
+      image: String(result.image || '')
+    };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 // Crate & Barrel's US storefront runs bot-mitigation that returns HTTP 403 to
 // any server-side request regardless of headers (verified directly — not a
 // solvable header/UA issue). Their public Philippines storefront exposes the
@@ -211,7 +285,7 @@ async function crateAndBarrelFallback(inputUrl) {
   };
 }
 
-exports.fetchProductDetails = onRequest({ region: 'us-west1', timeoutSeconds: 30, memory: '256MiB' }, async (req, res) => {
+exports.fetchProductDetails = onRequest({ region: 'us-west1', timeoutSeconds: 60, memory: '256MiB', secrets: [openAiApiKey] }, async (req, res) => {
   setCors(res);
   if (req.method === 'OPTIONS') return res.status(204).send('');
   if (req.method !== 'POST') return res.status(405).json({ error: 'Use POST.' });
@@ -225,18 +299,23 @@ exports.fetchProductDetails = onRequest({ region: 'us-west1', timeoutSeconds: 30
     if (!(role === 'admin' || role === 'designer' || STUDIO_ADMINS.has(String(user.email || '').toLowerCase()))) {
       return res.status(403).json({ error: 'Only studio users can fetch product details.' });
     }
+    const safeUrl = await publicUrl(inputUrl);
     let product = null;
     let pageError = null;
     try {
-      const page = await fetchPublicPage(inputUrl);
+      const page = await fetchPublicPage(safeUrl.href);
       product = extractProduct(page.html, page.url);
     } catch (error) {
       pageError = error;
     }
     if (!product || !product.name) {
-      const fallback = await crateAndBarrelFallback(inputUrl).catch(() => null);
+      const fallback = await crateAndBarrelFallback(safeUrl.href).catch(() => null);
       if (fallback && fallback.name) product = fallback;
     }
+    if (!product || !product.name) product = await openAiProductFallback(safeUrl.href).catch((error) => {
+      logger.warn('OpenAI product fallback failed', { message: error && error.message });
+      return null;
+    });
     if (!product || !product.name) throw pageError || new Error('No readable product details were found on this page.');
     return res.json({ product });
   } catch (error) {

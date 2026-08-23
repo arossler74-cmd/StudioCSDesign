@@ -1951,30 +1951,17 @@ class Component extends DCLogic {
     if (!/^https?:\/\//i.test(url)) return this.setState({
       fetchNotice: 'Paste a complete product URL, beginning with https://.', fetchMissing: []
     });
-    const failed = [];
     this.setState({ fetching: true, fetchProgress: 12, fetchNotice: 'Connecting to the product page…', fetchMissing: [] });
     try {
-      let j = null;
-      try {
-        j = await this.state.api.fetchProductDetails(url);
-        this.setState({ fetchProgress: 58, fetchNotice: 'Reading the product details…' });
-      } catch (e) {
-        failed.push((e && e.message) || 'the secure reader could not access this retailer page');
-      }
-      try {
-        if (!j) {
-          this.setState({ fetchProgress: 45, fetchNotice: 'Trying the retailer page directly…' });
-          const res = await fetch(url, { headers: { Accept: 'text/html' } });
-          if (res.ok) j = this.productDetailsFromText(await res.text(), url);
-        }
-      } catch (e) {
-        failed.push('the browser could not access this retailer page directly');
-      }
+      // Retailers commonly deny cross-origin browser requests. The authenticated
+      // Cloud Function is intentionally the only reader for product URLs.
+      const j = await this.state.api.fetchProductDetails(url);
+      this.setState({ fetchProgress: 58, fetchNotice: 'Reading the product details…' });
       if (!j || (!j.name && !j.price && !j.dimensions)) throw new Error('No readable product details found');
       this.applyFetchedDetails(j);
     } catch (e) {
       this.setState({ fetching: false, fetchProgress: 0, fetchMissing: wanted,
-        fetchNotice: 'Automatic fetch could not finish: ' + (failed[0] || 'this retailer did not provide readable product data')
+        fetchNotice: 'Automatic fetch could not finish: ' + ((e && e.message) || 'this retailer did not provide readable product data')
           + '. Add the details manually, or open the page yourself and use "Paste the page text instead" below.' });
     }
   }
