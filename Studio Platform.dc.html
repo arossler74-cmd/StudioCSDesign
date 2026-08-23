@@ -99,22 +99,24 @@
   .cs-review-hint-up .cs-review-stamp-up { opacity: 1; transform: scale(1) rotate(-8deg); }
   .cs-review-hint-down .cs-review-stamp-down { opacity: 1; transform: scale(1) rotate(8deg); }
 
-  /* catalog: type sections + draggable rows */
+  /* catalog: type sections + small draggable cards */
   .cs-catalog-group { display: flex; flex-direction: column; gap: 14px; }
   .cs-catalog-group + .cs-catalog-group { margin-top: 34px; }
   .cs-catalog-group-header { display: flex; align-items: baseline; gap: 10px; }
   .cs-catalog-group-header h2 { font-family: var(--font-heading); font-size: 24px; margin: 0; color: var(--color-accent-900); }
-  .cs-catalog-rows { display: flex; flex-direction: column; gap: 10px; }
-  .cs-catalog-row { flex-direction: row; align-items: center; gap: 16px; padding: 12px 16px; transition: transform .16s var(--ease-spring), box-shadow .16s var(--ease-spring); }
-  .cs-catalog-row:hover { box-shadow: var(--shadow-sm); }
-  .cs-catalog-row.cs-row-dragging { box-shadow: var(--shadow-lg); cursor: grabbing; }
+  .cs-catalog-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 14px; }
+  .cs-catalog-card { padding: 0; overflow: hidden; transition: transform .16s var(--ease-spring), box-shadow .16s var(--ease-spring); }
+  .cs-catalog-card:hover { box-shadow: var(--shadow-sm); }
+  .cs-catalog-card.cs-row-dragging { box-shadow: var(--shadow-lg); cursor: grabbing; }
+  .cs-catalog-card.cs-row-drop-target { outline: 2px solid var(--color-accent); outline-offset: -2px; }
+  .cs-catalog-card-photo { position: relative; aspect-ratio: 1 / 1; background: var(--color-neutral-100); }
+  .cs-catalog-card-photo img { width: 100%; height: 100%; object-fit: contain; }
+  .cs-catalog-card-body { padding: 9px 10px 10px; display: flex; flex-direction: column; gap: 3px; }
+  .cs-catalog-card-body .cs-row-title { font-weight: 600; font-size: 13px; line-height: 1.25; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .cs-drag-handle { touch-action: none; cursor: grab; border: 0; background: none; padding: 4px; flex: none; color: var(--color-neutral-400); display: flex; align-items: center; border-radius: 6px; transition: color .15s ease, background-color .15s ease; }
   .cs-drag-handle:hover { color: var(--color-neutral-600); background: color-mix(in srgb, var(--color-text) 6%, transparent); }
   .cs-drag-handle:active { cursor: grabbing; color: var(--color-accent-700); }
-  .cs-catalog-thumb { width: 64px; height: 64px; border-radius: var(--radius-sm); overflow: hidden; background: var(--color-neutral-100); flex: none; }
-  .cs-catalog-thumb img { width: 100%; height: 100%; object-fit: contain; }
-  .cs-catalog-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
-  .cs-catalog-info .cs-row-title { font-weight: 600; font-size: 14.5px; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .cs-drag-handle-float { position: absolute; top: 6px; right: 6px; background: color-mix(in srgb, var(--color-surface) 88%, transparent); backdrop-filter: blur(4px); box-shadow: var(--shadow-sm); }
 
   /* smart suggestion dropdowns (retailer / tags) */
   .cs-suggest-wrap { position: relative; }
@@ -167,8 +169,7 @@
     .cs-table-wrap table { min-width: 580px; }
     .cs-share-page h1 { font-size: 42px !important; }
     .cs-client-section { padding: 20px !important; }
-    .cs-catalog-row { flex-wrap: wrap; }
-    .cs-catalog-info { flex-basis: calc(100% - 96px); }
+    .cs-catalog-cards { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
   }
 </style>
 </helmet>
@@ -586,35 +587,30 @@
                   <div style="flex: 1;"></div>
                   <span style="font-size: 12px; color: var(--color-neutral-500);">{{ g.dragHint }}</span>
                 </div>
-                <div class="cs-catalog-rows" data-group-list="{{ g.type }}">
-                  <sc-for list="{{ g.items }}" as="c" hint-placeholder-count="3">
-                    <div class="card cs-catalog-row" data-row-id="{{ c.id }}">
-                      <sc-if value="{{ c.canDrag }}">
-                        <button type="button" class="cs-drag-handle" onPointerDown="{{ c.dragStart }}" title="Drag to reorder" aria-label="Drag to reorder">
-                          <svg width="12" height="18" viewBox="0 0 12 18" fill="currentColor" aria-hidden="true">
-                            <circle cx="3" cy="3" r="1.5"></circle><circle cx="9" cy="3" r="1.5"></circle>
-                            <circle cx="3" cy="9" r="1.5"></circle><circle cx="9" cy="9" r="1.5"></circle>
-                            <circle cx="3" cy="15" r="1.5"></circle><circle cx="9" cy="15" r="1.5"></circle>
-                          </svg>
-                        </button>
-                      </sc-if>
-                      <div class="cs-catalog-thumb">
+                <div class="cs-catalog-cards" data-group-list="{{ g.type }}">
+                  <sc-for list="{{ g.items }}" as="c" hint-placeholder-count="4">
+                    <div class="card cs-catalog-card" data-row-id="{{ c.id }}">
+                      <div class="cs-catalog-card-photo">
                         <img src="assets/piece-placeholder.png" data-img="{{ c.image }}" alt="">
-                      </div>
-                      <div class="cs-catalog-info">
-                        <div class="cs-row-title">{{ c.name }}</div>
-                        <div style="font-size: 12.5px; color: var(--color-neutral-600);">{{ c.retailer }}</div>
-                        <div style="display: flex; flex-wrap: wrap; gap: 5px;">
-                          <sc-for list="{{ c.roomPills }}" as="r" hint-placeholder-count="2"><span class="tag">{{ r }}</span></sc-for>
-                          <sc-for list="{{ c.tagPills }}" as="t" hint-placeholder-count="1"><span class="tag tag-accent">{{ t }}</span></sc-for>
-                        </div>
-                        <div style="font-size: 12.5px; color: var(--color-neutral-500);">{{ c.spec }}</div>
-                      </div>
-                      <div style="display: flex; align-items: center; gap: 14px; flex: none;">
-                        <span style="font-weight: 600; font-size: 13.5px; color: var(--color-accent-800);">{{ c.price }}</span>
-                        <sc-if value="{{ c.canEdit }}">
-                          <button type="button" onClick="{{ c.edit }}" class="btn btn-ghost" style="font-size: 12.5px; padding: 4px 10px;">Edit</button>
+                        <sc-if value="{{ c.canDrag }}">
+                          <button type="button" class="cs-drag-handle cs-drag-handle-float" onPointerDown="{{ c.dragStart }}" title="Drag to reorder" aria-label="Drag to reorder">
+                            <svg width="12" height="18" viewBox="0 0 12 18" fill="currentColor" aria-hidden="true">
+                              <circle cx="3" cy="3" r="1.5"></circle><circle cx="9" cy="3" r="1.5"></circle>
+                              <circle cx="3" cy="9" r="1.5"></circle><circle cx="9" cy="9" r="1.5"></circle>
+                              <circle cx="3" cy="15" r="1.5"></circle><circle cx="9" cy="15" r="1.5"></circle>
+                            </svg>
+                          </button>
                         </sc-if>
+                      </div>
+                      <div class="cs-catalog-card-body">
+                        <div class="cs-row-title">{{ c.name }}</div>
+                        <div style="font-size: 12px; color: var(--color-neutral-600); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ c.retailer }}</div>
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 2px;">
+                          <span style="font-weight: 600; font-size: 12.5px; color: var(--color-accent-800);">{{ c.price }}</span>
+                          <sc-if value="{{ c.canEdit }}">
+                            <button type="button" onClick="{{ c.edit }}" class="btn btn-ghost" style="font-size: 11.5px; padding: 3px 8px;">Edit</button>
+                          </sc-if>
+                        </div>
                       </div>
                     </div>
                   </sc-for>
@@ -1614,24 +1610,28 @@ class Component extends DCLogic {
     this.setState({ form: { ...this.state.form, image: '' }, imageNotice: 'Photo removed.', imageNoticeKind: 'status' });
   }
 
-  // Pointer-driven reorder within a type section. Runs entirely on the real
-  // DOM (no setState per frame) so the dragged row tracks the pointer at full
-  // speed; only the drop commits state and persists `order` for the section.
+  // Pointer-driven reorder within a type section's card grid. The grid is
+  // 2D, so "reorder" here means swap-with-nearest-card rather than the
+  // insert-and-shift used by a single-column list: cache every sibling's
+  // center point once at drag start, then on drop trade places with
+  // whichever one the pointer ended up closest to.
   startCardDrag(e, id, groupIds) {
     if (e.button !== undefined && e.button !== 0) return;
-    const rowEl = e.currentTarget.closest('[data-row-id]');
-    const container = rowEl && rowEl.closest('[data-group-list]');
-    if (!rowEl || !container) return;
+    const cardEl = e.currentTarget.closest('[data-row-id]');
+    const container = cardEl && cardEl.closest('[data-group-list]');
+    if (!cardEl || !container) return;
     e.preventDefault();
-    const rect = rowEl.getBoundingClientRect();
-    const gap = parseFloat(getComputedStyle(container).rowGap || '10') || 10;
-    const originIndex = groupIds.indexOf(id);
-    this._drag = { id, container, rowEl, orderIds: groupIds.slice(), startY: e.clientY,
-      rowH: rect.height + gap, originIndex, hoverIndex: originIndex };
-    try { rowEl.setPointerCapture(e.pointerId); } catch (err) {}
-    rowEl.style.zIndex = '5';
-    rowEl.style.boxShadow = 'var(--shadow-lg)';
-    rowEl.classList.add('cs-row-dragging');
+    const siblings = groupIds.filter((gid) => gid !== id).map((gid) => {
+      const el = container.querySelector('[data-row-id="' + CSS.escape(gid) + '"]');
+      if (!el) return null;
+      const r = el.getBoundingClientRect();
+      return { id: gid, el, cx: r.left + r.width / 2, cy: r.top + r.height / 2 };
+    }).filter(Boolean);
+    try { cardEl.setPointerCapture(e.pointerId); } catch (err) {}
+    this._drag = { id, cardEl, container, groupIds: groupIds.slice(), siblings, startX: e.clientX, startY: e.clientY, hoverId: null };
+    cardEl.style.zIndex = '5';
+    cardEl.style.boxShadow = 'var(--shadow-lg)';
+    cardEl.classList.add('cs-row-dragging');
     window.addEventListener('pointermove', this._onDragMove);
     window.addEventListener('pointerup', this._onDragEnd);
     window.addEventListener('pointercancel', this._onDragEnd);
@@ -1640,22 +1640,18 @@ class Component extends DCLogic {
   _onDragMove = (e) => {
     const d = this._drag;
     if (!d) return;
-    const deltaY = e.clientY - d.startY;
-    d.rowEl.style.transform = 'translateY(' + deltaY + 'px) scale(1.015)';
-    let newIndex = d.originIndex + Math.round(deltaY / d.rowH);
-    newIndex = Math.max(0, Math.min(d.orderIds.length - 1, newIndex));
-    if (newIndex === d.hoverIndex) return;
-    d.hoverIndex = newIndex;
-    d.orderIds.forEach((otherId, i) => {
-      if (otherId === d.id) return;
-      const el = d.container.querySelector('[data-row-id="' + CSS.escape(otherId) + '"]');
-      if (!el) return;
-      let shift = 0;
-      if (newIndex > d.originIndex && i > d.originIndex && i <= newIndex) shift = -d.rowH;
-      else if (newIndex < d.originIndex && i >= newIndex && i < d.originIndex) shift = d.rowH;
-      el.style.transition = 'transform .18s var(--ease-spring)';
-      el.style.transform = shift ? 'translateY(' + shift + 'px)' : '';
-    });
+    const dx = e.clientX - d.startX, dy = e.clientY - d.startY;
+    d.cardEl.style.transform = 'translate(' + dx + 'px,' + dy + 'px) scale(1.03)';
+    let nearest = null, nearestDist = Infinity;
+    for (const sib of d.siblings) {
+      const dist = Math.hypot(e.clientX - sib.cx, e.clientY - sib.cy);
+      if (dist < nearestDist) { nearestDist = dist; nearest = sib; }
+    }
+    const hoverId = nearest && nearestDist < 90 ? nearest.id : null;
+    if (hoverId === d.hoverId) return;
+    if (d.hoverId) { const prev = d.siblings.find((s) => s.id === d.hoverId); if (prev) prev.el.classList.remove('cs-row-drop-target'); }
+    d.hoverId = hoverId;
+    if (hoverId) nearest.el.classList.add('cs-row-drop-target');
   };
 
   _onDragEnd = async () => {
@@ -1665,19 +1661,18 @@ class Component extends DCLogic {
     window.removeEventListener('pointerup', this._onDragEnd);
     window.removeEventListener('pointercancel', this._onDragEnd);
     this._drag = null;
-    d.orderIds.forEach((otherId) => {
-      const el = d.container.querySelector('[data-row-id="' + CSS.escape(otherId) + '"]');
-      if (!el) return;
-      el.style.transform = ''; el.style.transition = ''; el.style.zIndex = ''; el.style.boxShadow = '';
-      el.classList.remove('cs-row-dragging');
-    });
-    if (d.hoverIndex === d.originIndex) return;
-    const reordered = d.orderIds.slice();
-    const [moved] = reordered.splice(d.originIndex, 1);
-    reordered.splice(d.hoverIndex, 0, moved);
+    d.cardEl.style.transition = 'transform .28s var(--ease-spring)';
+    d.cardEl.style.transform = ''; d.cardEl.style.zIndex = ''; d.cardEl.style.boxShadow = '';
+    d.cardEl.classList.remove('cs-row-dragging');
+    setTimeout(() => { d.cardEl.style.transition = ''; }, 300);
+    d.siblings.forEach((s) => s.el.classList.remove('cs-row-drop-target'));
+    if (!d.hoverId) return;
+    const next = d.groupIds.slice();
+    const originIndex = next.indexOf(d.id), targetIndex = next.indexOf(d.hoverId);
+    [next[originIndex], next[targetIndex]] = [next[targetIndex], next[originIndex]];
     const api = this.state.api;
     const all = this.state.catalog || [];
-    await Promise.all(reordered.map((id, idx) => {
+    await Promise.all(next.map((id, idx) => {
       const item = all.find((c) => c.id === id);
       if (!item || item.order === idx) return null;
       return api.saveCatalogItem({ ...item, order: idx });
@@ -1687,10 +1682,8 @@ class Component extends DCLogic {
 
   catalogRowVal(c, groupIds, dragEnabled, admin) {
     return {
-      id: c.id, name: c.name, retailer: c.retailer || '—', type: c.type || '—',
-      roomPills: roomsOf(c), tagPills: (c.tags || []),
+      id: c.id, name: c.name, retailer: c.retailer || '—',
       image: c.image || PLACEHOLDER,
-      spec: [c.dimensions, c.color].filter(Boolean).join(' · ') || ' ',
       price: this.money(c.price),
       canDrag: dragEnabled && admin,
       dragStart: (e) => this.startCardDrag(e, c.id, groupIds),
@@ -1721,14 +1714,17 @@ class Component extends DCLogic {
     // it only runs against the complete section -- a narrowed search or
     // room/retailer filter could otherwise silently reorder around hidden items.
     const dragEnabled = !s.q && !s.fRoom && !s.fStore;
-    const preferredTypes = (api && api.ITEM_TYPES) || types;
     const byType = new Map();
     list.forEach((c) => {
       const key = c.type || 'Uncategorized';
       if (!byType.has(key)) byType.set(key, []);
       byType.get(key).push(c);
     });
-    const typeKeys = [...preferredTypes.filter((t) => byType.has(t)), ...[...byType.keys()].filter((k) => !preferredTypes.includes(k)).sort()];
+    const typeKeys = [...byType.keys()].sort((a, b) => {
+      if (a === 'Uncategorized') return 1;
+      if (b === 'Uncategorized') return -1;
+      return a.localeCompare(b);
+    });
     const catalogGroups = typeKeys.map((type) => {
       const items = byType.get(type);
       const hasOrder = items.some((c) => Number.isFinite(c.order));
@@ -1739,7 +1735,7 @@ class Component extends DCLogic {
       return {
         type, count: ordered.length, custom: hasOrder,
         canReset: hasOrder && admin,
-        dragHint: dragEnabled ? 'Drag to reorder' : 'Clear search & filters to reorder',
+        dragHint: dragEnabled ? 'Drag onto another piece to swap places' : 'Clear search & filters to reorder',
         resetOrder: async () => {
           await Promise.all(items.map((c) => api.saveCatalogItem({ ...c, order: null })));
           this.setState({ catalog: await api.listCatalog() });
