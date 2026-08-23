@@ -190,7 +190,7 @@
   <sc-if value="{{ showShare }}">
     <div class="cs-share-page" style="max-width: 1100px; margin: 0 auto; padding: 56px 32px 96px; animation: csFade .4s var(--ease-spring) both;">
       <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 40px;">
-        <img src="assets/cybelle-logo-header.png" alt="Cybelle Sampaio Studio" style="height: 56px; width: auto; display: block;">
+        <img src="assets/cybelle-logo-header.png" alt="Cybelle Sampaio Studio" style="height: 84px; width: auto; display: block;">
       </div>
       <div style="margin-bottom: 40px;">
         <div style="font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--color-accent-700); margin-bottom: 10px;">{{ sharePhaseLabel }} · For {{ shareClient }}</div>
@@ -820,9 +820,14 @@
                       <div style="display: flex; flex-direction: column; gap: 20px;">
                         <sc-for list="{{ s.questions }}" as="q" hint-placeholder-count="3">
                           <div style="display: flex; flex-direction: column; gap: 9px;">
-                            <label style="font-size: 14.5px; font-weight: 600; color: var(--color-neutral-800);">{{ q.label }}</label>
+                            <div style="display: flex; align-items: center; gap: 9px;">
+                              <label style="font-size: 14.5px; font-weight: 600; color: var(--color-neutral-800);">{{ q.label }}</label>
+                              <sc-if value="{{ q.showStatusBadge }}" hint-placeholder-val="{{ false }}">
+                                <span style="padding: 2px 9px; border-radius: 999px; font-size: 10.5px; font-weight: 600; color: #fff; background: {{ q.statusBadgeBg }};">{{ q.statusBadge }}</span>
+                              </sc-if>
+                            </div>
                             <sc-if value="{{ q.isText }}" hint-placeholder-val="{{ true }}">
-                              <textarea class="input" rows="3" value="{{ q.value }}" onChange="{{ q.setValue }}" placeholder="Client's answer" style="resize: vertical; font-family: var(--font-body); border-radius: var(--radius-md);"></textarea>
+                              <textarea class="input" rows="3" value="{{ q.value }}" onChange="{{ q.setValue }}" placeholder="Client's answer" style="resize: vertical; font-family: var(--font-body); border-radius: var(--radius-md); {{ q.valueHighlight }}"></textarea>
                             </sc-if>
                             <sc-if value="{{ q.isPick }}" hint-placeholder-val="{{ false }}">
                               <div style="display: flex; flex-wrap: wrap; gap: 9px;">
@@ -830,9 +835,6 @@
                                   <button type="button" onClick="{{ o.pick }}" class="btn btn-ghost" style="border: 1px solid {{ o.ring }}; background: {{ o.bg }}; color: {{ o.fg }}; padding: 7px 16px; font-size: 13.5px;">{{ o.label }}</button>
                                 </sc-for>
                               </div>
-                            </sc-if>
-                            <sc-if value="{{ q.hasClientAnswer }}" hint-placeholder-val="{{ false }}">
-                              <div style="font-size: 12.5px; color: var(--color-neutral-700); background: var(--color-neutral-100); padding: 7px 11px; border-radius: var(--radius-sm);">{{ q.clientAnswerLine }}</div>
                             </sc-if>
                           </div>
                         </sc-for>
@@ -2298,30 +2300,52 @@ class Component extends DCLogic {
     if (v.tabDiscovery && !s.qEdit) {
       const secs = this.questionnaire();
       const clientAns = this.clientAnswers();
+      const isFilled = (v2) => Array.isArray(v2) ? v2.length : (v2 || '').toString().trim();
+      // The designer's own explicit edit always wins; otherwise the client's
+      // answer becomes the value shown right in the form (not a separate
+      // readout) — that's the "record" until the designer changes it.
+      const mergedValue = (q, isSpaces) => {
+        const own = s.answers[q.id];
+        if (isFilled(own)) return own;
+        const ca = clientAns[q.id];
+        if (!ca) return (q.type === 'multi' || isSpaces) ? [] : '';
+        return (q.type === 'multi' || isSpaces)
+          ? String(ca.value || '').split(',').map((x) => x.trim()).filter(Boolean)
+          : (ca.value || '');
+      };
       let total = 0, done = 0;
-      secs.forEach((sec) => (sec.questions || []).forEach((q) => { total++; const a = s.answers[q.id]; if (Array.isArray(a) ? a.length : (a || '').trim()) done++; }));
+      const merged = {};
+      secs.forEach((sec) => (sec.questions || []).forEach((q) => {
+        total++;
+        const v2 = mergedValue(q, q.type === 'spaces');
+        merged[q.id] = v2;
+        if (isFilled(v2)) done++;
+      }));
       v.answeredLabel = done === 0 ? 'Not answered yet — ' + total + ' questions' : done + ' of ' + total + ' answered';
       v.saveLabel = s.saved || 'Save answers';
       v.saveAnswers = async () => {
         const prog = total ? Math.round((done / total) * 100) : 0;
         const phases = { ...p.phases, discovery: { ...(p.phases.discovery || {}), progress: prog, status: prog === 0 ? 'not-started' : prog === 100 ? 'done' : 'in-progress' } };
-        await this.persist({ answers: s.answers, phases });
+        await this.persist({ answers: merged, phases });
         this.setState({ saved: 'Saved' });
         setTimeout(() => this.setState({ saved: '' }), 1600);
       };
       v.sections = secs.map((sec, i) => ({
         n: String(i + 1).padStart(2, '0'), title: sec.title,
         questions: (sec.questions || []).map((q) => {
-          const val = s.answers[q.id];
           const isSpaces = q.type === 'spaces';
           const isPick = q.type === 'choice' || q.type === 'multi' || isSpaces;
           const optionList = isSpaces ? (api.ROOM_TYPES || []) : (q.options || []);
           const ca = clientAns[q.id];
+          const val = merged[q.id];
+          const filled = isFilled(val);
           return {
             label: q.label, isText: !isPick, isPick,
-            hasClientAnswer: !!ca,
-            clientAnswerLine: ca ? ((ca.by || 'Client') + ' answered: ' + (ca.value || '')) : '',
+            showStatusBadge: !!ca || !filled,
+            statusBadge: ca ? (ca.by || 'Client') + ' answered' : 'Needs follow-up',
+            statusBadgeBg: ca ? 'var(--color-accent-2)' : 'var(--color-accent-700)',
             value: typeof val === 'string' ? val : '',
+            valueHighlight: (ca && !isFilled(s.answers[q.id])) ? 'border-color: var(--color-accent-2); background: var(--color-accent-2-200);' : '',
             setValue: (e) => this.setState({ answers: { ...this.state.answers, [q.id]: e.target.value } }),
             choices: optionList.map((o) => {
               const on = (q.type === 'multi' || isSpaces) ? (Array.isArray(val) && val.includes(o)) : val === o;
@@ -2331,7 +2355,7 @@ class Component extends DCLogic {
                 bg: on ? 'var(--color-accent)' : 'transparent',
                 fg: on ? '#fff' : 'var(--color-neutral-800)',
                 pick: () => {
-                  const cur = this.state.answers[q.id];
+                  const cur = val;
                   let next;
                   if (q.type === 'multi' || isSpaces) {
                     const arr = Array.isArray(cur) ? [...cur] : [];
