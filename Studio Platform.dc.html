@@ -44,16 +44,21 @@
   }, true);
 </script>
 <style>
-  :root { --font-heading: 'Cormorant Garamond', serif; --font-body: 'Jost', sans-serif; --radius-sm: 5px; --radius-md: 9px; --radius-lg: 16px; font-variant-numeric: lining-nums tabular-nums; }
+  :root { --font-heading: 'Cormorant Garamond', serif; --font-body: 'Jost', sans-serif; --radius-sm: 5px; --radius-md: 9px; --radius-lg: 16px; font-variant-numeric: lining-nums tabular-nums;
+    --ease-spring: cubic-bezier(.22,1,.36,1); --color-danger: #b3392a; --color-danger-600: #963022; --color-danger-100: #fbe9e6; }
   .btn, .tag { white-space: nowrap; }
   .card { border-radius: var(--radius-md); }
   .btn, .tag, .seg, .input { border-radius: 6px; }
   html, body { margin: 0; padding: 0; background: var(--color-bg, #f5ead8); font-family: 'Jost', sans-serif; }
   h1, h2, h3 { font-weight: 300; letter-spacing: -0.015em; }
+  /* Large display type wants tighter, more negative tracking than mid-size
+     headings -- one flat value looks loose at 44px+ and cramped at 20px. */
+  .cs-h1-display { letter-spacing: -0.022em; }
   .btn, .input, .tag, label, select, textarea, input { font-family: 'Jost', sans-serif; }
   a { color: var(--color-accent-700); text-decoration: none; }
   a:hover { color: var(--color-accent-800); }
   @keyframes csFade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  @keyframes csPop { from { opacity: 0; transform: scale(.94) translateY(6px); } to { opacity: 1; transform: none; } }
   @keyframes csSpin { to { transform: rotate(360deg); } }
   @keyframes csDrift {
     0%   { transform: scale(1.08) translate3d(0, 0, 0); }
@@ -61,10 +66,38 @@
     100% { transform: scale(1.08) translate3d(0, 0, 0); }
   }
   /* response on pointer-down, not release */
-  .btn { transition: transform .16s cubic-bezier(.22,1,.36,1), background-color .18s ease, color .18s ease, box-shadow .16s cubic-bezier(.22,1,.36,1); }
+  .btn { transition: transform .16s var(--ease-spring), background-color .18s ease, color .18s ease, box-shadow .16s var(--ease-spring), border-color .18s ease; }
   .btn:active { transform: scale(.972); }
   .btn-primary:hover, .btn-secondary:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
   .btn-primary:active, .btn-secondary:active { transform: scale(.972) translateY(0); box-shadow: none; }
+  .btn-danger { background: var(--color-danger); color: #fff; }
+  .btn-danger:hover { background: var(--color-danger-600); }
+  .btn-danger:active { background: var(--color-danger-600); }
+
+  /* press/hover feedback for custom clickable elements that aren't .btn */
+  .cs-tappable { cursor: pointer; transition: transform .18s var(--ease-spring), box-shadow .18s var(--ease-spring), border-color .2s ease; }
+  .cs-tappable:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+  .cs-tappable:active { transform: scale(.98) translateY(0); box-shadow: var(--shadow-sm); }
+  button.tag { cursor: pointer; transition: transform .14s var(--ease-spring), background-color .15s ease, color .15s ease; }
+  button.tag:active { transform: scale(.93); }
+  .cs-chip-remove { border: 0; background: none; cursor: pointer; font: inherit; line-height: 1; padding: 3px; margin: -3px; color: inherit; opacity: .65; border-radius: 999px; transition: transform .14s var(--ease-spring), opacity .15s ease, background-color .15s ease; }
+  .cs-chip-remove:hover { opacity: 1; background: color-mix(in srgb, currentColor 14%, transparent); }
+  .cs-chip-remove:active { transform: scale(.85); }
+
+  /* client review flow: swipeable "Love it / Reconsider" cards */
+  .cs-review-card { transition: box-shadow .18s ease, border-color .2s ease; }
+  .cs-review-card.cs-review-dragging { z-index: 5; box-shadow: var(--shadow-lg); }
+  .cs-review-photo { cursor: grab; touch-action: pan-y; }
+  .cs-review-card.cs-review-dragging .cs-review-photo { cursor: grabbing; }
+  .cs-review-stamp {
+    position: absolute; top: 14px; padding: 5px 12px; border-radius: 7px; border: 2px solid currentColor;
+    font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+    opacity: 0; pointer-events: none; transition: opacity .12s ease, transform .12s ease;
+  }
+  .cs-review-stamp-up { left: 14px; color: var(--color-accent-2-700); background: color-mix(in srgb, var(--color-accent-2-200) 70%, white); transform: scale(.85) rotate(-8deg); }
+  .cs-review-stamp-down { right: 14px; color: var(--color-accent-700); background: color-mix(in srgb, var(--color-accent-100) 80%, white); transform: scale(.85) rotate(8deg); }
+  .cs-review-hint-up .cs-review-stamp-up { opacity: 1; transform: scale(1) rotate(-8deg); }
+  .cs-review-hint-down .cs-review-stamp-down { opacity: 1; transform: scale(1) rotate(8deg); }
 
   /* catalog: type sections + draggable rows */
   .cs-catalog-group { display: flex; flex-direction: column; gap: 14px; }
@@ -72,7 +105,7 @@
   .cs-catalog-group-header { display: flex; align-items: baseline; gap: 10px; }
   .cs-catalog-group-header h2 { font-family: var(--font-heading); font-size: 24px; margin: 0; color: var(--color-accent-900); }
   .cs-catalog-rows { display: flex; flex-direction: column; gap: 10px; }
-  .cs-catalog-row { flex-direction: row; align-items: center; gap: 16px; padding: 12px 16px; transition: transform .16s cubic-bezier(.22,1,.36,1), box-shadow .16s cubic-bezier(.22,1,.36,1); }
+  .cs-catalog-row { flex-direction: row; align-items: center; gap: 16px; padding: 12px 16px; transition: transform .16s var(--ease-spring), box-shadow .16s var(--ease-spring); }
   .cs-catalog-row:hover { box-shadow: var(--shadow-sm); }
   .cs-catalog-row.cs-row-dragging { box-shadow: var(--shadow-lg); cursor: grabbing; }
   .cs-drag-handle { touch-action: none; cursor: grab; border: 0; background: none; padding: 4px; flex: none; color: var(--color-neutral-400); display: flex; align-items: center; border-radius: 6px; transition: color .15s ease, background-color .15s ease; }
@@ -85,7 +118,7 @@
 
   /* smart suggestion dropdowns (retailer / tags) */
   .cs-suggest-wrap { position: relative; }
-  .cs-suggest-list { position: absolute; z-index: 20; top: calc(100% + 6px); left: 0; right: 0; background: var(--color-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); padding: 6px; display: flex; flex-direction: column; gap: 2px; max-height: 220px; overflow-y: auto; animation: csFade .14s cubic-bezier(.22,1,.36,1) both; }
+  .cs-suggest-list { position: absolute; z-index: 20; top: calc(100% + 6px); left: 0; right: 0; background: var(--color-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); padding: 6px; display: flex; flex-direction: column; gap: 2px; max-height: 220px; overflow-y: auto; animation: csFade .14s var(--ease-spring) both; }
   .cs-suggest-item { text-align: left; border: 0; background: none; padding: 8px 10px; border-radius: 7px; font: inherit; font-size: 13.5px; color: var(--color-text); cursor: pointer; }
   .cs-suggest-item:hover, .cs-suggest-item.cs-suggest-hi { background: var(--color-accent-100); color: var(--color-accent-800); }
   @media (prefers-reduced-motion: reduce) {
@@ -153,13 +186,13 @@
 
   <!-- ============ client share view ============ -->
   <sc-if value="{{ showShare }}">
-    <div class="cs-share-page" style="max-width: 1100px; margin: 0 auto; padding: 56px 32px 96px; animation: csFade .4s ease both;">
+    <div class="cs-share-page" style="max-width: 1100px; margin: 0 auto; padding: 56px 32px 96px; animation: csFade .4s var(--ease-spring) both;">
       <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 40px;">
         <img src="assets/cybelle-logo-header.png" alt="Cybelle Sampaio Studio" style="height: 38px; width: auto; display: block;">
       </div>
       <div style="margin-bottom: 40px;">
         <div style="font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--color-accent-700); margin-bottom: 10px;">{{ sharePhaseLabel }} · For {{ shareClient }}</div>
-        <h1 style="font-family: var(--font-heading); font-size: 52px; margin: 0 0 8px; color: var(--color-accent-900);">{{ shareProject }}</h1>
+        <h1 class="cs-h1-display" style="font-family: var(--font-heading); font-size: 52px; margin: 0 0 8px; color: var(--color-accent-900);">{{ shareProject }}</h1>
         <p style="margin: 0; max-width: 62ch; color: var(--color-neutral-700); text-wrap: pretty;">{{ shareIntro }}</p>
       </div>
 
@@ -193,14 +226,17 @@
       </sc-if>
 
       <sc-if value="{{ showShareSelection }}"><div style="display: flex; flex-direction: column; gap: 36px;">
+        <p style="margin: -20px 0 0; font-size: 13px; color: var(--color-neutral-600);">Drag a photo left or right to vote, or use the buttons underneath.</p>
         <sc-for list="{{ shareRooms }}" as="room" hint-placeholder-count="2">
           <div>
             <h2 style="font-family: var(--font-heading); font-size: 30px; margin: 0 0 18px; color: var(--color-accent-900);">{{ room.name }}</h2>
             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 18px;">
               <sc-for list="{{ room.items }}" as="it" hint-placeholder-count="4">
-                <div class="card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
-                  <div style="aspect-ratio: 1 / 1; background: var(--color-neutral-100);">
-                    <img src="assets/piece-placeholder.png" data-img="{{ it.image }}" alt="" style="width: 100%; height: 100%; object-fit: cover;">
+                <div class="card cs-review-card" data-review-card style="padding: 0; overflow: hidden; display: flex; flex-direction: column; border: 2px solid {{ it.verdictRing }};">
+                  <div class="cs-review-photo" onPointerDown="{{ it.dragStart }}" style="aspect-ratio: 1 / 1; background: var(--color-neutral-100); position: relative;">
+                    <img src="assets/piece-placeholder.png" data-img="{{ it.image }}" alt="" style="width: 100%; height: 100%; object-fit: cover; pointer-events: none;">
+                    <span class="cs-review-stamp cs-review-stamp-up">Love it</span>
+                    <span class="cs-review-stamp cs-review-stamp-down">Reconsider</span>
                   </div>
                   <div style="padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 10px; flex: 1;">
                     <div>
@@ -240,7 +276,7 @@
         <img src="assets/cybelle-logo-hires.png" alt="Cybelle Sampaio Studio" style="width: 186px; display: block;">
         <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 28px; max-width: 430px;">
         <div style="display: flex; flex-direction: column; gap: 12px;">
-          <h1 style="font-family: var(--font-heading); font-size: 44px; line-height: 1.04; letter-spacing: -0.024em; margin: 2px 0 0; color: var(--color-accent-900);">{{ greeting }}</h1>
+          <h1 class="cs-h1-display" style="font-family: var(--font-heading); font-size: 44px; line-height: 1.04; margin: 2px 0 0; color: var(--color-accent-900);">{{ greeting }}</h1>
         </div>
         <div style="display: flex; flex-direction: column; gap: 14px; max-width: 430px;">
           <button type="button" onClick="{{ google }}" class="btn btn-secondary" style="justify-content: center; align-items: center; gap: 12px; height: 48px;">
@@ -274,7 +310,7 @@
         <video src="assets/hero-studio.mp4" poster="assets/studio-sign.jpg" autoPlay="{{ true }}" muted="{{ true }}" loop="{{ true }}" playsInline="{{ true }}" preload="auto" aria-hidden="true" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 37% 50%;"></video>
         <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(32,30,29,.50) 0%, rgba(32,30,29,.12) 32%, rgba(32,30,29,0) 58%);"></div>
         <div style="position: absolute; left: 0; right: 0; bottom: 46px; display: flex; justify-content: center; padding: 0 40px;">
-          <div style="font-family: var(--font-heading); font-weight: 300; font-size: 40px; line-height: 1.12; letter-spacing: -0.015em; color: #fff; max-width: 17ch; text-align: center; text-wrap: pretty; text-shadow: 0 1px 24px rgba(28,26,24,.45);">A home that lives the way you do</div>
+          <div class="cs-h1-display" style="font-family: var(--font-heading); font-weight: 300; font-size: 40px; line-height: 1.12; color: #fff; max-width: 17ch; text-align: center; text-wrap: pretty; text-shadow: 0 1px 24px rgba(28,26,24,.45);">A home that lives the way you do</div>
         </div>
       </div>
     </div>
@@ -309,10 +345,10 @@
 
       <!-- dashboard -->
       <sc-if value="{{ showDash }}">
-        <div class="cs-page" style="max-width: 1280px; margin: 0 auto; padding: 48px 32px 96px; animation: csFade .4s ease both;">
+        <div class="cs-page" style="max-width: 1280px; margin: 0 auto; padding: 48px 32px 96px; animation: csFade .4s var(--ease-spring) both;">
           <div class="cs-page-header" style="display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 36px;">
             <div>
-              <h1 style="font-family: var(--font-heading); font-size: 44px; margin: 0 0 6px; color: var(--color-accent-900);">Projects</h1>
+              <h1 class="cs-h1-display" style="font-family: var(--font-heading); font-size: 44px; margin: 0 0 6px; color: var(--color-accent-900);">Projects</h1>
               <p style="margin: 0; color: var(--color-neutral-700);">{{ projCount }}</p>
               <sc-if value="{{ loadError }}" hint-placeholder-val="{{ false }}">
                 <p style="margin: 6px 0 0; font-size: 13.5px; color: var(--color-accent-800);">{{ loadError }}</p>
@@ -364,7 +400,7 @@
 
           <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px;">
             <sc-for list="{{ projects }}" as="p" hint-placeholder-count="3">
-              <div class="card elev-sm" style="padding: 0; overflow: hidden; cursor: pointer; transition: transform .28s cubic-bezier(.22,1,.36,1), box-shadow .28s ease;" style-hover="transform: translateY(-3px); box-shadow: var(--shadow-lg);" onClick="{{ p.open }}">
+              <div class="card elev-sm cs-tappable" style="padding: 0; overflow: hidden;" onClick="{{ p.open }}">
                 <div style="aspect-ratio: 4 / 3; background: var(--color-accent-100); position: relative; overflow: hidden;">
                   <img src="assets/piece-placeholder.png" data-img="{{ p.cover }}" alt="" style="width: 100%; height: 100%; object-fit: cover; filter: saturate(.82) contrast(.95);">
                   <div style="position: absolute; top: 12px; left: 12px;"><span class="tag tag-accent">{{ p.status }}</span></div>
@@ -402,10 +438,10 @@
 
       <!-- catalog -->
       <sc-if value="{{ showCatalog }}">
-        <div class="cs-page" style="max-width: 1280px; margin: 0 auto; padding: 48px 32px 96px; animation: csFade .4s ease both;">
+        <div class="cs-page" style="max-width: 1280px; margin: 0 auto; padding: 48px 32px 96px; animation: csFade .4s var(--ease-spring) both;">
           <div class="cs-page-header" style="display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 28px;">
             <div>
-              <h1 style="font-family: var(--font-heading); font-size: 44px; margin: 0 0 6px; color: var(--color-accent-900);">Catalog</h1>
+              <h1 class="cs-h1-display" style="font-family: var(--font-heading); font-size: 44px; margin: 0 0 6px; color: var(--color-accent-900);">Catalog</h1>
               <p style="margin: 0; color: var(--color-neutral-700);">{{ catCount }}</p>
             </div>
             <sc-if value="{{ canEditCatalog }}">
@@ -474,7 +510,7 @@
                   <sc-if value="{{ fetchActive }}">
                     <div style="margin-top: 9px; font-size: 12.5px; color: var(--color-neutral-700);">
                       <div style="display: flex; justify-content: space-between; gap: var(--space-3);"><span>{{ fetchNotice }}</span><strong>{{ fetchProgress }}%</strong></div>
-                      <div style="margin-top: 6px; height: 5px; border-radius: 99px; overflow: hidden; background: var(--color-neutral-200);"><div style="height: 100%; width: {{ fetchProgress }}%; background: var(--color-accent); transition: width .25s ease;"></div></div>
+                      <div style="margin-top: 6px; height: 5px; border-radius: 99px; overflow: hidden; background: var(--color-neutral-200);"><div style="height: 100%; width: {{ fetchProgress }}%; background: var(--color-accent); transition: width .25s var(--ease-spring);"></div></div>
                     </div>
                   </sc-if>
                   <sc-if value="{{ fetchNoticeDone }}"><div style="margin-top: 7px; font-size: 12.5px; color: var(--color-neutral-600);">{{ fetchNotice }}</div></sc-if>
@@ -497,7 +533,7 @@
                   <div class="cs-suggest-wrap">
                     <div style="display: flex; flex-wrap: wrap; gap: 7px; align-items: center;">
                       <sc-for list="{{ tagChips }}" as="t" hint-placeholder-count="2">
-                        <span class="tag tag-accent" style="display: inline-flex; align-items: center; gap: 6px;">{{ t.label }}<button type="button" onClick="{{ t.remove }}" title="Remove" style="border: 0; background: none; cursor: pointer; font: inherit; line-height: 1; padding: 0; color: inherit; opacity: .65;">×</button></span>
+                        <span class="tag tag-accent" style="display: inline-flex; align-items: center; gap: 6px;">{{ t.label }}<button type="button" onClick="{{ t.remove }}" title="Remove" class="cs-chip-remove">×</button></span>
                       </sc-for>
                       <input class="input" value="{{ e_tagDraft }}" onChange="{{ set_tagDraft }}" onKeyDown="{{ addTag }}" onFocus="{{ tagFocus }}" onBlur="{{ tagBlur }}" placeholder="add a tag, then Enter" autocomplete="off" style="width: 200px;">
                     </div>
@@ -594,11 +630,11 @@
 
       <!-- project -->
       <sc-if value="{{ showProj }}">
-        <div class="cs-page" style="max-width: 1280px; margin: 0 auto; padding: 40px 32px 96px; animation: csFade .4s ease both;">
+        <div class="cs-page" style="max-width: 1280px; margin: 0 auto; padding: 40px 32px 96px; animation: csFade .4s var(--ease-spring) both;">
           <button type="button" onClick="{{ goDash }}" class="btn btn-ghost" style="padding: 4px 0; margin-bottom: 18px;">← Projects</button>
           <div class="cs-page-header" style="display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap; margin-bottom: 32px;">
             <div>
-              <h1 style="font-family: var(--font-heading); font-size: 46px; margin: 0 0 6px; color: var(--color-accent-900);">{{ projName }}</h1>
+              <h1 class="cs-h1-display" style="font-family: var(--font-heading); font-size: 46px; margin: 0 0 6px; color: var(--color-accent-900);">{{ projName }}</h1>
               <div style="color: var(--color-neutral-700);">{{ projSub }}</div>
             </div>
             <span class="tag tag-outline">{{ projEdited }}</span>
@@ -606,7 +642,7 @@
 
           <div class="cs-phase-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 36px;">
             <sc-for list="{{ phases }}" as="f" hint-placeholder-count="4">
-              <div class="card" style="padding: 22px; display: flex; flex-direction: column; gap: 14px; border: 2px solid {{ f.ring }}; cursor: pointer; transition: transform .28s cubic-bezier(.22,1,.36,1);" style-hover="transform: translateY(-2px);" onClick="{{ f.select }}">
+              <div class="card cs-tappable" style="padding: 22px; display: flex; flex-direction: column; gap: 14px; border: 2px solid {{ f.ring }};" onClick="{{ f.select }}">
                 <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
                   <div style="width: 32px; height: 32px; border-radius: 999px; background: {{ f.dot }}; color: #fff; display: grid; place-items: center; font-family: var(--font-heading); font-size: 14px;">{{ f.n }}</div>
                   <span class="tag tag-neutral">{{ f.statusLabel }}</span>
@@ -616,7 +652,7 @@
                   <div style="font-size: 13px; color: var(--color-neutral-600); margin-top: 2px;">{{ f.tagline }}</div>
                 </div>
                 <div style="height: 8px; border-radius: 999px; background: var(--color-neutral-200); overflow: hidden;">
-                  <div style="height: 100%; border-radius: 999px; background: {{ f.dot }}; width: {{ f.pct }}; transition: width .5s cubic-bezier(.22,1,.36,1);"></div>
+                  <div style="height: 100%; border-radius: 999px; background: {{ f.dot }}; width: {{ f.pct }}; transition: width .5s var(--ease-spring);"></div>
                 </div>
               </div>
             </sc-for>
@@ -630,7 +666,7 @@
 
           <!-- details — the client brief the report cover is built from -->
           <sc-if value="{{ tabDetails }}">
-            <div style="animation: csFade .35s ease both; max-width: 900px;">
+            <div style="animation: csFade .35s var(--ease-spring) both; max-width: 900px;">
               <div class="cs-section-header" style="display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 24px;">
                 <div>
                   <h2 style="font-family: var(--font-heading); font-size: 32px; margin: 0; color: var(--color-accent-900);">Project details</h2>
@@ -680,7 +716,7 @@
 
           <!-- fees — quoted from the rate card, then negotiated -->
           <sc-if value="{{ tabFees }}">
-            <div style="animation: csFade .35s ease both; max-width: 900px;">
+            <div style="animation: csFade .35s var(--ease-spring) both; max-width: 900px;">
               <div class="cs-section-header" style="display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 6px;">
                 <div>
                   <h2 style="font-family: var(--font-heading); font-size: 32px; margin: 0; color: var(--color-accent-900);">Consultancy fees</h2>
@@ -750,7 +786,7 @@
 
           <!-- discovery -->
           <sc-if value="{{ tabDiscovery }}">
-            <div style="animation: csFade .35s ease both;">
+            <div style="animation: csFade .35s var(--ease-spring) both;">
               <div class="cs-section-header" style="display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 24px;">
                 <div>
                   <h2 style="font-family: var(--font-heading); font-size: 32px; margin: 0; color: var(--color-accent-900);">Discovery</h2>
@@ -792,7 +828,7 @@
 
           <!-- concept / design docs -->
           <sc-if value="{{ tabDoc }}">
-            <div style="animation: csFade .35s ease both;">
+            <div style="animation: csFade .35s var(--ease-spring) both;">
               <div class="cs-section-header" style="display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 24px;">
                 <div>
                   <h2 style="font-family: var(--font-heading); font-size: 32px; margin: 0; color: var(--color-accent-900);">{{ docTitle }}</h2>
@@ -825,7 +861,7 @@
 
           <!-- selection -->
           <sc-if value="{{ tabSelection }}">
-            <div style="animation: csFade .35s ease both;">
+            <div style="animation: csFade .35s var(--ease-spring) both;">
               <div class="cs-section-header" style="display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 24px;">
                 <div>
                   <h2 style="font-family: var(--font-heading); font-size: 32px; margin: 0; color: var(--color-accent-900);">Selection</h2>
@@ -846,7 +882,7 @@
                   </div>
                   <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; max-height: 380px; overflow: auto;">
                     <sc-for list="{{ pickList }}" as="c" hint-placeholder-count="6">
-                      <div onClick="{{ c.add }}" style="cursor: pointer; border-radius: var(--radius-md); overflow: hidden; background: var(--color-neutral-100); transition: transform .2s cubic-bezier(.22,1,.36,1);" style-hover="transform: translateY(-2px);">
+                      <div class="cs-tappable" onClick="{{ c.add }}" style="border-radius: var(--radius-md); overflow: hidden; background: var(--color-neutral-100);">
                         <div style="aspect-ratio: 1 / 1;"><img src="assets/piece-placeholder.png" data-img="{{ c.image }}" alt="" style="width: 100%; height: 100%; object-fit: cover;"></div>
                         <div style="padding: 9px 11px 11px;">
                           <div style="font-size: 12.5px; font-weight: 600; line-height: 1.25;">{{ c.name }}</div>
@@ -925,7 +961,7 @@
 
           <!-- feedback -->
           <sc-if value="{{ tabFeedback }}">
-            <div style="animation: csFade .35s ease both;">
+            <div style="animation: csFade .35s var(--ease-spring) both;">
               <div class="cs-section-header" style="display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 6px;">
                 <div><h2 style="font-family: var(--font-heading); font-size: 32px; margin: 0 0 6px; color: var(--color-accent-900);">Client feedback</h2></div>
                 <button type="button" onClick="{{ refreshFeedback }}" class="btn btn-secondary">Refresh feedback</button>
@@ -962,7 +998,7 @@
 
           <!-- sharing -->
           <sc-if value="{{ tabSharing }}">
-            <div style="animation: csFade .35s ease both; max-width: 900px;">
+            <div style="animation: csFade .35s var(--ease-spring) both; max-width: 900px;">
               <h2 style="font-family: var(--font-heading); font-size: 32px; margin: 0 0 6px; color: var(--color-accent-900);">Client links</h2>
               <p style="margin: 0 0 28px; color: var(--color-neutral-600); font-size: 14px;">Each link is stamped with the client's name — no login needed, and everything they say comes back signed.</p>
               <div class="card" style="padding: 22px 24px; margin-bottom: 26px;">
@@ -1000,18 +1036,18 @@
       <!-- team -->
       <!-- rates — the studio's standard design fee per type of space -->
       <sc-if value="{{ showStudio }}">
-        <div class="cs-page" style="max-width: 900px; margin: 0 auto; padding: 48px 32px 96px; animation: csFade .35s ease both;">
+        <div class="cs-page" style="max-width: 900px; margin: 0 auto; padding: 48px 32px 96px; animation: csFade .35s var(--ease-spring) both;">
           <div style="margin-bottom: 32px;">
             <div style="font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--color-accent-700); margin-bottom: 8px;">Studio administration</div>
-            <h1 style="font-family: var(--font-heading); font-size: 44px; margin: 0 0 6px; color: var(--color-accent-900);">Studio settings</h1>
+            <h1 class="cs-h1-display" style="font-family: var(--font-heading); font-size: 44px; margin: 0 0 6px; color: var(--color-accent-900);">Studio settings</h1>
             <p style="margin: 0; color: var(--color-neutral-700); max-width: 56ch;">Manage the standards and people behind every project without distracting from the project workspace.</p>
           </div>
           <div class="cs-details-grid" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px;">
-            <button type="button" onClick="{{ goRates }}" class="card" style="border: 1px solid var(--color-neutral-300); cursor: pointer; text-align: left; color: inherit; font: inherit;">
+            <button type="button" onClick="{{ goRates }}" class="card cs-tappable" style="border: 1px solid var(--color-neutral-300); text-align: left; color: inherit; font: inherit;">
               <span style="font-family: var(--font-heading); font-size: 24px; color: var(--color-accent-900);">Rate card</span>
               <span style="font-size: 14px; color: var(--color-neutral-600);">Set the studio’s standard fee by space.</span>
             </button>
-            <button type="button" onClick="{{ goTeam }}" class="card" style="border: 1px solid var(--color-neutral-300); cursor: pointer; text-align: left; color: inherit; font: inherit;">
+            <button type="button" onClick="{{ goTeam }}" class="card cs-tappable" style="border: 1px solid var(--color-neutral-300); text-align: left; color: inherit; font: inherit;">
               <span style="font-family: var(--font-heading); font-size: 24px; color: var(--color-accent-900);">Team</span>
               <span style="font-size: 14px; color: var(--color-neutral-600);">Invite and manage the people who work on projects.</span>
             </button>
@@ -1020,10 +1056,10 @@
       </sc-if>
 
       <sc-if value="{{ showRates }}">
-        <div class="cs-page" style="max-width: 900px; margin: 0 auto; padding: 40px 32px 96px; animation: csFade .35s ease both;">
+        <div class="cs-page" style="max-width: 900px; margin: 0 auto; padding: 40px 32px 96px; animation: csFade .35s var(--ease-spring) both;">
           <div class="cs-page-header" style="display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 8px;">
             <div>
-              <h1 style="font-family: var(--font-heading); font-size: 44px; margin: 0 0 6px; color: var(--color-accent-900);">Consultancy rates</h1>
+              <h1 class="cs-h1-display" style="font-family: var(--font-heading); font-size: 44px; margin: 0 0 6px; color: var(--color-accent-900);">Consultancy rates</h1>
               <p style="margin: 0; color: var(--color-neutral-700);">The standard design fee per space. Each project quotes from this and can be negotiated from there.</p>
             </div>
             <button type="button" onClick="{{ saveRates }}" class="btn btn-primary">{{ ratesLabel }}</button>
@@ -1060,8 +1096,8 @@
       </sc-if>
 
       <sc-if value="{{ showTeam }}">
-        <div class="cs-page" style="max-width: 1000px; margin: 0 auto; padding: 48px 32px 96px; animation: csFade .4s ease both;">
-          <h1 style="font-family: var(--font-heading); font-size: 44px; margin: 0 0 6px; color: var(--color-accent-900);">Team</h1>
+        <div class="cs-page" style="max-width: 1000px; margin: 0 auto; padding: 48px 32px 96px; animation: csFade .4s var(--ease-spring) both;">
+          <h1 class="cs-h1-display" style="font-family: var(--font-heading); font-size: 44px; margin: 0 0 6px; color: var(--color-accent-900);">Team</h1>
           <p style="margin: 0 0 32px; color: var(--color-neutral-700); max-width: 62ch;">Admins manage projects, people and the catalog. Designers edit the projects they belong to. Clients normally use a share link instead of an account.</p>
           <div class="card" style="padding: 24px 26px; margin-bottom: 28px;">
             <div style="font-family: var(--font-heading); font-size: 20px; color: var(--color-accent-900); margin-bottom: 16px;">Invite someone</div>
@@ -1109,6 +1145,19 @@
               </sc-for>
             </tbody>
           </table></div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ confirmOpen }}">
+        <div class="dialog-backdrop" onClick="{{ confirmCancel }}" style="animation: csFade .16s var(--ease-spring) both; z-index: 200;">
+          <div class="dialog" onClick="{{ confirmStop }}" style="animation: csPop .2s var(--ease-spring) both;">
+            <div class="dialog-title">{{ confirmTitle }}</div>
+            <div class="dialog-body">{{ confirmBody }}</div>
+            <div class="dialog-actions">
+              <button type="button" onClick="{{ confirmCancel }}" class="btn btn-ghost">Cancel</button>
+              <button type="button" onClick="{{ confirmAccept }}" class="btn {{ confirmBtnClass }}">{{ confirmLabel }}</button>
+            </div>
+          </div>
         </div>
       </sc-if>
     </div>
@@ -1185,9 +1234,15 @@ class Component extends DCLogic {
     details: null, detailsSaving: false, detailsNotice: '', np: null, npBusy: false,
     exporting: false, exportNote: '',
     rates: null, ratesSaving: false, ratesNote: '',
-    fees: null, feesSaving: false, feesNote: '', feesQuoting: false };
+    fees: null, feesSaving: false, feesNote: '', feesQuoting: false,
+    confirm: null };
+
+  askConfirm(opts) { this.setState({ confirm: opts }); }
 
   async componentDidMount() {
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && this.state.confirm) this.setState({ confirm: null });
+    });
     const api = await import('./platform-data.js');
     const mode = await api.init();
     this.setState({ api, mode });
@@ -1323,6 +1378,19 @@ class Component extends DCLogic {
       showDash: s.view === 'dash', showProj: s.view === 'proj' && !!s.proj,
       showCatalog: s.view === 'catalog', showStudio: s.view === 'studio' && admin, showTeam: s.view === 'team' && admin,
       showRates: s.view === 'rates' && admin,
+      confirmOpen: !!s.confirm,
+      confirmTitle: s.confirm ? s.confirm.title : '',
+      confirmBody: s.confirm ? s.confirm.body : '',
+      confirmLabel: s.confirm ? (s.confirm.confirmLabel || 'Confirm') : 'Confirm',
+      confirmBtnClass: s.confirm && s.confirm.danger ? 'btn-danger' : 'btn-primary',
+      confirmCancel: () => this.setState({ confirm: null }),
+      confirmStop: (e) => e.stopPropagation(),
+      confirmAccept: async () => {
+        const c = this.state.confirm;
+        if (!c) return;
+        this.setState({ confirm: null });
+        await c.onConfirm();
+      },
     });
 
     if (v.showDash) {
@@ -1585,7 +1653,7 @@ class Component extends DCLogic {
       let shift = 0;
       if (newIndex > d.originIndex && i > d.originIndex && i <= newIndex) shift = -d.rowH;
       else if (newIndex < d.originIndex && i >= newIndex && i < d.originIndex) shift = d.rowH;
-      el.style.transition = 'transform .18s cubic-bezier(.22,1,.36,1)';
+      el.style.transition = 'transform .18s var(--ease-spring)';
       el.style.transform = shift ? 'translateY(' + shift + 'px)' : '';
     });
   };
@@ -1819,10 +1887,15 @@ class Component extends DCLogic {
           this.setState({ form: null, catalog: await api.listCatalog() });
         },
         cancelPiece: () => this.setState({ form: null }),
-        deletePiece: async () => {
-          await api.deleteCatalogItem(this.state.form.id);
-          this.setState({ form: null, catalog: await api.listCatalog() });
-        },
+        deletePiece: () => this.askConfirm({
+          title: 'Delete this piece?',
+          body: (f.name || 'This piece') + ' will be removed from the catalog and any room selections that reference it. This can\'t be undone.',
+          confirmLabel: 'Delete', danger: true,
+          onConfirm: async () => {
+            await api.deleteCatalogItem(this.state.form.id);
+            this.setState({ form: null, catalog: await api.listCatalog() });
+          },
+        }),
       });
     }
     return v;
@@ -2256,11 +2329,71 @@ class Component extends DCLogic {
         scope: ({ discovery: 'Discovery', concept: 'Concept', design: 'Design & sourcing', styling: 'Styling & reveal' })[sh.phase || (sh.phases || []).slice(-1)[0]] || 'Concept',
         copyLabel: s.copied === sh.token ? 'Copied' : 'Copy link',
         copy: async () => { try { await navigator.clipboard.writeText(api.shareUrl(sh.token)); } catch (e) {} this.setState({ copied: sh.token }); setTimeout(() => this.setState({ copied: '' }), 1600); },
-        revoke: async () => { const np = await api.revokeShare(p, sh.token); this.setState({ proj: np }); this.refresh(); },
+        revoke: () => this.askConfirm({
+          title: 'Revoke this link?',
+          body: (sh.clientName ? 'The link shared with ' + sh.clientName : 'This client link') + ' will stop working immediately.',
+          confirmLabel: 'Revoke', danger: true,
+          onConfirm: async () => { const np = await api.revokeShare(p, sh.token); this.setState({ proj: np }); this.refresh(); },
+        }),
       }));
     }
     return v;
   }
+
+  /* ---------- client share: swipeable review cards ---------- */
+  // The card never leaves the grid (its comment field and current verdict
+  // must stay visible/editable), so a swipe always springs the photo back to
+  // center -- direction + distance/velocity at release just decides the vote.
+  startReviewDrag(e, setVerdict) {
+    if (e.button !== undefined && e.button !== 0) return;
+    const cardEl = e.currentTarget.closest('[data-review-card]');
+    if (!cardEl) return;
+    e.preventDefault();
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
+    this._swipe = { cardEl, setVerdict, startX: e.clientX, hintDir: null, history: [[e.clientX, performance.now()]] };
+    cardEl.style.transition = 'none';
+    cardEl.classList.add('cs-review-dragging');
+    window.addEventListener('pointermove', this._onSwipeMove);
+    window.addEventListener('pointerup', this._onSwipeEnd);
+    window.addEventListener('pointercancel', this._onSwipeEnd);
+  }
+
+  _onSwipeMove = (e) => {
+    const d = this._swipe;
+    if (!d) return;
+    const dx = e.clientX - d.startX;
+    d.history.push([e.clientX, performance.now()]);
+    if (d.history.length > 5) d.history.shift();
+    const rotate = Math.max(-8, Math.min(8, dx / 16));
+    d.cardEl.style.transform = 'translateX(' + dx + 'px) rotate(' + rotate + 'deg)';
+    const dir = dx > 24 ? 'up' : dx < -24 ? 'down' : null;
+    if (dir !== d.hintDir) {
+      d.hintDir = dir;
+      d.cardEl.classList.toggle('cs-review-hint-up', dir === 'up');
+      d.cardEl.classList.toggle('cs-review-hint-down', dir === 'down');
+    }
+  };
+
+  _onSwipeEnd = () => {
+    const d = this._swipe;
+    if (!d) return;
+    window.removeEventListener('pointermove', this._onSwipeMove);
+    window.removeEventListener('pointerup', this._onSwipeEnd);
+    window.removeEventListener('pointercancel', this._onSwipeEnd);
+    this._swipe = null;
+    const [x0, t0] = d.history[0];
+    const [x1, t1] = d.history[d.history.length - 1];
+    const velocity = t1 > t0 ? (x1 - x0) / (t1 - t0) * 1000 : 0; // px/s, recent samples only
+    const finalDx = x1 - d.startX;
+    const DISTANCE = 90, FLICK_VELOCITY = 500;
+    let verdict = null;
+    if (finalDx > DISTANCE || velocity > FLICK_VELOCITY) verdict = 'up';
+    else if (finalDx < -DISTANCE || velocity < -FLICK_VELOCITY) verdict = 'down';
+    d.cardEl.style.transition = 'transform .38s var(--ease-spring)';
+    d.cardEl.style.transform = '';
+    d.cardEl.classList.remove('cs-review-dragging', 'cs-review-hint-up', 'cs-review-hint-down');
+    if (verdict) d.setVerdict(verdict);
+  };
 
   /* ---------- client share ---------- */
   shareVals() {
@@ -2326,10 +2459,12 @@ class Component extends DCLogic {
             setComment: (e) => set({ comment: e.target.value }),
             up: () => set({ verdict: on('up') ? null : 'up' }),
             down: () => set({ verdict: on('down') ? null : 'down' }),
+            dragStart: (e) => this.startReviewDrag(e, (v) => set({ verdict: v })),
             upRing: on('up') ? 'var(--color-accent-2)' : 'var(--color-neutral-300)',
             upBg: on('up') ? 'var(--color-accent-2-200)' : 'transparent',
             downRing: on('down') ? 'var(--color-accent)' : 'var(--color-neutral-300)',
             downBg: on('down') ? 'var(--color-accent-100)' : 'transparent',
+            verdictRing: on('up') ? 'var(--color-accent-2)' : on('down') ? 'var(--color-accent)' : 'transparent',
           };
         }),
       })),
@@ -2383,10 +2518,15 @@ class Component extends DCLogic {
             try { await api.setUserRole(x.id, e.target.value, x.invite); this.setState({ users: await api.listUsers() }); }
             catch (err) { this.setState({ inviteMsg: 'Could not change the role: ' + ((err && err.message) || 'permission denied') }); }
           },
-          remove: async () => {
-            try { await api.removeUser(x.id, x.invite, x.email); this.setState({ users: await api.listUsers(), inviteMsg: (x.email || x.name) + ' was removed.' }); }
-            catch (err) { this.setState({ inviteMsg: 'Could not remove this person: ' + ((err && err.message) || 'permission denied') }); }
-          },
+          remove: () => this.askConfirm({
+            title: 'Remove ' + (x.name || x.email) + '?',
+            body: 'They will immediately lose access to every project and the catalog.',
+            confirmLabel: 'Remove', danger: true,
+            onConfirm: async () => {
+              try { await api.removeUser(x.id, x.invite, x.email); this.setState({ users: await api.listUsers(), inviteMsg: (x.email || x.name) + ' was removed.' }); }
+              catch (err) { this.setState({ inviteMsg: 'Could not remove this person: ' + ((err && err.message) || 'permission denied') }); }
+            },
+          }),
         };
       }),
     };
