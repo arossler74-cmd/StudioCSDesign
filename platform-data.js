@@ -4,7 +4,7 @@
 
 const ADMIN_BOOTSTRAP = ['arossler74@gmail.com', 'cybellesampaio77@gmail.com'];
 const LS = 'cs-platform-v5';
-const SEED_VERSION = 5;
+const SEED_VERSION = 6;
 const R = 'refs/';
 
 let mode = 'local';
@@ -81,13 +81,20 @@ function seed() {
         id: '86-residence',
         name: '86 Residence', client: 'Maya Vander', location: 'Coral Gables, Miami',
         cover: 'assets/floor-plan.png', status: 'in progress', currency: 'USD',
-        tagline: 'A home that lives the way you do', scope: 'Five spaces', scopeNote: 'One layout each',
-        address: '5901 SW 86 Street', addressCity: 'Coral Gables, Miami', clientEmail: '', designerEmails: [], proposalSyncVersion: '2026-08-maya-concept',
+        tagline: 'A home that lives the way you do', scope: 'Five spaces', scopeNote: 'Family room first', stage: 'Concept & sourcing', stageNote: 'Five options',
+        address: '5901 SW 86 Street', addressCity: 'Coral Gables, Miami', clientEmail: '', designerEmails: [], startDate: '2026-08-01', proposalSyncVersion: '2026-09-maya-concept-restored-v5',
+        intro: 'Five spaces on the ground floor and above, designed one at a time — concept, plan, rendering and sourcing complete before anything is ordered. This document walks all five spaces, then closes with what it costs.',
+        studioProfile: {
+          name: 'Cybelle Sampaio', role: 'Founder & lead designer', strap: 'Design & Decoration · Orange County, CA', portrait: 'assets/cybelle-portrait.png',
+          bio: ['I am an interior designer and decorator based in Orange County, California. My passion is creating warm, sophisticated homes built around the way you actually live — layered and tactile, quietly luxurious, combining creativity with a strong aesthetic sense.', 'Having lived in Brazil, Missouri, New York and Florida, I bring a well-travelled eye to residential interiors, creating elegant and personalised spaces. My practice is dedicated to designing and decorating living spaces — not replacing your general contractor, and not renovating kitchens or bathrooms.'],
+          stats: [{ title: 'Decor', body: '& design' }, { title: 'LA & OC', body: 'Online everywhere' }, { title: '1:1', body: 'Personal service' }],
+          services: [{ title: 'Concept & mood boards', body: 'Palette, materials and mood agreed before a single purchase.' }, { title: 'Floor plans & layouts', body: 'Space planning to scale — placement, flow and dimensions.' }, { title: '3D renderings', body: 'Photorealistic views, so you see the room before it exists.' }, { title: 'Sourcing & styling', body: 'A curated shopping list, then the styling that finishes it.' }],
+        },
         members: ['u-admin', 'u-cybelle'],
         createdAt: '2026-05-04T12:00:00.000Z', updatedAt: '2026-08-14T18:22:00.000Z',
         phases: {
           discovery: { status: 'done', progress: 100, doc: null, note: 'Discovery completed; the client is now reviewing the concept direction.' },
-          concept: { status: 'review', progress: 100, doc: '86 Residence - Concept - Maya Vander.html', note: 'Concept package sent to Maya for review: direction, materials, plans and moodboards.' },
+          concept: { status: 'review', progress: 100, doc: '86 Residence - Concept - Maya Vander.html', concept: 'A neutral, sun-tolerant ground — plaster, ivory and travertine — warmed with chestnut leather, sage and bronze. Low horizontal furniture so the terrace stays in view, and one sculptural wood or stone piece per room to keep the calm from going flat.', note: 'Concept package sent to Maya for review: direction, materials, plans and moodboards.' },
           design: { status: 'not-started', progress: 0, doc: '86 Residence Design Proposal.dc.html', note: 'Begins after the concept is approved.' },
           styling: { status: 'not-started', progress: 0, doc: null, note: 'Delivery, placement and final styling — after the sourcing list is approved.' },
         },
@@ -100,11 +107,29 @@ function seed() {
         ], discountPct: 0, discountNote: '', note: '50% retainer to reserve the start date; balance due on delivery of the final concept. Furniture, trade labor, delivery and white-glove installation are billed separately.' },
         answers: {},
         plan: 'assets/floor-plan.png',
+        floorPlans: [{ title: 'First floor', image: 'assets/floor-plan.png', comment: '' }, { title: 'Second floor', image: '', comment: '' }],
+        goals: [
+          { title: 'One ground floor, not four rooms', body: 'Family room, dining, breakfast and terrace share a palette and a material language without repeating the same furniture; the eye should travel, not stop, and it should carry straight out to the pool.' },
+          { title: 'Comfort that survives real life', body: 'Performance textiles where the sun and the family land, motion seating where it earns its place, and nothing so precious it changes how you use a room.' },
+          { title: 'One decision at a time', body: 'Each space is concepted, planned, rendered and fully costed before anything is ordered — starting with the family room, so the rest has something to answer to.' },
+        ],
+        conceptPoints: [
+          { title: 'Simplicity', body: 'Fewer, better pieces with air between them. Every room has one empty corner on purpose.' },
+          { title: 'Neutral palette', body: 'Plaster, ivory and travertine as the ground, so the light off the terrace does the decorating.' },
+          { title: 'Layered texture', body: 'Bouclé against leather against linen — the interest is tactile rather than graphic.' },
+          { title: 'Sculptural wood', body: 'One turned or carved wood piece per room to break the straight lines of the architecture.' },
+          { title: 'Warm metals', body: 'Aged brass and bronze only. No chrome, no black hardware anywhere on this floor.' },
+          { title: 'Quiet lighting', body: 'Layered and low — table and floor lamps carrying the evening, ceiling light for cleaning day.' },
+        ],
         materials: [
-          { name: 'Textile', note: 'Performance weave on everything the sun and the family land on — cleanable, and it does not read like performance fabric.' },
-          { name: 'Wood', note: 'Rift-cut oak with a natural oil finish, plus one turned or carved piece per room.' },
-          { name: 'Stone', note: 'Honed travertine for table tops — warm, matte, forgiving of water rings.' },
-          { name: 'Metal', note: 'Aged brass and bronze only. No chrome and no black hardware anywhere on this floor.' },
+          { name: 'Accent textile', note: 'Warm, rich colors and textures in selected accent pieces.', image: '' },
+          { name: 'Warm wood', note: 'Walnut and richer wood tones are introduced to create luxury and visual depth, plus one turned or carved piece per room.', image: '' },
+          { name: 'Stone', note: 'Marble for table tops — warm, matte and forgiving of water rings.', image: '' },
+          { name: 'Metal', note: 'Aged brass and bronze only. No chrome and no black hardware anywhere on this floor.', image: '' },
+          { name: 'Leather', note: 'Caramel leather brings warmth and character.', image: '' },
+          { name: 'Textile — woven', note: 'Performance weave on everything the sun and the family land on — cleanable, and it does not read like performance fabric.', image: '' },
+          { name: 'Textile — upholstery', note: 'Quiet tones — ivory, fendi and sand — for the upholstery.', image: '' },
+          { name: 'Warm oak', note: 'Introduces a natural glow that brings continuity throughout the spaces.', image: '' },
         ],
         palette: [
           { name: 'Ivory', hex: '#F6F2EA' }, { name: 'Plaster', hex: '#EDE7DA' },
@@ -302,7 +327,7 @@ export async function saveProject(p) {
 // 2026. It is deliberately versioned, so it never overwrites later edits.
 export async function reconcile86Residence(p) {
   if (!p || p.id !== '86-residence') return p;
-  if (p.proposalSyncVersion === '2026-08-maya-concept') {
+  if (p.proposalSyncVersion === '2026-09-maya-concept-restored-v5') {
     if (Object.prototype.hasOwnProperty.call(p, 'clientEmail') && Array.isArray(p.designerEmails)) return p;
     return saveProject({ ...p, clientEmail: p.clientEmail || '', designerEmails: Array.isArray(p.designerEmails) ? p.designerEmails : [] });
   }
@@ -320,12 +345,44 @@ export async function reconcile86Residence(p) {
   };
   return saveProject({
     ...p, client: 'Maya Vander', location: 'Coral Gables, Miami', tagline: 'A home that lives the way you do',
-    scope: 'Five spaces', scopeNote: 'One layout each', address: '5901 SW 86 Street', addressCity: 'Coral Gables, Miami',
-    proposalSyncVersion: '2026-08-maya-concept', fees,
+    scope: 'Five spaces', scopeNote: 'Family room first', stage: 'Concept & sourcing', stageNote: 'Five options', address: '5901 SW 86 Street', addressCity: 'Coral Gables, Miami',
+    intro: 'Five spaces on the ground floor and above, designed one at a time — concept, plan, rendering and sourcing complete before anything is ordered. This document walks all five spaces, then closes with what it costs.',
+    studioProfile: {
+      name: 'Cybelle Sampaio', role: 'Founder & lead designer', strap: 'Design & Decoration · Orange County, CA', portrait: 'assets/cybelle-portrait.png',
+      bio: ['I am an interior designer and decorator based in Orange County, California. My passion is creating warm, sophisticated homes built around the way you actually live — layered and tactile, quietly luxurious, combining creativity with a strong aesthetic sense.', 'Having lived in Brazil, Missouri, New York and Florida, I bring a well-travelled eye to residential interiors, creating elegant and personalised spaces. My practice is dedicated to designing and decorating living spaces — not replacing your general contractor, and not renovating kitchens or bathrooms.'],
+      stats: [{ title: 'Decor', body: '& design' }, { title: 'LA & OC', body: 'Online everywhere' }, { title: '1:1', body: 'Personal service' }],
+      services: [{ title: 'Concept & mood boards', body: 'Palette, materials and mood agreed before a single purchase.' }, { title: 'Floor plans & layouts', body: 'Space planning to scale — placement, flow and dimensions.' }, { title: '3D renderings', body: 'Photorealistic views, so you see the room before it exists.' }, { title: 'Sourcing & styling', body: 'A curated shopping list, then the styling that finishes it.' }],
+    },
+    startDate: p.startDate || '2026-08-01', proposalSyncVersion: '2026-09-maya-concept-restored-v5', fees,
+    materials: [
+      { name: 'Accent textile', note: 'Warm, rich colors and textures in selected accent pieces.', image: '' },
+      { name: 'Warm wood', note: 'Walnut and richer wood tones are introduced to create luxury and visual depth, plus one turned or carved piece per room.', image: '' },
+      { name: 'Stone', note: 'Marble for table tops — warm, matte and forgiving of water rings.', image: '' },
+      { name: 'Metal', note: 'Aged brass and bronze only. No chrome and no black hardware anywhere on this floor.', image: '' },
+      { name: 'Leather', note: 'Caramel leather brings warmth and character.', image: '' },
+      { name: 'Textile — woven', note: 'Performance weave on everything the sun and the family land on — cleanable, and it does not read like performance fabric.', image: '' },
+      { name: 'Textile — upholstery', note: 'Quiet tones — ivory, fendi and sand — for the upholstery.', image: '' },
+      { name: 'Warm oak', note: 'Introduces a natural glow that brings continuity throughout the spaces.', image: '' },
+    ],
+    floorPlans: (p.floorPlans && p.floorPlans.length) ? p.floorPlans : [{ title: 'First floor', image: p.plan || 'assets/floor-plan.png', comment: '' }, { title: 'Second floor', image: '', comment: '' }],
+    rooms: (p.rooms || []).map((r) => ({ ...r, goal: r.goal || '', conceptMedia: r.conceptMedia || (r.moodboard || []).map((url, i) => ({ id: 'legacy-' + i, type: 'moodboard', title: r.name + ' moodboard', url })) })),
+    goals: [
+      { title: 'One ground floor, not four rooms', body: 'Family room, dining, breakfast and terrace share a palette and a material language without repeating the same furniture; the eye should travel, not stop, and it should carry straight out to the pool.' },
+      { title: 'Comfort that survives real life', body: 'Performance textiles where the sun and the family land, motion seating where it earns its place, and nothing so precious it changes how you use a room.' },
+      { title: 'One decision at a time', body: 'Each space is concepted, planned, rendered and fully costed before anything is ordered — starting with the family room, so the rest has something to answer to.' },
+    ],
+    conceptPoints: [
+      { title: 'Simplicity', body: 'Fewer, better pieces with air between them. Every room has one empty corner on purpose.' },
+      { title: 'Neutral palette', body: 'Plaster, ivory and travertine as the ground, so the light off the terrace does the decorating.' },
+      { title: 'Layered texture', body: 'Bouclé against leather against linen — the interest is tactile rather than graphic.' },
+      { title: 'Sculptural wood', body: 'One turned or carved wood piece per room to break the straight lines of the architecture.' },
+      { title: 'Warm metals', body: 'Aged brass and bronze only. No chrome, no black hardware anywhere on this floor.' },
+      { title: 'Quiet lighting', body: 'Layered and low — table and floor lamps carrying the evening, ceiling light for cleaning day.' },
+    ],
     phases: {
       ...phase,
       discovery: { ...(phase.discovery || {}), status: 'done', progress: 100, note: 'Discovery completed; the client is now reviewing the concept direction.' },
-      concept: { ...(phase.concept || {}), status: 'review', progress: 100, doc: '86 Residence - Concept - Maya Vander.html', note: 'Concept package sent to Maya for review: direction, materials, plans and moodboards.' },
+      concept: { ...(phase.concept || {}), status: 'review', progress: 100, doc: '86 Residence - Concept - Maya Vander.html', concept: 'A neutral, sun-tolerant ground — plaster, ivory and travertine — warmed with chestnut leather, sage and bronze. Low horizontal furniture so the terrace stays in view, and one sculptural wood or stone piece per room to keep the calm from going flat.', note: 'Concept package sent to Maya for review: direction, materials, plans and moodboards.' },
       design: { ...(phase.design || {}), status: 'not-started', progress: 0, doc: '86 Residence Design Proposal.dc.html', note: 'Begins after the concept is approved.' },
     },
   });
@@ -341,7 +398,7 @@ export function blankRoom(name) {
     // `type` is the ROOM_TYPES value the room was created from and stays put
     // even when the room is renamed ("Family Room" -> "The snug"), because the
     // rate card quotes by type, not by whatever the room ends up being called.
-    name: name || 'Room', type: name || '', code: '', cad: '', brief: '', moodboard: [], selected: [],
+    name: name || 'Room', type: name || '', code: '', cad: '', brief: '', goal: '', moodboard: [], conceptMedia: [], selected: [], alternatives: [],
   };
 }
 
@@ -363,7 +420,7 @@ export async function createProject(name, client, user, opts) {
       design: { status: 'not-started', progress: 0, doc: null, note: '' },
       styling: { status: 'not-started', progress: 0, doc: null, note: '' },
     },
-    answers: {}, rooms: (o.rooms || []).map(blankRoom), reviews: [], shares: [],
+    answers: {}, floorPlans: [{ title: 'First floor', image: '', comment: '' }, { title: 'Second floor', image: '', comment: '' }], rooms: (o.rooms || []).map(blankRoom), reviews: [], shares: [],
     questionnaire: DEFAULT_QUESTIONNAIRE(),
   };
   return saveProject(p);

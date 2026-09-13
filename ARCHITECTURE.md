@@ -13,7 +13,7 @@ firestore.rules            security rules
 86 Residence Design Proposal.dc.html                   → Design/Sourcing deliverable
 ```
 
-The two 86 Residence documents are not rewritten — each phase references its file and shows it inline. Furniture now lives in the shared catalog and each project references catalog pieces by id (live link: editing the catalog updates every project using the piece).
+Concept is edited natively in the project workspace and exported as a standalone client document; it is not an embedded HTML file. Furniture lives in the shared catalog and each project references catalog pieces by id (live link: editing the catalog updates every project using the piece).
 
 ## Firestore
 
@@ -26,10 +26,19 @@ catalog/{id}           name, type, room, retailer, url, image,
 
 projects/{id}
   name, client, location, cover, status, currency: 'USD'
+  tagline, intro, hero, scope, scopeNote, stage, stageNote
+  studioProfile: { name, role, strap, portrait, bio[], stats[], services[] }
   members: [uid], createdAt, updatedAt
-  phases: { discovery|concept|design: { status, progress, doc, note } }
+  phases: { discovery|concept|design: { status, progress, doc, note, concept? } }
+  goals: [{ title, body }]
+  conceptPoints: [{ title, body }]
+  palette: [{ name, hex }]
+  materials: [{ name, note, image }]
+  floorPlans: [{ title, image, comment }]
   answers: { [questionId]: string | string[] }
-  rooms:   [{ id, name, selected: [{refId, qty}], alternatives: [{refId, qty}] }]
+  rooms:   [{ id, name, goal, brief,
+              conceptMedia: [{ id, type: 'moodboard'|'sketchup'|'rendering', title, url }],
+              selected: [{refId, qty}], alternatives: [{refId, qty}] }]
   reviews: [{ id, roomId, itemId, verdict: 'up'|'down', comment, by, at, resolved }]
   shares:  [{ token, clientName, phases: ['concept'|'design'], createdAt }]
 
@@ -84,4 +93,4 @@ actually guarding the data. Two consequences worth keeping in mind:
 1. Point the two 86 Residence documents at the catalog so their tables read from Firestore instead of localStorage.
 2. Per-piece approval history (who approved what, when) beyond the latest verdict.
 3. PDF export per phase.
-4. Moodboard uploads into Storage from the Concept tab.
+4. Client annotations directly on Concept floor plans and visual carousels.

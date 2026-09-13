@@ -33,8 +33,8 @@ export const STUDIO = {
   portrait: 'assets/cybelle-portrait.png',
   logo: 'assets/cybelle-logo.png',
   bio: [
-    'I am an interior designer and decorator based in Orange County, California. My passion is creating warm, liveable homes that feel collected rather than decorated.',
-    'Having lived in Brazil, Missouri, New York and Florida, I bring a well-travelled eye to residential interiors — and a preference for materials that age well.',
+    'I am an interior designer and decorator based in Orange County, California. My passion is creating warm, sophisticated homes built around the way you actually live — layered and tactile, quietly luxurious, combining creativity with a strong aesthetic sense.',
+    'Having lived in Brazil, Missouri, New York and Florida, I bring a well-travelled eye to residential interiors, creating elegant and personalised spaces. My practice is dedicated to designing and decorating living spaces — not replacing your general contractor, and not renovating kitchens or bathrooms.',
   ],
   stats: [
     { k: 'Decor', v: '& design' },
@@ -89,11 +89,15 @@ async function embed(url, cache, timeoutMs) {
 /** Every image the report will reference, in the order it appears. Collected
  *  first so the caller can show real progress instead of a spinner. */
 function imageList(project, phaseKey) {
-  const out = [STUDIO.portrait, STUDIO.logo];
+  const profile = project.studioProfile || STUDIO;
+  const out = [profile.portrait || STUDIO.portrait, STUDIO.logo];
   if (project.hero) out.push(project.hero);
+  for (const m of project.materials || []) if (m.image) out.push(m.image);
+  for (const f of project.floorPlans || []) if (f.image) out.push(f.image);
   for (const r of project.rooms || []) {
     if (r.cad) out.push(r.cad);
     if (phaseKey === 'concept' || phaseKey === 'design') for (const m of r.moodboard || []) out.push(m);
+    if (phaseKey === 'concept') for (const m of r.conceptMedia || []) if (m.url) out.push(m.url);
   }
   return [...new Set(out.filter(Boolean))];
 }
@@ -171,30 +175,41 @@ function coverSection(p, phase, img) {
       ${addr ? `<div style="font-size:13.5px;color:var(--mute);margin-top:2px">${esc(addr)}</div>` : ''}</div>` : ''}
     ${p.scope ? `<div><div class="lbl">Scope</div><div class="val">${esc(p.scope)}</div>
       ${p.scopeNote ? `<div style="font-size:13.5px;color:var(--mute);margin-top:2px">${esc(p.scopeNote)}</div>` : ''}</div>` : ''}
-    <div><div class="lbl">Stage</div><div class="val">${esc(phase.title)}</div></div>
+    <div><div class="lbl">Stage</div><div class="val">${esc(p.stage || phase.title)}</div>
+      ${p.stageNote ? `<div style="font-size:13.5px;color:var(--mute);margin-top:2px">${esc(p.stageNote)}</div>` : ''}</div>
   </div>
+  ${p.intro ? `<p class="lead" style="font-size:17px;margin-top:30px">${esc(p.intro)}</p>` : ''}
   ${img[p.hero] || p.hero ? `<img class="heroimg" src="${esc(img[p.hero] || p.hero)}" alt="">` : ''}
 </div></section>`;
 }
 
-function studioSection(img) {
+function studioSection(p, img) {
+  const s = { ...STUDIO, ...(p.studioProfile || {}) };
+  const stats = s.stats || STUDIO.stats;
+  const services = s.services || [];
   return `
 <section><div class="wrap">
   <div class="kicker">Who I am</div>
   <div class="grid g2" style="align-items:center;gap:38px">
     <div>
-      <h2>${esc(STUDIO.name)}</h2>
-      <div style="color:var(--mute);font-size:13.5px;margin-bottom:16px">${esc(STUDIO.role)}</div>
-      ${STUDIO.bio.map((b) => `<p class="lead">${esc(b)}</p>`).join('')}
+      <h2>${esc(s.name)}</h2>
+      <div style="color:var(--mute);font-size:13.5px;margin-bottom:16px">${esc(s.role)} · ${esc(s.strap)}</div>
+      ${(s.bio || []).map((b) => `<p class="lead">${esc(b)}</p>`).join('')}
       <div class="grid g3" style="margin-top:24px;gap:14px">
-        ${STUDIO.stats.map((s) => `<div class="card" style="padding:14px 16px">
-          <div style="font-size:17px">${esc(s.k)}</div>
-          <div style="font-size:12.5px;color:var(--mute)">${esc(s.v)}</div></div>`).join('')}
+        ${stats.map((x) => `<div class="card" style="padding:14px 16px">
+          <div style="font-size:17px">${esc(x.title || x.k)}</div>
+          <div style="font-size:12.5px;color:var(--mute)">${esc(x.body || x.v)}</div></div>`).join('')}
       </div>
     </div>
-    ${img[STUDIO.portrait] ? `<img src="${esc(img[STUDIO.portrait])}" alt="${esc(STUDIO.name)}"
+    ${img[s.portrait] ? `<img src="${esc(img[s.portrait])}" alt="${esc(s.name)}"
       style="border-radius:16px;width:100%;object-fit:cover">` : ''}
   </div>
+  ${services.length ? `<div class="grid g4" style="margin-top:28px;gap:0">
+    ${services.map((x, i) => `<div class="card" style="border-radius:0;padding:20px">
+      <div style="font-size:11px;letter-spacing:.14em;color:var(--mute)">0${i + 1}</div>
+      <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:22px;margin:8px 0">${esc(x.title)}</div>
+      <div class="lead" style="font-size:13px">${esc(x.body)}</div></div>`).join('')}
+  </div>` : ''}
 </div></section>`;
 }
 
@@ -250,7 +265,7 @@ function conceptSection(p, phaseData) {
 </div></section>`;
 }
 
-function materialsSection(p) {
+function materialsSection(p, img) {
   const materials = (p.materials || []).filter((m) => m && (m.name || m.note));
   if (!materials.length) return '';
   return `
@@ -258,6 +273,7 @@ function materialsSection(p) {
   <div class="kicker">What everything is made from</div><h2>Materials</h2>
   <div class="grid g2" style="margin-top:24px">
     ${materials.map((m) => `<div class="card">
+      ${m.image ? `<img src="${esc(img[m.image] || m.image)}" alt="${esc(m.name || '')}" style="width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:10px;margin-bottom:14px">` : ''}
       <div style="font-size:16px;margin-bottom:6px">${esc(m.name || '')}</div>
       <div class="lead" style="font-size:13.5px">${esc(m.note || '')}</div></div>`).join('')}
   </div>
@@ -265,6 +281,12 @@ function materialsSection(p) {
 }
 
 function planSection(p, img) {
+  const floors = (p.floorPlans || []).filter((f) => f.image);
+  if (floors.length) return `
+<section><div class="wrap">
+  <div class="kicker">First &amp; second floor</div><h2>Space plan · 2D</h2>
+  ${floors.map((f) => `<div class="room"><h3>${esc(f.title || 'Floor plan')}</h3>${f.comment ? `<p class="lead" style="font-size:13.5px;margin-top:8px">${esc(f.comment)}</p>` : ''}<img class="plan" src="${esc(img[f.image] || f.image)}" alt="${esc(f.title || 'Floor plan')}"></div>`).join('')}
+</div></section>`;
   const rooms = (p.rooms || []).filter((r) => r.cad);
   if (!rooms.length) return '';
   return `
@@ -279,15 +301,17 @@ function planSection(p, img) {
 }
 
 function moodSection(p, img) {
-  const rooms = (p.rooms || []).filter((r) => (r.moodboard || []).length);
+  const rooms = (p.rooms || []).filter((r) => ((r.conceptMedia || []).length || (r.moodboard || []).length));
   if (!rooms.length) return '';
   return `
 <section><div class="wrap">
   <div class="kicker">The feeling</div><h2>Moodboards</h2>
   ${rooms.map((r) => `<div class="room">
     <h3>${esc(r.name)}</h3>
+    ${r.goal ? `<p class="lead" style="font-size:15px;margin-top:8px"><strong>Goal:</strong> ${esc(r.goal)}</p>` : ''}
+    ${r.brief ? `<p class="lead" style="font-size:13.5px;margin-top:8px">${esc(r.brief)}</p>` : ''}
     ${r.moodNote ? `<p class="lead" style="font-size:13.5px;margin-top:8px">${esc(r.moodNote)}</p>` : ''}
-    <div class="mood">${(r.moodboard || []).map((m) => `<img src="${esc(img[m] || m)}" alt="">`).join('')}</div>
+    <div class="mood">${((r.conceptMedia || []).length ? r.conceptMedia : (r.moodboard || []).map((url) => ({ url, title: '', type: 'moodboard' }))).map((m) => `<div><img src="${esc(img[m.url] || m.url)}" alt="${esc(m.title || '')}"><div style="font-size:12.5px;margin-top:7px">${esc(m.title || '')}</div><div style="font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.1em">${esc(({moodboard:'Moodboard',sketchup:'SketchUp rendering',rendering:'Ultra-realistic rendering'})[m.type] || m.type || '')}</div></div>`).join('')}</div>
   </div>`).join('')}
 </div></section>`;
 }
@@ -407,21 +431,19 @@ export async function buildReport(project, phaseKey, catalog, onProgress) {
 
   const body = [
     coverSection(p, phase, img),
-    studioSection(img),
+    studioSection(p, img),
     processSection(phase),
     goalsSection(p),
     // Concept agrees a direction; Design & sourcing commits to pieces. Showing
     // furniture in the concept report turns a conversation about feeling into
     // one about price, which is why the phases carry different sections.
     phase.key === 'concept' ? conceptSection(p, (p.phases && p.phases.concept) || {}) : '',
-    phase.key === 'concept' ? materialsSection(p) : '',
+    phase.key === 'concept' ? materialsSection(p, img) : '',
     phase.key === 'concept' || phase.key === 'design' ? planSection(p, img) : '',
     phase.key === 'concept' || phase.key === 'design' ? moodSection(p, img) : '',
     phase.key === 'design' || phase.key === 'styling' ? sourcingSection(p, byId, img) : '',
-    // The fee belongs where the engagement is being agreed — the concept
-    // proposal — and again alongside the furnishings total, so the client can
-    // see the studio's fee and the pieces as two separate numbers.
-    phase.key === 'concept' || phase.key === 'design' ? feesSection(p) : '',
+    // Costs stay out of Concept: this phase is for direction, plans and imagery.
+    phase.key === 'design' ? feesSection(p) : '',
     footerSection(img),
   ].join('');
 
