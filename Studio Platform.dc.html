@@ -961,7 +961,7 @@
                 </div>
                 <div style="margin-top: 18px; display: grid; grid-template-columns: 220px 1fr; gap: 18px; align-items: center;">
                   <div style="aspect-ratio: 16 / 10; border-radius: var(--radius-md); overflow: hidden; background: var(--color-neutral-100);"><img src="assets/piece-placeholder.png" data-img="{{ introHero }}" alt="" style="width: 100%; height: 100%; object-fit: cover;"></div>
-                  <div><div style="font-size: 13.5px; color: var(--color-neutral-600); margin-bottom: 10px;">Hero image — the room that sets the tone</div><label class="btn btn-secondary" style="cursor: pointer;">Choose hero image<input type="file" accept="image/*" onChange="{{ pickIntroHero }}" style="display: none;"></label></div>
+                  <div><div style="font-size: 13.5px; color: var(--color-neutral-600); margin-bottom: 10px;">Hero image — the room that sets the tone</div><div style="display: flex; flex-wrap: wrap; gap: 8px;"><label class="btn btn-secondary" style="cursor: pointer;">Choose hero image<input type="file" accept="image/*" onChange="{{ pickIntroHero }}" style="display: none;"></label><button type="button" onClick="{{ pasteIntroHero }}" class="btn btn-secondary">Paste from clipboard</button></div></div>
                 </div>
               </div>
 
@@ -971,7 +971,7 @@
                 <div class="cs-concept-intro" style="display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 22px;">
                   <div>
                     <div style="aspect-ratio: 4 / 5; border-radius: var(--radius-md); overflow: hidden; background: var(--color-neutral-100); margin-bottom: 10px;"><img src="assets/piece-placeholder.png" data-img="{{ studioPortrait }}" alt="Cybelle Sampaio" style="width: 100%; height: 100%; object-fit: cover;"></div>
-                    <label class="btn btn-secondary" style="cursor: pointer; font-size: 13px;">Choose portrait<input type="file" accept="image/*" onChange="{{ pickStudioPortrait }}" style="display: none;"></label>
+                    <div style="display: flex; flex-wrap: wrap; gap: 7px;"><label class="btn btn-secondary" style="cursor: pointer; font-size: 13px;">Choose portrait<input type="file" accept="image/*" onChange="{{ pickStudioPortrait }}" style="display: none;"></label><button type="button" onClick="{{ pasteStudioPortrait }}" class="btn btn-secondary" style="font-size: 13px;">Paste from clipboard</button></div>
                   </div>
                   <div class="cs-details-grid" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;">
                     <div class="field"><label>Name</label><input class="input" value="{{ studioName }}" onChange="{{ setStudioName }}"></div>
@@ -1063,7 +1063,7 @@
                   <sc-for list="{{ conceptMaterials }}" as="m" hint-placeholder-count="4">
                     <div style="border: 1px solid var(--color-neutral-200); border-radius: var(--radius-md); padding: 14px 16px; display: flex; flex-direction: column; gap: 8px;">
                       <div style="aspect-ratio: 16 / 10; border-radius: 10px; overflow: hidden; background: var(--color-neutral-100);"><img src="assets/piece-placeholder.png" data-img="{{ m.image }}" alt="" style="width: 100%; height: 100%; object-fit: cover;"></div>
-                      <div style="display: flex; gap: 7px;"><label class="btn btn-secondary" style="cursor: pointer; font-size: 12px; flex: 1;">Choose image<input type="file" accept="image/*" onChange="{{ m.pickImage }}" style="display: none;"></label><button type="button" onClick="{{ m.clearImage }}" class="btn btn-ghost" style="font-size: 12px;">Clear</button></div>
+                      <div style="display: flex; flex-wrap: wrap; gap: 7px;"><label class="btn btn-secondary" style="cursor: pointer; font-size: 12px; flex: 1;">Choose image<input type="file" accept="image/*" onChange="{{ m.pickImage }}" style="display: none;"></label><button type="button" onClick="{{ m.pasteImage }}" class="btn btn-secondary" style="font-size: 12px;">Paste</button><button type="button" onClick="{{ m.clearImage }}" class="btn btn-ghost" style="font-size: 12px;">Clear</button></div>
                       <div style="display: flex; gap: 8px;">
                         <input class="input" value="{{ m.name }}" onChange="{{ m.setName }}" placeholder="Material" style="flex: 1;">
                         <button type="button" onClick="{{ m.remove }}" class="btn btn-ghost" style="font-size: 13px;">×</button>
@@ -1082,7 +1082,7 @@
                     <div style="border: 1px solid var(--color-neutral-200); border-radius: var(--radius-md); padding: 14px;">
                       <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;"><input class="input" value="{{ floor.title }}" onChange="{{ floor.setTitle }}" placeholder="Floor name" style="flex: 1;"><button type="button" onClick="{{ floor.remove }}" class="btn btn-ghost" disabled="{{ floor.cannotRemove }}">Remove level</button></div>
                       <div style="aspect-ratio: 4 / 3; border-radius: 10px; overflow: hidden; background: var(--color-neutral-100);"><img src="assets/piece-placeholder.png" data-img="{{ floor.image }}" alt="" style="width: 100%; height: 100%; object-fit: contain;"></div>
-                      <label class="btn btn-secondary" style="cursor: pointer; font-size: 12px; margin-top: 10px;">Choose floor plan<input type="file" accept="image/*" onChange="{{ floor.pickImage }}" style="display: none;"></label>
+                      <div style="display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px;"><label class="btn btn-secondary" style="cursor: pointer; font-size: 12px;">Choose floor plan<input type="file" accept="image/*" onChange="{{ floor.pickImage }}" style="display: none;"></label><button type="button" onClick="{{ floor.pasteImage }}" class="btn btn-secondary" style="font-size: 12px;">Paste from clipboard</button></div>
                       <textarea class="input" rows="3" value="{{ floor.comment }}" onChange="{{ floor.setComment }}" placeholder="Comments about circulation, layout or revisions" style="margin-top: 10px; resize: vertical; font-family: var(--font-body);"></textarea>
                     </div>
                   </sc-for>
@@ -1097,7 +1097,7 @@
                     <label style="font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--color-neutral-600);">Goal for this space</label>
                     <textarea class="input" rows="2" value="{{ room.goal }}" onChange="{{ room.setGoal }}" placeholder="What we want to achieve in this space" style="resize: vertical; font-family: var(--font-body); margin: 7px 0 10px;"></textarea>
                     <textarea class="input" rows="2" value="{{ room.brief }}" onChange="{{ room.setBrief }}" placeholder="Functional brief, priorities and what we are looking for" style="resize: vertical; font-family: var(--font-body); margin-bottom: 18px;"></textarea>
-                    <div style="border-top: 1px solid var(--color-neutral-200); padding-top: 16px;"><div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;"><div style="font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-600);">Visual carousel</div><div style="flex: 1;"></div><label class="btn btn-secondary" style="cursor: pointer; font-size: 12px;">Add images<input type="file" accept="image/*" multiple onChange="{{ room.addMedia }}" style="display: none;"></label></div>
+                    <div style="border-top: 1px solid var(--color-neutral-200); padding-top: 16px;"><div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px;"><div style="font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-600);">Visual carousel</div><div style="flex: 1;"></div><label class="btn btn-secondary" style="cursor: pointer; font-size: 12px;">Add images<input type="file" accept="image/*" multiple onChange="{{ room.addMedia }}" style="display: none;"></label><button type="button" onClick="{{ room.pasteMedia }}" class="btn btn-secondary" style="font-size: 12px;">Paste from clipboard</button></div>
                       <sc-if value="{{ room.hasMedia }}" hint-placeholder-val="{{ false }}"><div style="position: relative; border-radius: var(--radius-md); overflow: hidden; background: var(--color-neutral-100); margin-bottom: 14px;"><div style="aspect-ratio: 16 / 9;"><img src="assets/piece-placeholder.png" data-img="{{ room.currentUrl }}" alt="" style="width: 100%; height: 100%; object-fit: contain;"></div><div style="position: absolute; left: 12px; right: 12px; bottom: 12px; display: flex; align-items: center; gap: 8px;"><button type="button" onClick="{{ room.prevMedia }}" class="btn btn-secondary">←</button><div style="background: rgba(255,255,255,.92); border-radius: 999px; padding: 7px 13px; font-size: 12px; flex: 1;">{{ room.currentType }} · {{ room.currentTitle }}</div><button type="button" onClick="{{ room.nextMedia }}" class="btn btn-secondary">→</button></div></div></sc-if>
                       <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px;"><sc-for list="{{ room.media }}" as="media" hint-placeholder-count="3"><div style="border: 1px solid var(--color-neutral-200); border-radius: var(--radius-md); padding: 10px;"><div style="aspect-ratio: 4 / 3; border-radius: 9px; overflow: hidden; background: var(--color-neutral-100);"><img src="assets/piece-placeholder.png" data-img="{{ media.url }}" alt="" style="width: 100%; height: 100%; object-fit: cover;"></div><select class="input" value="{{ media.type }}" onChange="{{ media.setType }}" style="margin-top: 8px;"><option value="moodboard">Moodboard</option><option value="floorplan">2D Floor Plan</option><option value="sketchup">SketchUp rendering</option><option value="rendering">Ultra-realistic rendering</option></select><input class="input" value="{{ media.title }}" onChange="{{ media.setTitle }}" placeholder="Image title" style="margin-top: 7px;"><button type="button" onClick="{{ media.remove }}" class="btn btn-ghost" style="font-size: 12px; margin-top: 5px;">Remove image</button></div></sc-for></div>
                     </div>
@@ -1952,6 +1952,29 @@ class Component extends DCLogic {
     }
   }
 
+  // Shared by every image control in the Concept editor. Clipboard.read is
+  // intentionally called from a button click so browsers treat it as a user
+  // gesture and can show their normal clipboard permission prompt.
+  async conceptClipboardImage() {
+    if (!navigator.clipboard || !navigator.clipboard.read) {
+      this.setState({ conceptNotice: 'Clipboard image access is unavailable in this browser. Use Choose file instead.' });
+      return null;
+    }
+    try {
+      const items = await navigator.clipboard.read();
+      for (const item of items) {
+        const type = item.types.find((value) => value.startsWith('image/'));
+        if (!type) continue;
+        const blob = await item.getType(type);
+        return new File([blob], 'clipboard-image-' + Date.now() + '.' + (type.split('/')[1] || 'png'), { type });
+      }
+      this.setState({ conceptNotice: 'The clipboard does not contain an image.' });
+    } catch (e) {
+      this.setState({ conceptNotice: 'Clipboard permission was not granted. Use Choose file or allow clipboard access.' });
+    }
+    return null;
+  }
+
   removeCatalogImage() {
     this.setState({ form: { ...this.state.form, image: '' }, imageNotice: 'Photo removed.', imageNoticeKind: 'status' });
   }
@@ -2433,6 +2456,7 @@ class Component extends DCLogic {
       v.introStageNote = draft.intro.stageNote; v.setIntroStageNote = setIntro('stageNote');
       v.introBody = draft.intro.body; v.setIntroBody = setIntro('body'); v.introHero = draft.intro.hero;
       v.pickIntroHero = async (e) => { const file = e.target.files && e.target.files[0]; if (file) setDraft({ intro: { ...draft.intro, hero: await api.uploadFile(p.id, file) } }); };
+      v.pasteIntroHero = async () => { const file = await this.conceptClipboardImage(); if (file) setDraft({ intro: { ...draft.intro, hero: await api.uploadFile(p.id, file) } }); };
 
       const setStudio = (key) => (e) => setDraft({ studio: { ...draft.studio, [key]: e.target.value } });
       v.studioName = draft.studio.name; v.setStudioName = setStudio('name');
@@ -2440,6 +2464,7 @@ class Component extends DCLogic {
       v.studioStrap = draft.studio.strap; v.setStudioStrap = setStudio('strap');
       v.studioPortrait = draft.studio.portrait;
       v.pickStudioPortrait = async (e) => { const file = e.target.files && e.target.files[0]; if (file) setDraft({ studio: { ...draft.studio, portrait: await api.uploadFile(p.id, file) } }); };
+      v.pasteStudioPortrait = async () => { const file = await this.conceptClipboardImage(); if (file) setDraft({ studio: { ...draft.studio, portrait: await api.uploadFile(p.id, file) } }); };
       const setBio = (i) => (e) => { const bio = draft.studio.bio.slice(); bio[i] = e.target.value; setDraft({ studio: { ...draft.studio, bio } }); };
       v.studioBio1 = draft.studio.bio[0] || ''; v.setStudioBio1 = setBio(0);
       v.studioBio2 = draft.studio.bio[1] || ''; v.setStudioBio2 = setBio(1);
@@ -2481,6 +2506,7 @@ class Component extends DCLogic {
         name: m.name || '', note: m.note || '', image: m.image || '',
         setName: materialsC.setField(i, 'name'), setNote: materialsC.setField(i, 'note'), remove: materialsC.remove(i),
         pickImage: async (e) => { const file = e.target.files && e.target.files[0]; if (!file) return; const next = draft.materials.slice(); next[i] = { ...next[i], image: await api.uploadFile(p.id, file) }; setDraft({ materials: next }); },
+        pasteImage: async () => { const file = await this.conceptClipboardImage(); if (!file) return; const next = draft.materials.slice(); next[i] = { ...next[i], image: await api.uploadFile(p.id, file) }; setDraft({ materials: next }); },
         clearImage: () => { const next = draft.materials.slice(); next[i] = { ...next[i], image: '' }; setDraft({ materials: next }); },
       }));
 
@@ -2490,6 +2516,7 @@ class Component extends DCLogic {
         return { title: floor.title || '', image: floor.image || '', comment: floor.comment || '', cannotRemove: draft.floorPlans.length <= 1,
           setTitle: (e) => setFloor({ title: e.target.value }), setComment: (e) => setFloor({ comment: e.target.value }),
           pickImage: async (e) => { const file = e.target.files && e.target.files[0]; if (file) setFloor({ image: await api.uploadFile(p.id, file) }); },
+          pasteImage: async () => { const file = await this.conceptClipboardImage(); if (file) setFloor({ image: await api.uploadFile(p.id, file) }); },
           remove: () => { if (draft.floorPlans.length > 1) setDraft({ floorPlans: draft.floorPlans.filter((_, j) => j !== fi) }); }
         };
       });
@@ -2530,6 +2557,12 @@ class Component extends DCLogic {
             const added = [];
             for (const file of files) added.push({ id: 'media-' + Date.now().toString(36) + '-' + added.length, type: 'moodboard', title: file.name.replace(/\.[^.]+$/, ''), url: await api.uploadFile(p.id, file) });
             setRoom({ conceptMedia: [...(room.conceptMedia || []), ...added] });
+          },
+          pasteMedia: async () => {
+            const file = await this.conceptClipboardImage();
+            if (!file) return;
+            const url = await api.uploadFile(p.id, file);
+            setRoom({ conceptMedia: [...(room.conceptMedia || []), { id: 'media-' + Date.now().toString(36), type: 'moodboard', title: 'Pasted image', url }] });
           },
         };
       });
