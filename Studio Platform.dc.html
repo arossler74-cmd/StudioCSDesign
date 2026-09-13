@@ -923,6 +923,146 @@
             </div>
           </sc-if>
 
+          <!-- concept editor — direction, goals, palette, materials and each
+               space's plan and moodboard, edited here and turned into the
+               client document on export -->
+          <sc-if value="{{ tabConcept }}">
+            <div style="animation: csFade .35s var(--ease-spring) both; max-width: 980px;">
+              <div class="cs-section-header" style="display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 24px;">
+                <div>
+                  <h2 style="font-family: var(--font-heading); font-size: 32px; margin: 0; color: var(--color-accent-900);">{{ docTitle }}</h2>
+                  <div style="color: var(--color-neutral-600); font-size: 14px;">{{ docSub }}</div>
+                </div>
+                <div class="cs-inline-actions" style="display: flex; align-items: center; gap: 10px;">
+                  <button type="button" onClick="{{ exportHtml }}" class="btn btn-secondary">{{ exportLabel }}</button>
+                  <button type="button" onClick="{{ exportPdf }}" class="btn btn-ghost">Export PDF</button>
+                </div>
+              </div>
+              <sc-if value="{{ exportNote }}" hint-placeholder-val="{{ false }}">
+                <div class="card" style="padding: 12px 16px; margin-bottom: 18px; font-size: 13.5px; color: var(--color-accent-900);">{{ exportNote }}</div>
+              </sc-if>
+
+              <div class="card" style="padding: 24px 26px; margin-bottom: 22px;">
+                <div style="font-family: var(--font-heading); font-size: 20px; color: var(--color-accent-900); margin-bottom: 4px;">Direction</div>
+                <div style="font-size: 13.5px; color: var(--color-neutral-600); margin-bottom: 14px;">The story this concept tells — what the client reads first.</div>
+                <textarea class="input" rows="4" value="{{ conceptNote }}" onChange="{{ setConceptNote }}" placeholder="A home that lives the way you do…" style="resize: vertical; font-family: var(--font-body);"></textarea>
+              </div>
+
+              <div class="card" style="padding: 24px 26px; margin-bottom: 22px;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                  <div style="font-family: var(--font-heading); font-size: 20px; color: var(--color-accent-900);">Goals</div>
+                  <div style="flex: 1;"></div>
+                  <button type="button" onClick="{{ addGoal }}" class="btn btn-ghost" style="font-size: 13px;">+ Add goal</button>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px;">
+                  <sc-for list="{{ conceptGoals }}" as="g" hint-placeholder-count="3">
+                    <div style="border: 1px solid var(--color-neutral-200); border-radius: var(--radius-md); padding: 14px 16px; display: flex; flex-direction: column; gap: 8px;">
+                      <div style="display: flex; gap: 8px;">
+                        <input class="input" value="{{ g.title }}" onChange="{{ g.setTitle }}" placeholder="Goal" style="flex: 1;">
+                        <button type="button" onClick="{{ g.remove }}" class="btn btn-ghost" style="font-size: 13px;">×</button>
+                      </div>
+                      <textarea class="input" rows="2" value="{{ g.body }}" onChange="{{ g.setBody }}" placeholder="What this means for the space" style="resize: vertical; font-family: var(--font-body);"></textarea>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div class="card" style="padding: 24px 26px; margin-bottom: 22px;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                  <div style="font-family: var(--font-heading); font-size: 20px; color: var(--color-accent-900);">Concept direction</div>
+                  <div style="flex: 1;"></div>
+                  <button type="button" onClick="{{ addPoint }}" class="btn btn-ghost" style="font-size: 13px;">+ Add point</button>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px;">
+                  <sc-for list="{{ conceptPoints }}" as="c" hint-placeholder-count="3">
+                    <div style="border: 1px solid var(--color-neutral-200); border-radius: var(--radius-md); padding: 14px 16px; display: flex; flex-direction: column; gap: 8px;">
+                      <div style="display: flex; gap: 8px;">
+                        <input class="input" value="{{ c.title }}" onChange="{{ c.setTitle }}" placeholder="Direction" style="flex: 1;">
+                        <button type="button" onClick="{{ c.remove }}" class="btn btn-ghost" style="font-size: 13px;">×</button>
+                      </div>
+                      <textarea class="input" rows="2" value="{{ c.body }}" onChange="{{ c.setBody }}" placeholder="How it plays out" style="resize: vertical; font-family: var(--font-body);"></textarea>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div class="card" style="padding: 24px 26px; margin-bottom: 22px;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                  <div style="font-family: var(--font-heading); font-size: 20px; color: var(--color-accent-900);">Palette</div>
+                  <div style="flex: 1;"></div>
+                  <button type="button" onClick="{{ addColor }}" class="btn btn-ghost" style="font-size: 13px;">+ Add color</button>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 14px;">
+                  <sc-for list="{{ conceptPalette }}" as="c" hint-placeholder-count="4">
+                    <div style="border: 1px solid var(--color-neutral-200); border-radius: var(--radius-md); overflow: hidden;">
+                      <input type="color" value="{{ c.hex }}" onChange="{{ c.setHex }}" style="width: 100%; height: 60px; border: 0; padding: 0; cursor: pointer; display: block;">
+                      <div style="padding: 8px 10px; display: flex; gap: 6px; align-items: center;">
+                        <input class="input" value="{{ c.name }}" onChange="{{ c.setName }}" placeholder="Name" style="flex: 1; font-size: 12.5px; padding: 5px 8px;">
+                        <button type="button" onClick="{{ c.remove }}" class="btn btn-ghost" style="font-size: 12px; padding: 2px 6px;">×</button>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div class="card" style="padding: 24px 26px; margin-bottom: 22px;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                  <div style="font-family: var(--font-heading); font-size: 20px; color: var(--color-accent-900);">Materials</div>
+                  <div style="flex: 1;"></div>
+                  <button type="button" onClick="{{ addMaterial }}" class="btn btn-ghost" style="font-size: 13px;">+ Add material</button>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px;">
+                  <sc-for list="{{ conceptMaterials }}" as="m" hint-placeholder-count="4">
+                    <div style="border: 1px solid var(--color-neutral-200); border-radius: var(--radius-md); padding: 14px 16px; display: flex; flex-direction: column; gap: 8px;">
+                      <div style="display: flex; gap: 8px;">
+                        <input class="input" value="{{ m.name }}" onChange="{{ m.setName }}" placeholder="Material" style="flex: 1;">
+                        <button type="button" onClick="{{ m.remove }}" class="btn btn-ghost" style="font-size: 13px;">×</button>
+                      </div>
+                      <textarea class="input" rows="2" value="{{ m.note }}" onChange="{{ m.setNote }}" placeholder="Why this, and where" style="resize: vertical; font-family: var(--font-body);"></textarea>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: 20px; margin-bottom: 22px;">
+                <sc-for list="{{ conceptRooms }}" as="room" hint-placeholder-count="2">
+                  <div class="card" style="padding: 24px 26px;">
+                    <div style="font-family: var(--font-heading); font-size: 22px; color: var(--color-accent-900); margin-bottom: 14px;">{{ room.name }}</div>
+                    <textarea class="input" rows="2" value="{{ room.brief }}" onChange="{{ room.setBrief }}" placeholder="What this space needs to do" style="resize: vertical; font-family: var(--font-body); margin-bottom: 18px;"></textarea>
+                    <div style="display: grid; grid-template-columns: 220px 1fr; gap: 24px;">
+                      <div>
+                        <div style="font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-600); margin-bottom: 8px;">Floor plan</div>
+                        <div style="aspect-ratio: 4 / 3; border-radius: var(--radius-md); overflow: hidden; background: var(--color-neutral-100); margin-bottom: 10px;">
+                          <img src="assets/piece-placeholder.png" data-img="{{ room.cad }}" alt="" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        <label class="btn btn-secondary" style="cursor: pointer; font-size: 13px;">Choose plan<input type="file" accept="image/*" onChange="{{ room.pickPlan }}" style="display: none;"></label>
+                      </div>
+                      <div>
+                        <div style="font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-600); margin-bottom: 8px;">Moodboard</div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; margin-bottom: 10px;">
+                          <sc-for list="{{ room.moodboard }}" as="m" hint-placeholder-count="3">
+                            <div style="position: relative; aspect-ratio: 1 / 1; border-radius: var(--radius-md); overflow: hidden; background: var(--color-neutral-100);">
+                              <img src="assets/piece-placeholder.png" data-img="{{ m.url }}" alt="" style="width: 100%; height: 100%; object-fit: cover;">
+                              <button type="button" onClick="{{ m.remove }}" class="btn btn-ghost" style="position: absolute; top: 4px; right: 4px; font-size: 11px; padding: 1px 7px; background: rgba(255,255,255,.85);">×</button>
+                            </div>
+                          </sc-for>
+                        </div>
+                        <label class="btn btn-secondary" style="cursor: pointer; font-size: 13px;">Add images<input type="file" accept="image/*" multiple onChange="{{ room.addMood }}" style="display: none;"></label>
+                      </div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+
+              <div style="display: flex; align-items: center; gap: 14px;">
+                <button type="button" onClick="{{ saveConcept }}" class="btn btn-primary">{{ conceptSaveLabel }}</button>
+                <sc-if value="{{ conceptNotice }}" hint-placeholder-val="{{ false }}">
+                  <div style="font-size: 13.5px; color: var(--color-accent-800);">{{ conceptNotice }}</div>
+                </sc-if>
+              </div>
+            </div>
+          </sc-if>
+
           <!-- selection -->
           <sc-if value="{{ tabSelection }}">
             <div style="animation: csFade .35s var(--ease-spring) both;">
@@ -1399,7 +1539,7 @@ class Component extends DCLogic {
   cat(id) { return (this.state.catalog || []).find((c) => c.id === id) || null; }
 
   openProject(p) {
-    this.setState({ proj: p, view: 'proj', tab: 'discovery', answers: p.answers || {}, saved: '', pick: null, inbox: [], qEdit: false, qDraft: null });
+    this.setState({ proj: p, view: 'proj', tab: 'discovery', answers: p.answers || {}, saved: '', pick: null, inbox: [], qEdit: false, qDraft: null, concept: null, conceptNotice: '' });
     this.state.api.shareReviews(p).then((inbox) => { this.setState({ inbox }); this.syncDiscoveryStatus(); }).catch(() => {});
   }
 
@@ -1415,6 +1555,20 @@ class Component extends DCLogic {
   async setRooms(rooms) {
     await this.persist({ rooms });
     try { await this.state.api.refreshShares(this.state.proj); } catch (e) {}
+  }
+
+  // Concept tab: goals, direction points, palette and materials are all small
+  // arrays of a couple of text fields on the same in-progress draft — one
+  // helper builds add/set/remove for each rather than repeating it four times.
+  conceptList(draft, setDraft, key, blank) {
+    const list = draft[key] || [];
+    const set = (next) => setDraft({ [key]: next });
+    return {
+      items: list,
+      add: () => set([...list, { ...blank }]),
+      setField: (i, field) => (e) => { const next = list.slice(); next[i] = { ...next[i], [field]: e.target.value }; set(next); },
+      remove: (i) => () => set(list.filter((_, j) => j !== i)),
+    };
   }
 
   // A project's own questionnaire once it has one; the studio-wide template
@@ -2113,16 +2267,18 @@ class Component extends DCLogic {
       tabDetails: s.tab === 'details',
       tabFees: s.tab === 'fees',
       tabDiscovery: s.tab === 'discovery',
-      tabDoc: s.tab === 'concept' || s.tab === 'design' || s.tab === 'styling',
+      tabDoc: s.tab === 'design' || s.tab === 'styling',
+      tabConcept: s.tab === 'concept',
       tabSelection: s.tab === 'selection',
       tabFeedback: s.tab === 'feedback',
       tabSharing: s.tab === 'sharing',
       showPrice: s.tab === 'design' || s.tab === 'styling' || admin || (s.user && s.user.role === 'designer'),
     };
 
-    if (v.tabDoc) {
+    if (v.tabDoc || v.tabConcept) {
       const f = PHASES.find((x) => x.key === s.tab), d = ph[s.tab] || {};
-      Object.assign(v, { docTitle: f.title, docSub: d.note || f.tagline, docHref: d.doc || '', hasDoc: !!d.doc, noDoc: !d.doc });
+      if (v.tabDoc) Object.assign(v, { docTitle: f.title, docSub: d.note || f.tagline, docHref: d.doc || '', hasDoc: !!d.doc, noDoc: !d.doc });
+      if (v.tabConcept) Object.assign(v, { docTitle: f.title, docSub: f.tagline });
 
       // The client report is generated from project data on demand rather than
       // stored, so it always reflects what the platform currently holds.
@@ -2171,6 +2327,111 @@ class Component extends DCLogic {
           }
         },
       });
+    }
+
+    if (v.tabConcept) {
+      // Edits are held in a draft (like Details/Fees) so a half-typed goal is
+      // never persisted and Firestore is not written on every keystroke. The
+      // draft is rebuilt from the project the first time this tab is opened,
+      // then kept in state until Save concept or a project switch clears it.
+      const draft = s.concept || {
+        note: (ph.concept && ph.concept.note) || '',
+        goals: (p.goals || []).map((g) => ({ ...g })),
+        points: (p.conceptPoints || []).map((x) => ({ ...x })),
+        palette: (p.palette || []).map((x) => ({ ...x })),
+        materials: (p.materials || []).map((x) => ({ ...x })),
+        rooms: this.rooms().map((r) => ({ id: r.id, name: r.name, brief: r.brief || '', cad: r.cad || '', moodboard: [...(r.moodboard || [])] })),
+      };
+      const setDraft = (patch) => this.setState({ concept: { ...draft, ...patch } });
+
+      v.conceptNote = draft.note;
+      v.setConceptNote = (e) => setDraft({ note: e.target.value });
+
+      const goalsC = this.conceptList(draft, setDraft, 'goals', { title: '', body: '' });
+      v.addGoal = goalsC.add;
+      v.conceptGoals = goalsC.items.map((g, i) => ({
+        title: g.title || '', body: g.body || '',
+        setTitle: goalsC.setField(i, 'title'), setBody: goalsC.setField(i, 'body'), remove: goalsC.remove(i),
+      }));
+
+      const pointsC = this.conceptList(draft, setDraft, 'points', { title: '', body: '' });
+      v.addPoint = pointsC.add;
+      v.conceptPoints = pointsC.items.map((c, i) => ({
+        title: c.title || '', body: c.body || '',
+        setTitle: pointsC.setField(i, 'title'), setBody: pointsC.setField(i, 'body'), remove: pointsC.remove(i),
+      }));
+
+      const paletteC = this.conceptList(draft, setDraft, 'palette', { name: '', hex: '#CCCCCC' });
+      v.addColor = paletteC.add;
+      v.conceptPalette = paletteC.items.map((c, i) => ({
+        name: c.name || '', hex: c.hex || '#CCCCCC',
+        setName: paletteC.setField(i, 'name'), setHex: paletteC.setField(i, 'hex'), remove: paletteC.remove(i),
+      }));
+
+      const materialsC = this.conceptList(draft, setDraft, 'materials', { name: '', note: '' });
+      v.addMaterial = materialsC.add;
+      v.conceptMaterials = materialsC.items.map((m, i) => ({
+        name: m.name || '', note: m.note || '',
+        setName: materialsC.setField(i, 'name'), setNote: materialsC.setField(i, 'note'), remove: materialsC.remove(i),
+      }));
+
+      v.conceptRooms = draft.rooms.map((room, ri) => {
+        const setRoom = (patch) => {
+          const next = draft.rooms.slice();
+          next[ri] = { ...next[ri], ...patch };
+          setDraft({ rooms: next });
+        };
+        return {
+          name: room.name,
+          brief: room.brief,
+          setBrief: (e) => setRoom({ brief: e.target.value }),
+          cad: room.cad,
+          pickPlan: async (e) => {
+            const file = e.target.files && e.target.files[0];
+            if (!file) return;
+            const url = await api.uploadFile(p.id, file);
+            setRoom({ cad: url });
+          },
+          moodboard: (room.moodboard || []).map((url, mi) => ({
+            url,
+            remove: () => setRoom({ moodboard: room.moodboard.filter((_, j) => j !== mi) }),
+          })),
+          addMood: async (e) => {
+            const files = Array.from(e.target.files || []);
+            if (!files.length) return;
+            const urls = [];
+            for (const file of files) urls.push(await api.uploadFile(p.id, file));
+            setRoom({ moodboard: [...(room.moodboard || []), ...urls] });
+          },
+        };
+      });
+
+      v.conceptSaveLabel = s.conceptSaving ? 'Saving…' : 'Save concept';
+      v.conceptNotice = s.conceptNotice || '';
+      v.saveConcept = async () => {
+        if (this.state.conceptSaving) return;
+        const d = this.state.concept || draft;
+        this.setState({ conceptSaving: true, conceptNotice: '' });
+        // Merge only the fields this tab owns (brief/cad/moodboard) back onto
+        // the current rooms, rather than writing the whole draft rooms array —
+        // that way a selection made on the Selection tab while this draft was
+        // open is never clobbered.
+        const roomsNext = this.rooms().map((r) => {
+          const edited = d.rooms.find((x) => x.id === r.id);
+          return edited ? { ...r, brief: edited.brief, cad: edited.cad, moodboard: edited.moodboard } : r;
+        });
+        try {
+          await this.persist({
+            goals: d.goals, conceptPoints: d.points, palette: d.palette, materials: d.materials,
+            rooms: roomsNext,
+            phases: { ...p.phases, concept: { ...(ph.concept || {}), note: d.note } },
+          });
+          this.setState({ concept: null, conceptSaving: false, conceptNotice: 'Saved.' });
+          setTimeout(() => this.setState({ conceptNotice: '' }), 1600);
+        } catch (err) {
+          this.setState({ conceptSaving: false, conceptNotice: 'Could not save — ' + ((err && err.message) || err) });
+        }
+      };
     }
 
     if (v.tabFees) {

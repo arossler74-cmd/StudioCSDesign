@@ -250,6 +250,20 @@ function conceptSection(p, phaseData) {
 </div></section>`;
 }
 
+function materialsSection(p) {
+  const materials = (p.materials || []).filter((m) => m && (m.name || m.note));
+  if (!materials.length) return '';
+  return `
+<section><div class="wrap">
+  <div class="kicker">What everything is made from</div><h2>Materials</h2>
+  <div class="grid g2" style="margin-top:24px">
+    ${materials.map((m) => `<div class="card">
+      <div style="font-size:16px;margin-bottom:6px">${esc(m.name || '')}</div>
+      <div class="lead" style="font-size:13.5px">${esc(m.note || '')}</div></div>`).join('')}
+  </div>
+</div></section>`;
+}
+
 function planSection(p, img) {
   const rooms = (p.rooms || []).filter((r) => r.cad);
   if (!rooms.length) return '';
@@ -400,6 +414,7 @@ export async function buildReport(project, phaseKey, catalog, onProgress) {
     // furniture in the concept report turns a conversation about feeling into
     // one about price, which is why the phases carry different sections.
     phase.key === 'concept' ? conceptSection(p, (p.phases && p.phases.concept) || {}) : '',
+    phase.key === 'concept' ? materialsSection(p) : '',
     phase.key === 'concept' || phase.key === 'design' ? planSection(p, img) : '',
     phase.key === 'concept' || phase.key === 'design' ? moodSection(p, img) : '',
     phase.key === 'design' || phase.key === 'styling' ? sourcingSection(p, byId, img) : '',
