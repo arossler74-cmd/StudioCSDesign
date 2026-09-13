@@ -17,10 +17,10 @@
 //   discovery / styling — the brief and the closing summary respectively.
 
 const PHASES = [
-  { key: 'discovery', n: 1, title: 'Discovery', blurb: 'We start with the questionnaire and a conversation, then I visit and measure the space.' },
-  { key: 'concept', n: 2, title: 'Concept', blurb: 'I present a design direction — moodboard, palette and materials — so we agree on the feeling before anything is bought.' },
-  { key: 'design', n: 3, title: 'Design & sourcing', blurb: 'Floor plans, renderings and a curated sourcing list come together into one cohesive scheme.' },
-  { key: 'styling', n: 4, title: 'Styling & reveal', blurb: 'Pieces arrive, everything is placed and styled, and your space is ready to be lived in.' },
+  { key: 'discovery', n: 1, icon: 'assets/icon-discovery.png', title: 'Discovery', blurb: 'We start with the questionnaire and a conversation, then I visit and measure the space. This is where I learn how you live.' },
+  { key: 'concept', n: 2, icon: 'assets/icon-concept.png', title: 'Concept', blurb: 'I present a design direction — moodboard, palette and materials — so we agree on the feeling before anything is chosen.' },
+  { key: 'design', n: 3, icon: 'assets/icon-design.png', title: 'Design & sourcing', blurb: 'Floor plans, renderings and a curated sourcing list come together into one cohesive scheme, with a round of refinements.' },
+  { key: 'styling', n: 4, icon: 'assets/icon-styling.png', title: 'Styling & reveal', blurb: 'Pieces arrive, everything is placed and styled, and your space is ready to be lived in — exactly as we imagined it.' },
 ];
 
 // The studio's own copy. Identical on every report and changed rarely, so it
@@ -90,7 +90,7 @@ async function embed(url, cache, timeoutMs) {
  *  first so the caller can show real progress instead of a spinner. */
 function imageList(project, phaseKey) {
   const profile = project.studioProfile || STUDIO;
-  const out = [profile.portrait || STUDIO.portrait, STUDIO.logo];
+  const out = [profile.portrait || STUDIO.portrait, STUDIO.logo, ...PHASES.map((f) => f.icon)];
   if (project.hero) out.push(project.hero);
   for (const m of project.materials || []) if (m.image) out.push(m.image);
   for (const f of project.floorPlans || []) if (f.image) out.push(f.image);
@@ -106,41 +106,48 @@ const CSS = `
 :root{--bg:#F4EDE4;--surface:#FBF7F1;--surface2:#F7F0E6;--ink:#3B342C;--soft:#6A6154;
 --mute:#9A8C7C;--faint:#B3A695;--line:#E6DBCC;--line2:#DCCFBB;--accent:#A98A5F;--accent-dark:#8A6E45}
 *{box-sizing:border-box}
+html{scroll-behavior:smooth}
 body{margin:0;background:var(--bg);color:var(--ink);
 font-family:'Jost',-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;
-font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+font-size:clamp(15px,1.05vw,20px);line-height:1.65;-webkit-font-smoothing:antialiased}
 h1,h2,h3,.disp{font-family:'Cormorant Garamond',Georgia,'Times New Roman',serif;font-weight:400;margin:0}
-.wrap{max-width:1000px;margin:0 auto;padding:0 32px}
-section{padding:72px 0;border-top:1px solid var(--line)}
+.wrap{width:100%;margin:0 auto;padding:0 clamp(34px,6vw,128px)}
+section{min-height:100vh;padding:clamp(70px,8vh,130px) 0;border-top:1px solid var(--line);display:flex;align-items:center}
 section:first-of-type{border-top:0}
-.kicker{font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--mute);margin-bottom:10px}
-h2{font-size:40px;line-height:1.1;color:var(--accent-dark);margin-bottom:8px}
+.kicker{font-size:.7em;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
+h2{font-size:clamp(48px,5vw,84px);line-height:1;color:var(--ink);margin-bottom:12px}
 .lead{color:var(--soft);max-width:68ch;text-wrap:pretty}
 .grid{display:grid;gap:22px}
 .g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px 24px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:26px;padding:clamp(24px,2.5vw,48px)}
 img{max-width:100%;display:block}
-.cover{min-height:88vh;display:flex;flex-direction:column;justify-content:center;padding:80px 0}
-.cover h1{font-size:clamp(44px,7vw,86px);line-height:1.02;color:var(--accent-dark);margin:18px 0 28px}
+.cover{min-height:100vh;padding:clamp(70px,8vh,130px) 0}
+.cover h1{font-size:clamp(66px,9vw,160px);line-height:.92;color:var(--accent-dark);margin:clamp(24px,4vh,54px) 0}
 .heroimg{width:100%;aspect-ratio:16/7;object-fit:cover;border-radius:16px;margin-top:34px}
-.meta{display:flex;flex-wrap:wrap;gap:44px;margin-top:20px}
-.meta .lbl{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--mute)}
-.meta .val{font-size:17px;margin-top:4px}
-.step{display:flex;gap:16px;padding:18px 0;border-bottom:1px solid var(--line)}
-.step:last-child{border-bottom:0}
-.step .n{font-family:'Cormorant Garamond',Georgia,serif;font-size:26px;color:var(--faint);min-width:44px}
+.meta{display:grid;grid-template-columns:minmax(280px,1.4fr) repeat(2,minmax(180px,.65fr));gap:clamp(28px,5vw,80px);margin-top:28px}
+.meta .lbl{font-size:.68em;letter-spacing:.18em;text-transform:uppercase;color:var(--accent)}
+.meta .val{font-size:1.15em;margin-top:6px}
+.studio-grid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(320px,.8fr);gap:clamp(50px,7vw,120px);align-items:end}
+.studio-copy{padding-bottom:4px}.studio-portrait{justify-self:end;width:min(100%,560px);height:min(69vh,760px);object-fit:cover;object-position:center top;border-radius:24px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:32px}.stat{padding:18px 20px;border-radius:18px}
+.process-list{margin-top:clamp(30px,5vh,70px)}
+.process-step{display:grid;grid-template-columns:190px 1fr;gap:clamp(30px,5vw,88px);align-items:center;padding:clamp(28px,4vh,54px) 0;border-bottom:1px solid var(--line)}
+.process-step:last-child{border-bottom:0}.process-icon{width:72px;height:72px;object-fit:contain;margin-bottom:14px}.process-label{font-size:.68em;letter-spacing:.2em;text-transform:uppercase;color:var(--accent)}
+.process-title{font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(32px,3vw,54px);line-height:1.05}.process-copy{font-size:1.05em;color:var(--soft);max-width:900px;margin-top:10px}
 .here{display:inline-block;margin-left:10px;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
 background:var(--accent);color:#fff;border-radius:999px;padding:3px 10px;vertical-align:middle}
-.sw{border-radius:12px;overflow:hidden;border:1px solid var(--line2)}
-.sw .chip{height:78px}
-.sw .n{padding:9px 12px;font-size:13px;background:var(--surface)}
-.sw .h{padding:0 12px 10px;font-size:11.5px;color:var(--mute);background:var(--surface);font-family:ui-monospace,monospace}
+.goals-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(22px,3vw,42px);margin-top:clamp(38px,7vh,90px)}
+.goal-card{min-height:390px;display:flex;flex-direction:column;justify-content:flex-start}.goal-number{width:44px;height:44px;border:1px solid var(--accent);border-radius:50%;display:grid;place-items:center;color:var(--accent);font-size:.78em;letter-spacing:.06em;margin-bottom:28px}.goal-title{font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(28px,2.2vw,42px);line-height:1.18;margin-bottom:18px}
+.concept-head{display:grid;grid-template-columns:.85fr 1.15fr;gap:clamp(50px,8vw,140px);align-items:start}.concept-grid{display:grid;grid-template-columns:repeat(3,1fr);margin-top:clamp(45px,7vh,90px);border:1px solid var(--line2);border-radius:22px;overflow:hidden}.concept-point{min-height:230px;padding:clamp(28px,3vw,52px);background:var(--surface);border-right:1px solid var(--line2);border-bottom:1px solid var(--line2)}.concept-point:nth-child(3n){border-right:0}.concept-point:nth-last-child(-n+3){border-bottom:0}.point-title{font-size:.72em;letter-spacing:.17em;text-transform:uppercase;color:var(--accent);margin-bottom:20px}
+.palette-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:24px;margin-top:42px}.sw .chip{height:120px;border-radius:24px;border:1px solid var(--line)}.sw .n{font-size:.9em;margin-top:12px}.sw .h{font-size:.7em;color:var(--mute);letter-spacing:.08em;text-transform:uppercase;overflow-wrap:anywhere}
+.materials-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-top:40px}.material-card{padding:16px;overflow:hidden;border-radius:20px}.material-card img{width:100%;height:168px;object-fit:cover;border-radius:14px}.material-copy{padding:14px 2px 0}.material-title{font-family:'Cormorant Garamond',Georgia,serif;font-size:1.45em;line-height:1.2}
 .room{margin-top:44px}
-.room h3{font-size:28px;color:var(--accent-dark)}
+.room h3{font-size:clamp(34px,3vw,52px);color:var(--accent-dark)}
 .room .code{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
 .plan{width:100%;border:1px solid var(--line2);border-radius:14px;background:#fff;margin-top:14px}
-.mood{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;margin-top:14px}
-.mood img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px;border:1px solid var(--line2)}
+.zoomable{cursor:zoom-in}
+.carousel{margin-top:28px}.carousel-stage{position:relative;width:100%;aspect-ratio:16/10;max-height:1100px;background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:clamp(18px,2.5vw,48px);overflow:hidden}.slide{display:none;width:100%;height:100%}.slide.active{display:flex;flex-direction:column;align-items:center;justify-content:center}.slide img{max-width:100%;max-height:calc(100% - 58px);width:auto;height:auto;object-fit:contain;background:#fff;border-radius:12px}.slide-meta{display:flex;justify-content:space-between;align-self:stretch;gap:20px;margin-top:14px}.slide-type{font-size:.7em;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}.carousel-arrow{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:1px solid var(--line2);background:rgba(251,247,241,.94);font-size:24px;color:var(--ink);cursor:pointer;z-index:2}.carousel-arrow.prev{left:14px}.carousel-arrow.next{right:14px}.carousel-tools{display:flex;align-items:center;justify-content:space-between;margin-top:16px}.carousel-thumbs{display:flex;gap:10px;overflow:auto;padding:2px}.carousel-thumb{width:74px;height:56px;padding:3px;border:1px solid var(--line2);border-radius:12px;background:var(--surface);cursor:pointer;flex:0 0 auto}.carousel-thumb.active{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}.carousel-thumb img{width:100%;height:100%;object-fit:cover;border-radius:9px}.carousel-count{font-size:.75em;letter-spacing:.13em;color:var(--mute)}
+.lightbox{position:fixed;inset:0;display:none;place-items:center;background:rgba(30,25,20,.92);padding:30px;z-index:9999}.lightbox.open{display:grid}.lightbox img{max-width:96vw;max-height:92vh;object-fit:contain}.lightbox-close{position:fixed;right:24px;top:20px;border:1px solid rgba(255,255,255,.5);background:rgba(0,0,0,.2);color:#fff;border-radius:50%;width:52px;height:52px;font-size:28px;cursor:pointer}
 table{width:100%;border-collapse:collapse;margin-top:14px;font-size:13.5px}
 th{text-align:left;font-weight:500;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
 color:var(--mute);border-bottom:1px solid var(--line2);padding:9px 10px}
@@ -153,12 +160,14 @@ footer img{height:52px;margin:0 auto 14px;opacity:.85}
 @media print{
   @page{margin:14mm}
   body{background:#fff}
-  section{break-inside:avoid;padding:34px 0}
+  section{min-height:auto;break-inside:avoid;padding:34px 0}
   .cover{min-height:auto;padding:0 0 28px}
-  .room,.card,table,.mood img{break-inside:avoid}
+  .room,.card,table{break-inside:avoid}
   h2{font-size:30px}
+  .carousel-arrow,.carousel-tools,.lightbox{display:none!important}.slide{display:none!important}.slide.active{display:block!important}
 }
-@media(max-width:760px){.g2,.g3,.g4{grid-template-columns:1fr}.wrap{padding:0 20px}}
+@media(max-width:1200px){.materials-grid{grid-template-columns:repeat(3,1fr)}.palette-grid{grid-template-columns:repeat(3,1fr)}.process-step{grid-template-columns:130px 1fr}}
+@media(max-width:760px){section{min-height:auto}.g2,.g3,.g4,.studio-grid,.goals-grid,.concept-head,.concept-grid,.materials-grid,.meta{grid-template-columns:1fr}.wrap{padding:0 22px}.cover h1{font-size:58px}.studio-portrait{justify-self:start;height:auto;max-height:620px}.process-step{grid-template-columns:82px 1fr;gap:20px}.process-icon{width:54px;height:54px}.goal-card{min-height:auto}.concept-point,.concept-point:nth-child(3n),.concept-point:nth-last-child(-n+3){border-right:0;border-bottom:1px solid var(--line2)}.concept-point:last-child{border-bottom:0}.palette-grid{grid-template-columns:repeat(2,1fr);gap:14px}.stats{grid-template-columns:1fr}.carousel-arrow{width:44px;height:44px}.slide img{height:55vh}}
 `;
 
 function coverSection(p, phase, img) {
@@ -166,7 +175,7 @@ function coverSection(p, phase, img) {
   return `
 <section class="cover"><div class="wrap">
   <div class="kicker">Interior Design Proposal · Step ${phase.n} of 4</div>
-  <div style="color:var(--mute);font-size:13.5px">${esc(longDate(p.startDate))}</div>
+  <div style="color:var(--mute);font-size:.9em">${esc(longDate())}</div>
   <div style="margin-top:26px;font-size:15px;letter-spacing:.02em;color:var(--soft)">
     ${esc(p.name)}${p.location ? ' · ' + esc(p.location) : ''}</div>
   <h1>${esc(p.tagline || 'A home that lives the way you do')}</h1>
@@ -179,49 +188,41 @@ function coverSection(p, phase, img) {
       ${p.stageNote ? `<div style="font-size:13.5px;color:var(--mute);margin-top:2px">${esc(p.stageNote)}</div>` : ''}</div>
   </div>
   ${p.intro ? `<p class="lead" style="font-size:17px;margin-top:30px">${esc(p.intro)}</p>` : ''}
-  ${img[p.hero] || p.hero ? `<img class="heroimg" src="${esc(img[p.hero] || p.hero)}" alt="">` : ''}
+  ${img[p.hero] || p.hero ? `<img class="heroimg zoomable" src="${esc(img[p.hero] || p.hero)}" alt="Project hero image">` : ''}
 </div></section>`;
 }
 
 function studioSection(p, img) {
   const s = { ...STUDIO, ...(p.studioProfile || {}) };
   const stats = s.stats || STUDIO.stats;
-  const services = s.services || [];
   return `
 <section><div class="wrap">
   <div class="kicker">Who I am</div>
-  <div class="grid g2" style="align-items:center;gap:38px">
-    <div>
+  <div class="studio-grid">
+    <div class="studio-copy">
       <h2>${esc(s.name)}</h2>
-      <div style="color:var(--mute);font-size:13.5px;margin-bottom:16px">${esc(s.role)} · ${esc(s.strap)}</div>
+      <div style="color:var(--mute);font-size:.86em;margin-bottom:24px">${esc(s.role)} · ${esc(s.strap)}</div>
       ${(s.bio || []).map((b) => `<p class="lead">${esc(b)}</p>`).join('')}
-      <div class="grid g3" style="margin-top:24px;gap:14px">
-        ${stats.map((x) => `<div class="card" style="padding:14px 16px">
-          <div style="font-size:17px">${esc(x.title || x.k)}</div>
-          <div style="font-size:12.5px;color:var(--mute)">${esc(x.body || x.v)}</div></div>`).join('')}
+      <div class="stats">
+        ${stats.map((x) => `<div class="card stat">
+          <div style="font-size:1.1em">${esc(x.title || x.k)}</div>
+          <div style="font-size:.78em;color:var(--mute)">${esc(x.body || x.v)}</div></div>`).join('')}
       </div>
     </div>
-    ${img[s.portrait] ? `<img src="${esc(img[s.portrait])}" alt="${esc(s.name)}"
-      style="border-radius:16px;width:100%;object-fit:cover">` : ''}
+    ${img[s.portrait] ? `<img class="studio-portrait zoomable" src="${esc(img[s.portrait])}" alt="${esc(s.name)}">` : ''}
   </div>
-  ${services.length ? `<div class="grid g4" style="margin-top:28px;gap:0">
-    ${services.map((x, i) => `<div class="card" style="border-radius:0;padding:20px">
-      <div style="font-size:11px;letter-spacing:.14em;color:var(--mute)">0${i + 1}</div>
-      <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:22px;margin:8px 0">${esc(x.title)}</div>
-      <div class="lead" style="font-size:13px">${esc(x.body)}</div></div>`).join('')}
-  </div>` : ''}
 </div></section>`;
 }
 
-function processSection(phase) {
+function processSection(phase, img) {
   return `
 <section><div class="wrap">
   <div class="kicker">How we work together</div><h2>The process</h2>
-  <div style="margin-top:22px">
-    ${PHASES.map((f) => `<div class="step">
-      <div class="n">0${f.n}</div>
-      <div><div style="font-size:17px">${esc(f.title)}${f.key === phase.key ? '<span class="here">We are here</span>' : ''}</div>
-      <div class="lead" style="font-size:13.5px">${esc(f.blurb)}</div></div>
+  <div class="process-list">
+    ${PHASES.map((f) => `<div class="process-step">
+      <div>${img[f.icon] ? `<img class="process-icon" src="${esc(img[f.icon])}" alt="">` : ''}<div class="process-label">Step 0${f.n}</div></div>
+      <div><div class="process-title">${esc(f.title)}${f.key === phase.key ? '<span class="here">We are here</span>' : ''}</div>
+      <div class="process-copy">${esc(f.blurb)}</div></div>
     </div>`).join('')}
   </div>
 </div></section>`;
@@ -233,11 +234,11 @@ function goalsSection(p) {
   return `
 <section><div class="wrap">
   <div class="kicker">What we're solving</div><h2>Your goals</h2>
-  <div class="grid g3" style="margin-top:24px">
-    ${goals.map((g, i) => `<div class="card">
-      <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:24px;color:var(--faint)">0${i + 1}</div>
-      <div style="font-size:16px;margin:6px 0 6px">${esc(g.title || '')}</div>
-      <div class="lead" style="font-size:13.5px">${esc(g.body || '')}</div></div>`).join('')}
+  <div class="goals-grid">
+    ${goals.map((g, i) => `<div class="card goal-card">
+      <div class="goal-number">0${i + 1}</div>
+      <div class="goal-title">${esc(g.title || '')}</div>
+      <div class="lead">${esc(g.body || '')}</div></div>`).join('')}
   </div>
 </div></section>`;
 }
@@ -249,18 +250,18 @@ function conceptSection(p, phaseData) {
   if (!text && !points.length && !palette.length) return '';
   return `
 <section><div class="wrap">
-  <div class="kicker">Direction</div><h2>Design concept</h2>
-  ${text ? `<p class="lead" style="margin-top:12px">${esc(text)}</p>` : ''}
-  ${points.length ? `<div class="grid g2" style="margin-top:26px">
-    ${points.map((c) => `<div class="card">
-      <div style="font-size:16px;margin-bottom:6px">${esc(c.title || '')}</div>
-      <div class="lead" style="font-size:13.5px">${esc(c.body || '')}</div></div>`).join('')}
+  <div class="concept-head"><div><div class="kicker">Direction</div><h2>Design concept</h2></div>
+  ${text ? `<p class="lead">${esc(text)}</p>` : '<div></div>'}</div>
+  ${points.length ? `<div class="concept-grid">
+    ${points.map((c) => `<div class="concept-point">
+      <div class="point-title">${esc(c.title || '')}</div>
+      <div class="lead">${esc(c.body || '')}</div></div>`).join('')}
   </div>` : ''}
-  ${palette.length ? `<div class="grid g4" style="margin-top:26px">
+  ${palette.length ? `<div class="palette-grid">
     ${palette.map((c) => `<div class="sw">
       <div class="chip" style="background:${esc(c.hex || '#EEE')}"></div>
       <div class="n">${esc(c.name || '')}</div>
-      ${c.ref || c.hex ? `<div class="h">${esc(c.ref || c.hex)}</div>` : ''}</div>`).join('')}
+      ${c.pantone || c.ref || c.hex ? `<div class="h">${esc([c.pantone || c.ref, c.hex].filter(Boolean).join(' · '))}</div>` : ''}</div>`).join('')}
   </div>` : ''}
 </div></section>`;
 }
@@ -270,12 +271,12 @@ function materialsSection(p, img) {
   if (!materials.length) return '';
   return `
 <section><div class="wrap">
-  <div class="kicker">What everything is made from</div><h2>Materials</h2>
-  <div class="grid g2" style="margin-top:24px">
-    ${materials.map((m) => `<div class="card">
-      ${m.image ? `<img src="${esc(img[m.image] || m.image)}" alt="${esc(m.name || '')}" style="width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:10px;margin-bottom:14px">` : ''}
-      <div style="font-size:16px;margin-bottom:6px">${esc(m.name || '')}</div>
-      <div class="lead" style="font-size:13.5px">${esc(m.note || '')}</div></div>`).join('')}
+  <div class="kicker">The tactile palette</div><h2>Material selection</h2>
+  <div class="materials-grid">
+    ${materials.map((m) => `<div class="card material-card">
+      ${m.image ? `<img class="zoomable" src="${esc(img[m.image] || m.image)}" alt="${esc(m.name || '')}">` : ''}
+      <div class="material-copy"><div class="material-title">${esc(m.name || '')}</div>
+      <div class="lead" style="font-size:.86em;margin-top:8px">${esc(m.note || '')}</div></div></div>`).join('')}
   </div>
 </div></section>`;
 }
@@ -285,7 +286,7 @@ function planSection(p, img) {
   if (floors.length) return `
 <section><div class="wrap">
   <div class="kicker">First &amp; second floor</div><h2>Space plan · 2D</h2>
-  ${floors.map((f) => `<div class="room"><h3>${esc(f.title || 'Floor plan')}</h3>${f.comment ? `<p class="lead" style="font-size:13.5px;margin-top:8px">${esc(f.comment)}</p>` : ''}<img class="plan" src="${esc(img[f.image] || f.image)}" alt="${esc(f.title || 'Floor plan')}"></div>`).join('')}
+  ${floors.map((f) => `<div class="room"><h3>${esc(f.title || 'Floor plan')}</h3>${f.comment ? `<p class="lead" style="font-size:13.5px;margin-top:8px">${esc(f.comment)}</p>` : ''}<img class="plan zoomable" src="${esc(img[f.image] || f.image)}" alt="${esc(f.title || 'Floor plan')}"></div>`).join('')}
 </div></section>`;
   const rooms = (p.rooms || []).filter((r) => r.cad);
   if (!rooms.length) return '';
@@ -295,7 +296,7 @@ function planSection(p, img) {
   ${rooms.map((r) => `<div class="room">
     <h3>${esc(r.name)}</h3>${r.code ? `<div class="code">${esc(r.code)}</div>` : ''}
     ${r.brief ? `<p class="lead" style="font-size:13.5px;margin-top:8px">${esc(r.brief)}</p>` : ''}
-    <img class="plan" src="${esc(img[r.cad] || r.cad)}" alt="${esc(r.name)} plan">
+    <img class="plan zoomable" src="${esc(img[r.cad] || r.cad)}" alt="${esc(r.name)} plan">
   </div>`).join('')}
 </div></section>`;
 }
@@ -306,15 +307,53 @@ function moodSection(p, img) {
   return `
 <section><div class="wrap">
   <div class="kicker">The feeling</div><h2>Moodboards</h2>
-  ${rooms.map((r) => `<div class="room">
+  ${rooms.map((r, roomIndex) => {
+    const media = (r.conceptMedia || []).length ? r.conceptMedia : (r.moodboard || []).map((url) => ({ url, title: '', type: 'moodboard' }));
+    const typeName = { moodboard: 'Moodboard', floorplan: '2D Floor Plan', sketchup: 'SketchUp rendering', rendering: 'Ultra-realistic rendering' };
+    return `<div class="room">
     <h3>${esc(r.name)}</h3>
     ${r.goal ? `<p class="lead" style="font-size:15px;margin-top:8px"><strong>Goal:</strong> ${esc(r.goal)}</p>` : ''}
     ${r.brief ? `<p class="lead" style="font-size:13.5px;margin-top:8px">${esc(r.brief)}</p>` : ''}
     ${r.moodNote ? `<p class="lead" style="font-size:13.5px;margin-top:8px">${esc(r.moodNote)}</p>` : ''}
-    <div class="mood">${((r.conceptMedia || []).length ? r.conceptMedia : (r.moodboard || []).map((url) => ({ url, title: '', type: 'moodboard' }))).map((m) => `<div><img src="${esc(img[m.url] || m.url)}" alt="${esc(m.title || '')}"><div style="font-size:12.5px;margin-top:7px">${esc(m.title || '')}</div><div style="font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.1em">${esc(({moodboard:'Moodboard',floorplan:'2D Floor Plan',sketchup:'SketchUp rendering',rendering:'Ultra-realistic rendering'})[m.type] || m.type || '')}</div></div>`).join('')}</div>
-  </div>`).join('')}
+    <div class="carousel" data-carousel="room-${roomIndex}"><div class="carousel-stage">
+      ${media.map((m, i) => `<div class="slide${i === 0 ? ' active' : ''}" data-slide="${i}"><img class="zoomable" src="${esc(img[m.url] || m.url)}" alt="${esc(m.title || r.name)}"><div class="slide-meta"><div>${esc(m.title || r.name)}</div><div class="slide-type">${esc(typeName[m.type] || m.type || '')}</div></div></div>`).join('')}
+      ${media.length > 1 ? '<button class="carousel-arrow prev" type="button" aria-label="Previous image">‹</button><button class="carousel-arrow next" type="button" aria-label="Next image">›</button>' : ''}
+    </div><div class="carousel-tools"><div class="carousel-thumbs">${media.map((m, i) => `<button class="carousel-thumb${i === 0 ? ' active' : ''}" type="button" data-go="${i}" aria-label="Image ${i + 1}"><img src="${esc(img[m.url] || m.url)}" alt=""></button>`).join('')}</div><div class="carousel-count"><span>1</span> / ${media.length}</div></div></div>
+  </div>`;
+  }).join('')}
 </div></section>`;
 }
+
+const INTERACTIONS = `
+<div class="lightbox" id="image-lightbox" role="dialog" aria-modal="true" aria-label="Expanded image">
+  <button class="lightbox-close" type="button" aria-label="Close">×</button><img alt="">
+</div>
+<script>
+(function(){
+  document.querySelectorAll('[data-carousel]').forEach(function(carousel){
+    var slides = Array.from(carousel.querySelectorAll('.slide'));
+    var thumbs = Array.from(carousel.querySelectorAll('.carousel-thumb'));
+    var count = carousel.querySelector('.carousel-count span');
+    var current = 0;
+    function show(index){
+      current = (index + slides.length) % slides.length;
+      slides.forEach(function(el,i){el.classList.toggle('active',i === current)});
+      thumbs.forEach(function(el,i){el.classList.toggle('active',i === current)});
+      if(count) count.textContent = current + 1;
+      if(thumbs[current]) thumbs[current].scrollIntoView({block:'nearest',inline:'nearest'});
+    }
+    var prev = carousel.querySelector('.prev'); var next = carousel.querySelector('.next');
+    if(prev) prev.addEventListener('click',function(){show(current - 1)});
+    if(next) next.addEventListener('click',function(){show(current + 1)});
+    thumbs.forEach(function(el){el.addEventListener('click',function(){show(Number(el.dataset.go))})});
+  });
+  var box = document.getElementById('image-lightbox'); var full = box.querySelector('img');
+  function close(){box.classList.remove('open');full.removeAttribute('src');document.body.style.overflow=''}
+  document.addEventListener('click',function(e){var target=e.target.closest('.zoomable');if(!target)return;full.src=target.currentSrc||target.src;full.alt=target.alt||'';box.classList.add('open');document.body.style.overflow='hidden'});
+  box.addEventListener('click',function(e){if(e.target===box||e.target.closest('.lightbox-close'))close()});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')close()});
+})();
+</script>`;
 
 /** Design & sourcing: the per-room list with prices and a total. Concept
  *  deliberately omits this — see the note at the top of the file. */
@@ -331,7 +370,7 @@ function sourcingSection(p, byId, img) {
       const line = c.price == null ? null : Number(c.price) * qty;
       if (line != null && !isNaN(line)) sub += line;
       return `<tr>
-        <td>${img[c.image] || c.image ? `<img class="thumb" src="${esc(img[c.image] || c.image)}" alt="">` : ''}</td>
+        <td>${img[c.image] || c.image ? `<img class="thumb zoomable" src="${esc(img[c.image] || c.image)}" alt="${esc(c.name || '')}">` : ''}</td>
         <td><div style="font-weight:500">${esc(c.name || '')}</div>
           <div style="color:var(--mute);font-size:12.5px">${esc([c.retailer, c.finish, c.color].filter(Boolean).join(' · '))}</div>
           ${c.dimensions ? `<div style="color:var(--faint);font-size:12px">${esc(c.dimensions)}</div>` : ''}</td>
@@ -432,7 +471,7 @@ export async function buildReport(project, phaseKey, catalog, onProgress) {
   const body = [
     coverSection(p, phase, img),
     studioSection(p, img),
-    processSection(phase),
+    processSection(phase, img),
     goalsSection(p),
     // Concept agrees a direction; Design & sourcing commits to pieces. Showing
     // furniture in the concept report turns a conversation about feeling into
@@ -457,7 +496,7 @@ export async function buildReport(project, phaseKey, catalog, onProgress) {
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
 <style>${CSS}</style>
-</head><body>${body}</body></html>`;
+</head><body>${body}${INTERACTIONS}</body></html>`;
 
   return { html, embedded: urls.length - kept, kept };
 }

@@ -32,7 +32,7 @@ projects/{id}
   phases: { discovery|concept|design: { status, progress, doc, note, concept? } }
   goals: [{ title, body }]
   conceptPoints: [{ title, body }]
-  palette: [{ name, hex }]
+  palette: [{ name, hex, pantone? }]
   materials: [{ name, note, image }]
   floorPlans: [{ title, image, comment }]
   answers: { [questionId]: string | string[] }

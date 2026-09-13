@@ -1043,10 +1043,13 @@
                 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 14px;">
                   <sc-for list="{{ conceptPalette }}" as="c" hint-placeholder-count="4">
                     <div style="border: 1px solid var(--color-neutral-200); border-radius: var(--radius-md); overflow: hidden;">
-                      <input type="color" value="{{ c.hex }}" onChange="{{ c.setHex }}" style="width: 100%; height: 60px; border: 0; padding: 0; cursor: pointer; display: block;">
-                      <div style="padding: 8px 10px; display: flex; gap: 6px; align-items: center;">
-                        <input class="input" value="{{ c.name }}" onChange="{{ c.setName }}" placeholder="Name" style="flex: 1; font-size: 12.5px; padding: 5px 8px;">
+                      <input type="color" value="{{ c.pickerHex }}" onChange="{{ c.setPicker }}" style="width: 100%; height: 60px; border: 0; padding: 0; cursor: pointer; display: block;">
+                      <div style="padding: 9px 10px; display: grid; gap: 6px;">
+                        <div style="display: flex; gap: 6px; align-items: center;"><input class="input" value="{{ c.name }}" onChange="{{ c.setName }}" placeholder="Color name" style="flex: 1; font-size: 12.5px; padding: 5px 8px;">
                         <button type="button" onClick="{{ c.remove }}" class="btn btn-ghost" style="font-size: 12px; padding: 2px 6px;">×</button>
+                        </div>
+                        <input class="input" value="{{ c.hex }}" onChange="{{ c.setHex }}" placeholder="#HEX" style="font-family: ui-monospace, monospace; font-size: 11.5px; padding: 5px 8px; text-transform: uppercase;">
+                        <input class="input" value="{{ c.pantone }}" onChange="{{ c.setPantone }}" placeholder="Pantone code (optional)" style="font-size: 11.5px; padding: 5px 8px;">
                       </div>
                     </div>
                   </sc-for>
@@ -2493,11 +2496,12 @@ class Component extends DCLogic {
         setTitle: pointsC.setField(i, 'title'), setBody: pointsC.setField(i, 'body'), remove: pointsC.remove(i),
       }));
 
-      const paletteC = this.conceptList(draft, setDraft, 'palette', { name: '', hex: '#CCCCCC' });
+      const paletteC = this.conceptList(draft, setDraft, 'palette', { name: '', hex: '#CCCCCC', pantone: '' });
       v.addColor = paletteC.add;
       v.conceptPalette = paletteC.items.map((c, i) => ({
-        name: c.name || '', hex: c.hex || '#CCCCCC',
-        setName: paletteC.setField(i, 'name'), setHex: paletteC.setField(i, 'hex'), remove: paletteC.remove(i),
+        name: c.name || '', hex: c.hex || '', pantone: c.pantone || c.ref || '',
+        pickerHex: /^#[0-9a-f]{6}$/i.test(c.hex || '') ? c.hex : '#CCCCCC',
+        setName: paletteC.setField(i, 'name'), setHex: paletteC.setField(i, 'hex'), setPantone: paletteC.setField(i, 'pantone'), setPicker: paletteC.setField(i, 'hex'), remove: paletteC.remove(i),
       }));
 
       const materialsC = this.conceptList(draft, setDraft, 'materials', { name: '', note: '', image: '' });
