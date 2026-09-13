@@ -143,6 +143,7 @@
   }
   @media (max-width: 700px) {
     .cs-share-page, .cs-page { padding-left: 20px !important; padding-right: 20px !important; }
+    .cs-trade-layout { grid-template-columns: 1fr !important; }
     .cs-login { display: block !important; min-height: 100dvh !important; }
     .cs-login-panel { min-height: 100dvh; padding: 32px 24px 40px !important; }
     .cs-login-media { display: none; }
@@ -1312,6 +1313,10 @@
               <span style="font-family: var(--font-heading); font-size: 24px; color: var(--color-accent-900);">Team</span>
               <span style="font-size: 14px; color: var(--color-neutral-600);">Invite and manage the people who work on projects.</span>
             </button>
+            <button type="button" onClick="{{ goTradePrograms }}" class="card cs-tappable" style="border: 1px solid var(--color-neutral-300); text-align: left; color: inherit; font: inherit;">
+              <span style="font-family: var(--font-heading); font-size: 24px; color: var(--color-accent-900);">Trade programs</span>
+              <span style="font-size: 14px; color: var(--color-neutral-600);">Store accounts, representatives, discounts and partnership documents.</span>
+            </button>
           </div>
         </div>
       </sc-if>
@@ -1352,6 +1357,85 @@
                 </tr>
               </tbody>
             </table>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showTradePrograms }}">
+        <div class="cs-page" style="max-width: 1180px; margin: 0 auto; padding: 40px 32px 96px; animation: csFade .35s var(--ease-spring) both;">
+          <div class="cs-page-header" style="display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 24px;">
+            <div>
+              <div style="font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--color-accent-700); margin-bottom: 8px;">Studio resources</div>
+              <h1 class="cs-h1-display" style="font-family: var(--font-heading); font-size: 44px; margin: 0 0 6px; color: var(--color-accent-900);">Trade programs</h1>
+              <p style="margin: 0; color: var(--color-neutral-700); max-width: 68ch;">One place for vendor contacts, trade terms, account references and the images normally buried in email signatures or business cards.</p>
+            </div>
+            <button type="button" onClick="{{ addTradeProgram }}" class="btn btn-primary">Add trade program</button>
+          </div>
+          <sc-if value="{{ tradeNotice }}"><div class="card" style="padding: 12px 16px; margin-bottom: 18px; font-size: 13.5px; color: var(--color-accent-900);">{{ tradeNotice }}</div></sc-if>
+          <div class="cs-trade-layout" style="display: grid; grid-template-columns: 310px minmax(0, 1fr); gap: 22px; align-items: start;">
+            <div>
+              <div class="field" style="margin-bottom: 12px;"><label>Find a program</label><input class="input" value="{{ tradeQuery }}" onChange="{{ setTradeQuery }}" placeholder="Store, rep or category"></div>
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <sc-for list="{{ tradeProgramRows }}" as="tp" hint-placeholder-count="3">
+                  <button type="button" onClick="{{ tp.open }}" class="card cs-tappable" style="padding: 15px; border: 1px solid {{ tp.border }}; text-align: left; color: inherit; font: inherit;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                      <div style="width: 48px; height: 48px; border-radius: 10px; overflow: hidden; background: var(--color-neutral-100); flex: none;"><img src="assets/piece-placeholder.png" data-img="{{ tp.image }}" alt="" style="width: 100%; height: 100%; object-fit: contain;"></div>
+                      <div style="min-width: 0;"><div style="font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ tp.storeName }}</div><div style="font-size: 12px; color: var(--color-neutral-600);">{{ tp.summary }}</div></div>
+                    </div>
+                  </button>
+                </sc-for>
+                <sc-if value="{{ noTradePrograms }}"><div class="card" style="padding: 20px; color: var(--color-neutral-600); font-size: 14px;">No trade programs yet. Add the first vendor account above.</div></sc-if>
+              </div>
+            </div>
+            <sc-if value="{{ tradeEditorOpen }}">
+              <div class="card" style="padding: 26px;">
+                <div style="display: flex; justify-content: space-between; gap: 18px; align-items: center; margin-bottom: 22px;"><div><div style="font-family: var(--font-heading); font-size: 28px; color: var(--color-accent-900);">{{ tradeEditorTitle }}</div><div style="font-size: 12.5px; color: var(--color-neutral-600);">Do not store passwords here.</div></div><button type="button" onClick="{{ removeTradeProgram }}" class="btn btn-ghost">Delete</button></div>
+                <div style="font-size: 11px; letter-spacing: .15em; text-transform: uppercase; color: var(--color-accent-700); margin: 22px 0 12px;">Program identity</div>
+                <div class="cs-details-grid" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px;">
+                  <div class="field"><label>Store / vendor name *</label><input class="input" value="{{ tr_storeName }}" onChange="{{ settr_storeName }}"></div>
+                  <div class="field"><label>Program name</label><input class="input" value="{{ tr_programName }}" onChange="{{ settr_programName }}" placeholder="Designer Trade Program"></div>
+                  <div class="field"><label>Status</label><select class="input" value="{{ tr_status }}" onChange="{{ settr_status }}"><option value="active">Active</option><option value="pending">Application pending</option><option value="renewal">Renewal needed</option><option value="inactive">Inactive</option></select></div>
+                  <div class="field"><label>Category / specialty</label><input class="input" value="{{ tr_category }}" onChange="{{ settr_category }}" placeholder="Furniture, lighting, textiles…"></div>
+                  <div class="field"><label>Account / member ID</label><input class="input" value="{{ tr_accountId }}" onChange="{{ settr_accountId }}"></div>
+                  <div class="field"><label>Tier</label><input class="input" value="{{ tr_tier }}" onChange="{{ settr_tier }}" placeholder="Trade, Designer, Platinum…"></div>
+                </div>
+                <div style="font-size: 11px; letter-spacing: .15em; text-transform: uppercase; color: var(--color-accent-700); margin: 26px 0 12px;">Contact &amp; access</div>
+                <div class="cs-details-grid" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px;">
+                  <div class="field"><label>Representative</label><input class="input" value="{{ tr_repName }}" onChange="{{ settr_repName }}"></div>
+                  <div class="field"><label>Representative title</label><input class="input" value="{{ tr_repTitle }}" onChange="{{ settr_repTitle }}"></div>
+                  <div class="field"><label>Representative email</label><input type="email" class="input" value="{{ tr_repEmail }}" onChange="{{ settr_repEmail }}"></div>
+                  <div class="field"><label>Representative phone</label><input type="tel" class="input" value="{{ tr_repPhone }}" onChange="{{ settr_repPhone }}"></div>
+                  <div class="field"><label>General email</label><input type="email" class="input" value="{{ tr_email }}" onChange="{{ settr_email }}"></div>
+                  <div class="field"><label>General phone</label><input type="tel" class="input" value="{{ tr_phone }}" onChange="{{ settr_phone }}"></div>
+                  <div class="field"><label>Website</label><input type="url" class="input" value="{{ tr_website }}" onChange="{{ settr_website }}" placeholder="https://"></div>
+                  <div class="field"><label>Trade portal</label><input type="url" class="input" value="{{ tr_portalUrl }}" onChange="{{ settr_portalUrl }}" placeholder="https://"></div>
+                  <div class="field"><label>Portal login email</label><input type="email" class="input" value="{{ tr_loginEmail }}" onChange="{{ settr_loginEmail }}"></div>
+                  <div class="field"><label>Showroom / address</label><input class="input" value="{{ tr_address }}" onChange="{{ settr_address }}"></div>
+                </div>
+                <div style="font-size: 11px; letter-spacing: .15em; text-transform: uppercase; color: var(--color-accent-700); margin: 26px 0 12px;">Commercial terms</div>
+                <div class="cs-details-grid" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px;">
+                  <div class="field"><label>Trade discount</label><input class="input" value="{{ tr_discount }}" onChange="{{ settr_discount }}" placeholder="20% off retail"></div>
+                  <div class="field"><label>Pricing basis</label><input class="input" value="{{ tr_pricingBasis }}" onChange="{{ settr_pricingBasis }}" placeholder="Net, wholesale, tiered…"></div>
+                  <div class="field"><label>Minimum order</label><input class="input" value="{{ tr_minimumOrder }}" onChange="{{ settr_minimumOrder }}"></div>
+                  <div class="field"><label>Payment terms</label><input class="input" value="{{ tr_paymentTerms }}" onChange="{{ settr_paymentTerms }}" placeholder="Card, Net 30…"></div>
+                  <div class="field"><label>Shipping / delivery terms</label><input class="input" value="{{ tr_shippingTerms }}" onChange="{{ settr_shippingTerms }}"></div>
+                  <div class="field"><label>Freight / receiving notes</label><input class="input" value="{{ tr_freightNotes }}" onChange="{{ settr_freightNotes }}"></div>
+                  <div class="field"><label>Joined / approved</label><input type="date" class="input" value="{{ tr_joinedDate }}" onChange="{{ settr_joinedDate }}"></div>
+                  <div class="field"><label>Renewal / expiry</label><input type="date" class="input" value="{{ tr_renewalDate }}" onChange="{{ settr_renewalDate }}"></div>
+                  <div class="field"><label>Resale certificate / tax notes</label><input class="input" value="{{ tr_taxNotes }}" onChange="{{ settr_taxNotes }}"></div>
+                  <div class="field"><label>Certificate expiry</label><input type="date" class="input" value="{{ tr_certificateExpiry }}" onChange="{{ settr_certificateExpiry }}"></div>
+                </div>
+                <div style="font-size: 11px; letter-spacing: .15em; text-transform: uppercase; color: var(--color-accent-700); margin: 26px 0 12px;">Partnership knowledge</div>
+                <div class="field"><label>Partnership details</label><textarea class="input" rows="4" value="{{ tr_partnershipDetails }}" onChange="{{ settr_partnershipDetails }}" placeholder="Benefits, exclusions, how to quote, who approves special pricing…" style="resize: vertical; font-family: var(--font-body);"></textarea></div>
+                <div class="field" style="margin-top: 14px;"><label>Brands / product focus</label><input class="input" value="{{ tr_brands }}" onChange="{{ settr_brands }}" placeholder="Comma-separated"></div>
+                <div class="field" style="margin-top: 14px;"><label>Internal notes</label><textarea class="input" rows="3" value="{{ tr_notes }}" onChange="{{ settr_notes }}" style="resize: vertical; font-family: var(--font-body);"></textarea></div>
+                <div style="font-size: 11px; letter-spacing: .15em; text-transform: uppercase; color: var(--color-accent-700); margin: 26px 0 12px;">Images &amp; documents</div>
+                <div class="cs-details-grid" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px;">
+                  <sc-for list="{{ tradeImages }}" as="im" hint-placeholder-count="3"><div style="border: 1px solid var(--color-neutral-200); border-radius: var(--radius-md); padding: 12px;"><div tabindex="0" onPaste="{{ im.paste }}" style="aspect-ratio: 4 / 3; border-radius: 9px; overflow: hidden; background: var(--color-neutral-100); outline: 2px dashed var(--color-neutral-300); outline-offset: 2px;"><img src="assets/piece-placeholder.png" data-img="{{ im.url }}" alt="" style="width: 100%; height: 100%; object-fit: contain;"></div><div style="font-size: 12.5px; font-weight: 600; margin: 10px 0 7px;">{{ im.label }}</div><div style="display: flex; flex-wrap: wrap; gap: 6px;"><label class="btn btn-secondary" style="font-size: 11px; cursor: pointer;">Choose<input type="file" accept="image/*" onChange="{{ im.pick }}" style="display:none;"></label><button type="button" onClick="{{ im.paste }}" class="btn btn-secondary" style="font-size: 11px;">Paste</button><button type="button" onClick="{{ im.clear }}" class="btn btn-ghost" style="font-size: 11px;">Clear</button></div></div></sc-for>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 26px;"><button type="button" onClick="{{ cancelTradeEdit }}" class="btn btn-ghost">Cancel</button><button type="button" onClick="{{ saveTradeProgram }}" class="btn btn-primary">{{ tradeSaveLabel }}</button></div>
+              </div>
+            </sc-if>
           </div>
         </div>
       </sc-if>
@@ -1510,6 +1594,7 @@ class Component extends DCLogic {
     details: null, detailsSaving: false, detailsNotice: '', np: null, npBusy: false,
     exporting: false, exportNote: '',
     rates: null, ratesSaving: false, ratesNote: '',
+    tradePrograms: null, tradeDraft: null, tradeQuery: '', tradeSaving: false, tradeNotice: '',
     fees: null, feesSaving: false, feesNote: '', feesQuoting: false,
     confirm: null };
 
@@ -1720,9 +1805,15 @@ class Component extends DCLogic {
         try { this.setState({ rates: await api.getRates() }); }
         catch (e) { this.setState({ ratesNote: 'Could not load the rate card — ' + ((e && e.code) || (e && e.message) || e) }); }
       },
+      goTradePrograms: async () => {
+        this.setState({ view: 'trade-programs', tradeNotice: '', tradeDraft: null });
+        try { this.setState({ tradePrograms: await api.getTradePrograms() }); }
+        catch (e) { this.setState({ tradePrograms: [], tradeNotice: 'Could not load trade programs — ' + ((e && e.code) || (e && e.message) || e) }); }
+      },
       showDash: s.view === 'dash', showProj: s.view === 'proj' && !!s.proj,
       showCatalog: s.view === 'catalog', showStudio: s.view === 'studio' && admin, showTeam: s.view === 'team' && admin,
       showRates: s.view === 'rates' && admin,
+      showTradePrograms: s.view === 'trade-programs' && admin,
       confirmOpen: !!s.confirm,
       confirmTitle: s.confirm ? s.confirm.title : '',
       confirmBody: s.confirm ? s.confirm.body : '',
@@ -1840,6 +1931,79 @@ class Component extends DCLogic {
           }
         },
       });
+    }
+    if (v.showTradePrograms) {
+      const programs = s.tradePrograms || [];
+      const blankTrade = () => ({
+        id: 'trade-' + Date.now().toString(36), storeName: '', programName: '', status: 'active', category: '', accountId: '', tier: '',
+        repName: '', repTitle: '', repEmail: '', repPhone: '', email: '', phone: '', website: '', portalUrl: '', loginEmail: '', address: '',
+        discount: '', pricingBasis: '', minimumOrder: '', paymentTerms: '', shippingTerms: '', freightNotes: '', joinedDate: '', renewalDate: '', taxNotes: '', certificateExpiry: '',
+        partnershipDetails: '', brands: '', notes: '', logoImage: '', businessCardImage: '', signatureImage: '', createdAt: new Date().toISOString()
+      });
+      const setTrade = (patch) => this.setState({ tradeDraft: { ...(this.state.tradeDraft || blankTrade()), ...patch } });
+      const query = String(s.tradeQuery || '').trim().toLowerCase();
+      const visible = programs.filter((x) => !query || [x.storeName, x.programName, x.repName, x.category, x.brands].some((value) => String(value || '').toLowerCase().includes(query)));
+      const statusName = { active: 'Active', pending: 'Pending', renewal: 'Renewal needed', inactive: 'Inactive' };
+      Object.assign(v, {
+        tradeQuery: s.tradeQuery || '', setTradeQuery: (e) => this.setState({ tradeQuery: e.target.value }),
+        tradeProgramRows: visible.map((x) => ({
+          storeName: x.storeName || 'Untitled vendor', image: x.logoImage || x.businessCardImage || PLACEHOLDER,
+          summary: [statusName[x.status] || x.status, x.discount, x.repName].filter(Boolean).join(' · ') || 'No details yet',
+          border: s.tradeDraft && s.tradeDraft.id === x.id ? 'var(--color-accent)' : 'var(--color-neutral-300)',
+          open: () => this.setState({ tradeDraft: { ...x }, tradeNotice: '' }),
+        })),
+        noTradePrograms: visible.length === 0,
+        tradeEditorOpen: !!s.tradeDraft,
+        tradeEditorTitle: s.tradeDraft && s.tradeDraft.storeName ? s.tradeDraft.storeName : 'New trade program',
+        addTradeProgram: () => this.setState({ tradeDraft: blankTrade(), tradeNotice: '' }),
+        cancelTradeEdit: () => this.setState({ tradeDraft: null, tradeNotice: '' }),
+        tradeSaveLabel: s.tradeSaving ? 'Saving…' : 'Save trade program',
+        tradeNotice: s.tradeNotice || '',
+      });
+      const fields = ['storeName','programName','status','category','accountId','tier','repName','repTitle','repEmail','repPhone','email','phone','website','portalUrl','loginEmail','address','discount','pricingBasis','minimumOrder','paymentTerms','shippingTerms','freightNotes','joinedDate','renewalDate','taxNotes','certificateExpiry','partnershipDetails','brands','notes'];
+      fields.forEach((key) => { v['tr_' + key] = (s.tradeDraft && s.tradeDraft[key]) || ''; v['settr_' + key] = (e) => setTrade({ [key]: e.target.value }); });
+      const clipboardFile = async (event) => {
+        if (event && event.clipboardData) {
+          event.preventDefault();
+          return Array.from(event.clipboardData.files || []).find((file) => String(file.type || '').startsWith('image/')) || null;
+        }
+        if (!navigator.clipboard || !navigator.clipboard.read) throw new Error('Clipboard image access is unavailable. Use Choose instead.');
+        const items = await navigator.clipboard.read();
+        for (const item of items) {
+          const type = item.types.find((value) => value.startsWith('image/'));
+          if (type) { const blob = await item.getType(type); return new File([blob], 'trade-' + Date.now() + '.' + (type.split('/')[1] || 'png'), { type }); }
+        }
+        throw new Error('The clipboard does not contain an image.');
+      };
+      const tradeImage = (key, label) => ({
+        label, url: (s.tradeDraft && s.tradeDraft[key]) || PLACEHOLDER,
+        pick: async (e) => { const file = e.target.files && e.target.files[0]; if (!file) return; try { setTrade({ [key]: await api.uploadFile('trade-programs', file) }); } catch (err) { this.setState({ tradeNotice: 'Could not upload image — ' + ((err && err.message) || err) }); } },
+        paste: async (e) => { try { const file = await clipboardFile(e); if (file) setTrade({ [key]: await api.uploadFile('trade-programs', file) }); } catch (err) { this.setState({ tradeNotice: (err && err.message) || String(err) }); } },
+        clear: () => setTrade({ [key]: '' }),
+      });
+      v.tradeImages = [tradeImage('logoImage', 'Store logo'), tradeImage('businessCardImage', 'Business card'), tradeImage('signatureImage', 'Email signature / contact image')];
+      v.saveTradeProgram = async () => {
+        if (this.state.tradeSaving) return;
+        const draft = this.state.tradeDraft;
+        if (!draft || !String(draft.storeName || '').trim()) return this.setState({ tradeNotice: 'Store / vendor name is required.' });
+        const clean = { ...draft, storeName: String(draft.storeName).trim() };
+        const exists = programs.some((x) => x.id === clean.id);
+        const next = exists ? programs.map((x) => x.id === clean.id ? clean : x) : [...programs, clean];
+        this.setState({ tradeSaving: true, tradeNotice: '' });
+        try {
+          const saved = await api.saveTradePrograms(next);
+          this.setState({ tradePrograms: saved, tradeDraft: null, tradeSaving: false, tradeNotice: clean.storeName + ' saved.' });
+        } catch (e) { this.setState({ tradeSaving: false, tradeNotice: 'Could not save — ' + ((e && e.message) || e) }); }
+      };
+      v.removeTradeProgram = () => {
+        const draft = this.state.tradeDraft;
+        if (!draft) return;
+        if (!programs.some((x) => x.id === draft.id)) return this.setState({ tradeDraft: null });
+        this.askConfirm({ title: 'Delete trade program?', body: 'Remove ' + (draft.storeName || 'this vendor') + ' from the studio trade directory?', confirmLabel: 'Delete', danger: true, onConfirm: async () => {
+          const saved = await api.saveTradePrograms(programs.filter((x) => x.id !== draft.id));
+          this.setState({ tradePrograms: saved, tradeDraft: null, tradeNotice: 'Trade program deleted.' });
+        } });
+      };
     }
     if (v.showTeam) Object.assign(v, this.teamVals());
     return v;

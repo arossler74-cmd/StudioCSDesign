@@ -53,6 +53,15 @@ service firebase.storage {
       allow delete: if isAdmin();
     }
 
+    // Business cards, logos and email-signature images for the studio's
+    // trade-program directory. This directory is administrative, not tied to
+    // a client project, so it receives its own admin-only scope.
+    match /trade-programs/{allPaths=**} {
+      allow read: if isAdmin() || isDesigner();
+      allow create, update: if isAdmin() && isImageUpload();
+      allow delete: if isAdmin();
+    }
+
     // Project imagery stays scoped to the people assigned to that project.
     // Client links receive explicit download URLs from the share payload.
     match /{projectId}/{allPaths=**} {

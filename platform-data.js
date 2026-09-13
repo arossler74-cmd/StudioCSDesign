@@ -563,6 +563,27 @@ export async function saveRates(rates) {
   return rates;
 }
 
+export async function getTradePrograms() {
+  if (mode === 'firebase') {
+    const { doc, getDoc } = fb.D;
+    const snap = await getDoc(doc(fb.db, 'settings', 'trade-programs'));
+    return snap.exists() && Array.isArray(snap.data().programs) ? snap.data().programs : [];
+  }
+  const s = readLS();
+  return Array.isArray(s.tradePrograms) ? s.tradePrograms : [];
+}
+
+export async function saveTradePrograms(programs) {
+  const cleanPrograms = (programs || []).map((program) => ({ ...program, updatedAt: nowISO() }));
+  if (mode === 'firebase') {
+    const { doc, setDoc } = fb.D;
+    await setDoc(doc(fb.db, 'settings', 'trade-programs'), { programs: cleanPrograms, updatedAt: nowISO() });
+    return cleanPrograms;
+  }
+  const s = readLS(); s.tradePrograms = cleanPrograms; writeLS(s);
+  return cleanPrograms;
+}
+
 /** The fee the rate card suggests for a room, by its type, falling back to the
  *  card's own fallback when the type is not listed. */
 export function suggestFee(rates, roomType) {

@@ -5,7 +5,7 @@ The studio platform. 86 Residence is the first project inside it.
 ## Files
 
 ```
-Studio Platform.dc.html    the app: sign in, projects, project (3 phases + selection/feedback/sharing), catalog, team
+Studio Platform.dc.html    the app: sign in, projects, project (3 phases + selection/feedback/sharing), catalog, studio settings, trade programs, team
 platform-data.js           data layer — Firebase when configured, localStorage otherwise (same API)
 firebase-config.js         your keys (gitignored)
 firestore.rules            security rules
@@ -43,6 +43,8 @@ projects/{id}
   shares:  [{ token, clientName, phases: ['concept'|'design'], createdAt }]
 
 settings/questionnaire  sections: [{ id, title, questions: [{ id, label, type, options? }] }]
+settings/trade-programs admin-maintained vendor directory: accounts, contacts, access URLs,
+                        commercial terms, renewal dates, notes and image references
 ```
 
 Question types: `long` (textarea), `short`, `choice` (pick one), `multi` (pick many). The default set is the studio's own questionnaire — project scope, spaces, style, feel, colors, budget, timeline, involvement.
