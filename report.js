@@ -311,7 +311,7 @@ function moodSection(p, img) {
     ${r.goal ? `<p class="lead" style="font-size:15px;margin-top:8px"><strong>Goal:</strong> ${esc(r.goal)}</p>` : ''}
     ${r.brief ? `<p class="lead" style="font-size:13.5px;margin-top:8px">${esc(r.brief)}</p>` : ''}
     ${r.moodNote ? `<p class="lead" style="font-size:13.5px;margin-top:8px">${esc(r.moodNote)}</p>` : ''}
-    <div class="mood">${((r.conceptMedia || []).length ? r.conceptMedia : (r.moodboard || []).map((url) => ({ url, title: '', type: 'moodboard' }))).map((m) => `<div><img src="${esc(img[m.url] || m.url)}" alt="${esc(m.title || '')}"><div style="font-size:12.5px;margin-top:7px">${esc(m.title || '')}</div><div style="font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.1em">${esc(({moodboard:'Moodboard',sketchup:'SketchUp rendering',rendering:'Ultra-realistic rendering'})[m.type] || m.type || '')}</div></div>`).join('')}</div>
+    <div class="mood">${((r.conceptMedia || []).length ? r.conceptMedia : (r.moodboard || []).map((url) => ({ url, title: '', type: 'moodboard' }))).map((m) => `<div><img src="${esc(img[m.url] || m.url)}" alt="${esc(m.title || '')}"><div style="font-size:12.5px;margin-top:7px">${esc(m.title || '')}</div><div style="font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.1em">${esc(({moodboard:'Moodboard',floorplan:'2D Floor Plan',sketchup:'SketchUp rendering',rendering:'Ultra-realistic rendering'})[m.type] || m.type || '')}</div></div>`).join('')}</div>
   </div>`).join('')}
 </div></section>`;
 }

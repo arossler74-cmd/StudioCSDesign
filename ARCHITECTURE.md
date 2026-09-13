@@ -37,7 +37,7 @@ projects/{id}
   floorPlans: [{ title, image, comment }]
   answers: { [questionId]: string | string[] }
   rooms:   [{ id, name, goal, brief,
-              conceptMedia: [{ id, type: 'moodboard'|'sketchup'|'rendering', title, url }],
+              conceptMedia: [{ id, type: 'moodboard'|'floorplan'|'sketchup'|'rendering', title, url }],
               selected: [{refId, qty}], alternatives: [{refId, qty}] }]
   reviews: [{ id, roomId, itemId, verdict: 'up'|'down', comment, by, at, resolved }]
   shares:  [{ token, clientName, phases: ['concept'|'design'], createdAt }]

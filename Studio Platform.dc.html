@@ -1075,12 +1075,12 @@
               </div>
 
               <div class="card" style="padding: 24px 26px; margin-bottom: 22px;">
-                <div style="font-family: var(--font-heading); font-size: 22px; color: var(--color-accent-900); margin-bottom: 4px;">Floor plans</div>
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 4px;"><div style="font-family: var(--font-heading); font-size: 22px; color: var(--color-accent-900);">Floor plans</div><div style="flex: 1;"></div><button type="button" onClick="{{ addConceptFloor }}" class="btn btn-secondary">+ Add level</button></div>
                 <div style="font-size: 13.5px; color: var(--color-neutral-600); margin-bottom: 18px;">One card per level, with its own drawing and presentation comment.</div>
-                <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px;">
                   <sc-for list="{{ conceptFloors }}" as="floor" hint-placeholder-count="2">
                     <div style="border: 1px solid var(--color-neutral-200); border-radius: var(--radius-md); padding: 14px;">
-                      <input class="input" value="{{ floor.title }}" onChange="{{ floor.setTitle }}" placeholder="First floor" style="margin-bottom: 10px;">
+                      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;"><input class="input" value="{{ floor.title }}" onChange="{{ floor.setTitle }}" placeholder="Floor name" style="flex: 1;"><button type="button" onClick="{{ floor.remove }}" class="btn btn-ghost" disabled="{{ floor.cannotRemove }}">Remove level</button></div>
                       <div style="aspect-ratio: 4 / 3; border-radius: 10px; overflow: hidden; background: var(--color-neutral-100);"><img src="assets/piece-placeholder.png" data-img="{{ floor.image }}" alt="" style="width: 100%; height: 100%; object-fit: contain;"></div>
                       <label class="btn btn-secondary" style="cursor: pointer; font-size: 12px; margin-top: 10px;">Choose floor plan<input type="file" accept="image/*" onChange="{{ floor.pickImage }}" style="display: none;"></label>
                       <textarea class="input" rows="3" value="{{ floor.comment }}" onChange="{{ floor.setComment }}" placeholder="Comments about circulation, layout or revisions" style="margin-top: 10px; resize: vertical; font-family: var(--font-body);"></textarea>
@@ -1099,7 +1099,7 @@
                     <textarea class="input" rows="2" value="{{ room.brief }}" onChange="{{ room.setBrief }}" placeholder="Functional brief, priorities and what we are looking for" style="resize: vertical; font-family: var(--font-body); margin-bottom: 18px;"></textarea>
                     <div style="border-top: 1px solid var(--color-neutral-200); padding-top: 16px;"><div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;"><div style="font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-600);">Visual carousel</div><div style="flex: 1;"></div><label class="btn btn-secondary" style="cursor: pointer; font-size: 12px;">Add images<input type="file" accept="image/*" multiple onChange="{{ room.addMedia }}" style="display: none;"></label></div>
                       <sc-if value="{{ room.hasMedia }}" hint-placeholder-val="{{ false }}"><div style="position: relative; border-radius: var(--radius-md); overflow: hidden; background: var(--color-neutral-100); margin-bottom: 14px;"><div style="aspect-ratio: 16 / 9;"><img src="assets/piece-placeholder.png" data-img="{{ room.currentUrl }}" alt="" style="width: 100%; height: 100%; object-fit: contain;"></div><div style="position: absolute; left: 12px; right: 12px; bottom: 12px; display: flex; align-items: center; gap: 8px;"><button type="button" onClick="{{ room.prevMedia }}" class="btn btn-secondary">←</button><div style="background: rgba(255,255,255,.92); border-radius: 999px; padding: 7px 13px; font-size: 12px; flex: 1;">{{ room.currentType }} · {{ room.currentTitle }}</div><button type="button" onClick="{{ room.nextMedia }}" class="btn btn-secondary">→</button></div></div></sc-if>
-                      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px;"><sc-for list="{{ room.media }}" as="media" hint-placeholder-count="3"><div style="border: 1px solid var(--color-neutral-200); border-radius: var(--radius-md); padding: 10px;"><div style="aspect-ratio: 4 / 3; border-radius: 9px; overflow: hidden; background: var(--color-neutral-100);"><img src="assets/piece-placeholder.png" data-img="{{ media.url }}" alt="" style="width: 100%; height: 100%; object-fit: cover;"></div><select class="input" value="{{ media.type }}" onChange="{{ media.setType }}" style="margin-top: 8px;"><option value="moodboard">Moodboard</option><option value="sketchup">SketchUp rendering</option><option value="rendering">Ultra-realistic rendering</option></select><input class="input" value="{{ media.title }}" onChange="{{ media.setTitle }}" placeholder="Image title" style="margin-top: 7px;"><button type="button" onClick="{{ media.remove }}" class="btn btn-ghost" style="font-size: 12px; margin-top: 5px;">Remove image</button></div></sc-for></div>
+                      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px;"><sc-for list="{{ room.media }}" as="media" hint-placeholder-count="3"><div style="border: 1px solid var(--color-neutral-200); border-radius: var(--radius-md); padding: 10px;"><div style="aspect-ratio: 4 / 3; border-radius: 9px; overflow: hidden; background: var(--color-neutral-100);"><img src="assets/piece-placeholder.png" data-img="{{ media.url }}" alt="" style="width: 100%; height: 100%; object-fit: cover;"></div><select class="input" value="{{ media.type }}" onChange="{{ media.setType }}" style="margin-top: 8px;"><option value="moodboard">Moodboard</option><option value="floorplan">2D Floor Plan</option><option value="sketchup">SketchUp rendering</option><option value="rendering">Ultra-realistic rendering</option></select><input class="input" value="{{ media.title }}" onChange="{{ media.setTitle }}" placeholder="Image title" style="margin-top: 7px;"><button type="button" onClick="{{ media.remove }}" class="btn btn-ghost" style="font-size: 12px; margin-top: 5px;">Remove image</button></div></sc-for></div>
                     </div>
                   </div>
                 </sc-for>
@@ -2484,9 +2484,14 @@ class Component extends DCLogic {
         clearImage: () => { const next = draft.materials.slice(); next[i] = { ...next[i], image: '' }; setDraft({ materials: next }); },
       }));
 
+      v.addConceptFloor = () => setDraft({ floorPlans: draft.floorPlans.concat([{ title: 'Level ' + String(draft.floorPlans.length + 1).padStart(2, '0'), image: '', comment: '' }]) });
       v.conceptFloors = draft.floorPlans.map((floor, fi) => {
         const setFloor = (patch) => { const next = draft.floorPlans.slice(); next[fi] = { ...next[fi], ...patch }; setDraft({ floorPlans: next }); };
-        return { title: floor.title || '', image: floor.image || '', comment: floor.comment || '', setTitle: (e) => setFloor({ title: e.target.value }), setComment: (e) => setFloor({ comment: e.target.value }), pickImage: async (e) => { const file = e.target.files && e.target.files[0]; if (file) setFloor({ image: await api.uploadFile(p.id, file) }); } };
+        return { title: floor.title || '', image: floor.image || '', comment: floor.comment || '', cannotRemove: draft.floorPlans.length <= 1,
+          setTitle: (e) => setFloor({ title: e.target.value }), setComment: (e) => setFloor({ comment: e.target.value }),
+          pickImage: async (e) => { const file = e.target.files && e.target.files[0]; if (file) setFloor({ image: await api.uploadFile(p.id, file) }); },
+          remove: () => { if (draft.floorPlans.length > 1) setDraft({ floorPlans: draft.floorPlans.filter((_, j) => j !== fi) }); }
+        };
       });
 
       v.addConceptRoom = () => setDraft({ rooms: draft.rooms.concat([{ id: 'r-' + Date.now().toString(36), name: 'New space', type: '', code: '', brief: '', goal: '', conceptMedia: [], selected: [], alternatives: [] }]) });
@@ -2511,7 +2516,7 @@ class Component extends DCLogic {
           setBrief: (e) => setRoom({ brief: e.target.value }),
           remove: () => setDraft({ rooms: draft.rooms.filter((_, j) => j !== ri) }),
           hasMedia: mediaList.length > 0, currentUrl: currentMedia.url || '', currentTitle: currentMedia.title || 'Untitled image',
-          currentType: ({ moodboard: 'Moodboard', sketchup: 'SketchUp rendering', rendering: 'Ultra-realistic rendering' })[currentMedia.type] || 'Moodboard',
+          currentType: ({ moodboard: 'Moodboard', floorplan: '2D Floor Plan', sketchup: 'SketchUp rendering', rendering: 'Ultra-realistic rendering' })[currentMedia.type] || 'Moodboard',
           prevMedia: moveMedia(-1), nextMedia: moveMedia(1),
           media: (room.conceptMedia || []).map((media, mi) => ({
             ...media,
