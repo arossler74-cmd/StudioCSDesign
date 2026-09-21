@@ -56,7 +56,10 @@ projects/{id}
               designMedia:  [{ id, type: 'rendering'|'sketchup'|'floorplan'|'video', title, url }],
               selected: [{refId, qty}], alternatives: [{refId, qty}] }]
               — designPoints/designMaterials/designFloorPlans/designMedia start as a one-time "Copy
-              from Concept" in the Design & Sourcing tab, then diverge freely; never live-linked
+              from Concept" in the Design & Sourcing tab, then diverge freely; never live-linked.
+              tagline/client/location/address/addressCity/scope/scopeNote/stage/stageNote/intro/
+              hero/studioProfile are project-wide (not phase-specific) and are edited from both the
+              Concept and Design & Sourcing tabs — same fields, no copy involved
   reviews: [{ id, roomId, itemId, verdict: 'up'|'down', comment, by, at, resolved }]
   shares:  [{ token, clientName, phases: ['concept'|'design'], createdAt }]
 

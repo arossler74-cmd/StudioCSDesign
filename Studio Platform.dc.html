@@ -1265,17 +1265,64 @@
               </sc-if>
               <div style="font-size: 12.5px; color: var(--color-neutral-600); margin-bottom: 18px;">"Copy from Concept" is a one-time copy, not a live link — editing here never changes Concept's own report. Hide any section from Export HTML / Export PDF the same way as Concept.</div>
 
-              <div class="card" style="padding: 18px 26px; margin-bottom: 22px;">
-                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 4px;">
-                  <div style="font-family: var(--font-heading); font-size: 18px; color: var(--color-accent-900);">Shared with Concept</div>
-                  <div style="flex: 1;"></div>
-                  <button type="button" onClick="{{ goEditShared }}" class="btn btn-ghost" style="font-size: 12.5px;">Edit in Concept</button>
+              <div class="card" style="padding: 24px 26px; margin-bottom: 22px;">
+                <div style="font-family: var(--font-heading); font-size: 22px; color: var(--color-accent-900); margin-bottom: 4px;">Presentation introduction</div>
+                <div style="font-size: 13.5px; color: var(--color-neutral-600); margin-bottom: 18px;">The same opening page Concept uses — one project, one hero image, one headline. Editing it here changes it everywhere.</div>
+                <div class="cs-details-grid" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px;">
+                  <div class="field" style="grid-column: span 2;"><label>Headline</label><input class="input" value="{{ designIntroTitle }}" onChange="{{ setDesignIntroTitle }}" placeholder="A home that lives the way you do"></div>
+                  <div class="field"><label>Prepared for</label><input class="input" value="{{ designIntroClient }}" onChange="{{ setDesignIntroClient }}"></div>
+                  <div class="field"><label>Location</label><input class="input" value="{{ designIntroLocation }}" onChange="{{ setDesignIntroLocation }}"></div>
+                  <div class="field"><label>Residence address</label><input class="input" value="{{ designIntroAddress }}" onChange="{{ setDesignIntroAddress }}"></div>
+                  <div class="field"><label>City</label><input class="input" value="{{ designIntroCity }}" onChange="{{ setDesignIntroCity }}"></div>
+                  <div class="field"><label>Scope</label><input class="input" value="{{ designIntroScope }}" onChange="{{ setDesignIntroScope }}"></div>
+                  <div class="field"><label>Scope detail</label><input class="input" value="{{ designIntroScopeNote }}" onChange="{{ setDesignIntroScopeNote }}"></div>
+                  <div class="field"><label>Stage</label><input class="input" value="{{ designIntroStage }}" onChange="{{ setDesignIntroStage }}"></div>
+                  <div class="field"><label>Stage detail</label><input class="input" value="{{ designIntroStageNote }}" onChange="{{ setDesignIntroStageNote }}"></div>
+                  <div class="field" style="grid-column: span 2;"><label>Opening paragraph</label><textarea class="input" rows="4" value="{{ designIntroBody }}" onChange="{{ setDesignIntroBody }}" style="resize: vertical; font-family: var(--font-body);"></textarea></div>
                 </div>
-                <div style="font-size: 12.5px; color: var(--color-neutral-600); margin-bottom: 12px;">Same content, same hide/unhide, on every phase's report — edited once, in Concept, so the two tabs can't disagree.</div>
-                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                  <sc-for list="{{ sharedSections }}" as="sec" hint-placeholder-count="3">
-                    <div class="tag tag-neutral" style="display: flex; align-items: center; gap: 7px;">{{ sec.label }}<span style="font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; opacity: .75;">{{ sec.statusLabel }}</span></div>
-                  </sc-for>
+                <div style="margin-top: 18px; display: grid; grid-template-columns: 220px 1fr; gap: 18px; align-items: center;">
+                  <div style="aspect-ratio: 16 / 10; border-radius: var(--radius-md); overflow: hidden; background: var(--color-neutral-100);"><img src="assets/piece-placeholder.png" data-img="{{ designIntroHero }}" alt="" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                  <div><div style="font-size: 13.5px; color: var(--color-neutral-600); margin-bottom: 10px;">Hero image — the room that sets the tone</div><div style="display: flex; flex-wrap: wrap; gap: 8px;"><label class="btn btn-secondary" style="cursor: pointer;">Choose hero image<input type="file" accept="image/*" onChange="{{ pickDesignIntroHero }}" style="display: none;"></label><button type="button" onClick="{{ pasteDesignIntroHero }}" class="btn btn-secondary">Paste from clipboard</button></div></div>
+                </div>
+              </div>
+
+              <div class="card" style="padding: 24px 26px; margin-bottom: 22px; opacity: {{ secDesignStudio.opacity }};">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 4px;">
+                  <div style="font-family: var(--font-heading); font-size: 22px; color: var(--color-accent-900);">Studio introduction</div>
+                  <div style="flex: 1;"></div>
+                  <sc-if value="{{ !secDesignStudio.hidden }}">
+                    <button type="button" onClick="{{ secDesignStudio.toggle }}" class="btn btn-ghost" style="font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px; color: var(--color-neutral-600); flex: none;">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                      Hide from export
+                    </button>
+                  </sc-if>
+                  <sc-if value="{{ secDesignStudio.hidden }}">
+                    <button type="button" onClick="{{ secDesignStudio.toggle }}" class="btn btn-ghost" style="font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px; color: var(--color-accent-800); background: var(--color-accent-100); border-radius: 999px; padding: 6px 12px; flex: none;">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-7-11-7a21.6 21.6 0 0 1 5.06-6.06M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 7 11 7a21.6 21.6 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                      Hidden — Unhide
+                    </button>
+                  </sc-if>
+                </div>
+                <div style="font-size: 13.5px; color: var(--color-neutral-600); margin-bottom: 18px;">Cybelle’s portrait, biography, studio facts and services — the same "who I am" Concept uses.</div>
+                <div class="cs-concept-intro" style="display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 22px;">
+                  <div>
+                    <div style="aspect-ratio: 4 / 5; border-radius: var(--radius-md); overflow: hidden; background: var(--color-neutral-100); margin-bottom: 10px;"><img src="assets/piece-placeholder.png" data-img="{{ designStudioPortrait }}" alt="Cybelle Sampaio" style="width: 100%; height: 100%; object-fit: cover;"></div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 7px;"><label class="btn btn-secondary" style="cursor: pointer; font-size: 13px;">Choose portrait<input type="file" accept="image/*" onChange="{{ pickDesignStudioPortrait }}" style="display: none;"></label><button type="button" onClick="{{ pasteDesignStudioPortrait }}" class="btn btn-secondary" style="font-size: 13px;">Paste from clipboard</button></div>
+                  </div>
+                  <div class="cs-details-grid" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;">
+                    <div class="field"><label>Name</label><input class="input" value="{{ designStudioName }}" onChange="{{ setDesignStudioName }}"></div>
+                    <div class="field"><label>Role</label><input class="input" value="{{ designStudioRole }}" onChange="{{ setDesignStudioRole }}"></div>
+                    <div class="field" style="grid-column: span 2;"><label>Studio details</label><input class="input" value="{{ designStudioStrap }}" onChange="{{ setDesignStudioStrap }}"></div>
+                    <div class="field" style="grid-column: span 2;"><label>Biography — paragraph 1</label><textarea class="input" rows="4" value="{{ designStudioBio1 }}" onChange="{{ setDesignStudioBio1 }}" style="resize: vertical; font-family: var(--font-body);"></textarea></div>
+                    <div class="field" style="grid-column: span 2;"><label>Biography — paragraph 2</label><textarea class="input" rows="4" value="{{ designStudioBio2 }}" onChange="{{ setDesignStudioBio2 }}" style="resize: vertical; font-family: var(--font-body);"></textarea></div>
+                  </div>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 18px;">
+                  <sc-for list="{{ designStudioStats }}" as="st" hint-placeholder-count="3"><div style="border: 1px solid var(--color-neutral-200); border-radius: var(--radius-md); padding: 12px;"><input class="input" value="{{ st.title }}" onChange="{{ st.setTitle }}" placeholder="Studio fact"><input class="input" value="{{ st.body }}" onChange="{{ st.setBody }}" placeholder="Detail" style="margin-top: 7px;"></div></sc-for>
+                </div>
+                <div style="font-family: var(--font-heading); font-size: 18px; color: var(--color-accent-900); margin: 22px 0 12px;">Services</div>
+                <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;">
+                  <sc-for list="{{ designStudioServices }}" as="svc" hint-placeholder-count="4"><div style="border: 1px solid var(--color-neutral-200); border-radius: var(--radius-md); padding: 12px;"><input class="input" value="{{ svc.title }}" onChange="{{ svc.setTitle }}" placeholder="Service"><textarea class="input" rows="2" value="{{ svc.body }}" onChange="{{ svc.setBody }}" placeholder="Description" style="margin-top: 7px; resize: vertical; font-family: var(--font-body);"></textarea></div></sc-for>
                 </div>
               </div>
 
@@ -2022,8 +2069,12 @@ const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review
 // reaches this file — the version badge in the top bar and the Studio →
 // Changelog page both read straight from this, nothing else to update.
 // Versioning starts at 1.1; anything before that lives only in git log.
-const APP_VERSION = '1.3';
+const APP_VERSION = '1.4';
 const CHANGELOG = [
+  { version: '1.4', date: '2026-09-21', changes: [
+    'Design & sourcing: dropped the read-only "Shared with Concept" status card — every section already carries its own Hide from export / Unhide button, so a separate summary was one more thing to check.',
+    'Design & sourcing: Presentation introduction (headline, client, hero image) and Studio introduction (Cybelle\'s portrait, bio, facts, services) are now fully editable here too — the same project-wide fields Concept edits, so a change in either tab shows up in both.',
+  ] },
   { version: '1.3', date: '2026-09-21', changes: [
     'Design & sourcing has its own editable tab now, built the same way as Concept: design concept, direction points, materials and floor plans, each with a one-time "Copy from Concept" button so nothing gets retyped, plus its own hide/unhide for the export.',
     'Design & sourcing: each space carries its own rendering/walkthrough-video carousel (separate from the Concept moodboard), with a "Copy from Concept" starting point per room. Video always stays a remote link in the export, never embedded, so the file stays light.',
@@ -3372,6 +3423,22 @@ class Component extends DCLogic {
       const liveRooms = this.rooms();
       const draft = s.design || {
         hidden: { ...(p.reportHidden || {}) },
+        // Presentation intro and studio profile are project-wide fields — the
+        // same ones Concept edits, not a Design-only copy — so this starts
+        // from the live project exactly like Concept's draft does, and Save
+        // below writes back to those same fields. Editing either tab moves
+        // the other's report too, by design: there is only one hero image,
+        // one "who I am," one project name.
+        intro: {
+          title: p.tagline || '', client: p.client || '', location: p.location || '', address: p.address || '', city: p.addressCity || '',
+          scope: p.scope || '', scopeNote: p.scopeNote || '', stage: p.stage || 'Concept & sourcing', stageNote: p.stageNote || 'Five options', body: p.intro || CONCEPT_INTRO_DEFAULT, hero: p.hero || ''
+        },
+        studio: {
+          ...STUDIO_PROFILE_DEFAULT, ...(p.studioProfile || {}),
+          bio: [...((p.studioProfile && p.studioProfile.bio) || STUDIO_PROFILE_DEFAULT.bio)],
+          stats: ((p.studioProfile && p.studioProfile.stats) || STUDIO_PROFILE_DEFAULT.stats).map((x) => ({ ...x })),
+          services: ((p.studioProfile && p.studioProfile.services) || STUDIO_PROFILE_DEFAULT.services).map((x) => ({ ...x }))
+        },
         note: (ph.design && ph.design.concept) || '',
         points: (p.designPoints || []).map((x) => ({ ...x })),
         materials: (p.designMaterials || []).map((x) => ({ ...x })),
@@ -3390,18 +3457,41 @@ class Component extends DCLogic {
       v.secDesignPlan = sectionToggle('designPlan');
       v.secDesignMood = sectionToggle('designMood');
       v.secSourcing = sectionToggle('sourcing');
+      // Same reportHidden.studio key Concept's own toggle uses — edited from
+      // either tab, since it's one flag for one shared section.
+      v.secDesignStudio = sectionToggle('studio');
 
-      // Studio introduction / How we work / Goals are shared project-wide —
-      // already editable and hideable from the Concept tab — so this is a
-      // read-only status, not a second set of toggles that could disagree
-      // with Concept's about the same underlying reportHidden keys.
-      const sharedLabel = (key) => (p.reportHidden || {})[key] ? 'Hidden' : 'Included';
-      v.sharedSections = [
-        { label: 'Studio introduction', statusLabel: sharedLabel('studio') },
-        { label: 'How we work', statusLabel: sharedLabel('process') },
-        { label: 'Goals', statusLabel: sharedLabel('goals') },
-      ];
-      v.goEditShared = () => this.setState({ tab: 'concept' });
+      const setDesignIntro = (key) => (e) => setDraft({ intro: { ...draft.intro, [key]: e.target.value } });
+      v.designIntroTitle = draft.intro.title; v.setDesignIntroTitle = setDesignIntro('title');
+      v.designIntroClient = draft.intro.client; v.setDesignIntroClient = setDesignIntro('client');
+      v.designIntroLocation = draft.intro.location; v.setDesignIntroLocation = setDesignIntro('location');
+      v.designIntroAddress = draft.intro.address; v.setDesignIntroAddress = setDesignIntro('address');
+      v.designIntroCity = draft.intro.city; v.setDesignIntroCity = setDesignIntro('city');
+      v.designIntroScope = draft.intro.scope; v.setDesignIntroScope = setDesignIntro('scope');
+      v.designIntroScopeNote = draft.intro.scopeNote; v.setDesignIntroScopeNote = setDesignIntro('scopeNote');
+      v.designIntroStage = draft.intro.stage; v.setDesignIntroStage = setDesignIntro('stage');
+      v.designIntroStageNote = draft.intro.stageNote; v.setDesignIntroStageNote = setDesignIntro('stageNote');
+      v.designIntroBody = draft.intro.body; v.setDesignIntroBody = setDesignIntro('body'); v.designIntroHero = draft.intro.hero;
+      v.pickDesignIntroHero = async (e) => { const file = e.target.files && e.target.files[0]; if (file) setDraft({ intro: { ...draft.intro, hero: await api.uploadFile(p.id, file) } }); };
+      v.pasteDesignIntroHero = async () => { const file = await this.conceptClipboardImage(); if (file) setDraft({ intro: { ...draft.intro, hero: await api.uploadFile(p.id, file) } }); };
+
+      const setDesignStudio = (key) => (e) => setDraft({ studio: { ...draft.studio, [key]: e.target.value } });
+      v.designStudioName = draft.studio.name; v.setDesignStudioName = setDesignStudio('name');
+      v.designStudioRole = draft.studio.role; v.setDesignStudioRole = setDesignStudio('role');
+      v.designStudioStrap = draft.studio.strap; v.setDesignStudioStrap = setDesignStudio('strap');
+      v.designStudioPortrait = draft.studio.portrait;
+      v.pickDesignStudioPortrait = async (e) => { const file = e.target.files && e.target.files[0]; if (file) setDraft({ studio: { ...draft.studio, portrait: await api.uploadFile(p.id, file) } }); };
+      v.pasteDesignStudioPortrait = async () => { const file = await this.conceptClipboardImage(); if (file) setDraft({ studio: { ...draft.studio, portrait: await api.uploadFile(p.id, file) } }); };
+      const setDesignBio = (i) => (e) => { const bio = draft.studio.bio.slice(); bio[i] = e.target.value; setDraft({ studio: { ...draft.studio, bio } }); };
+      v.designStudioBio1 = draft.studio.bio[0] || ''; v.setDesignStudioBio1 = setDesignBio(0);
+      v.designStudioBio2 = draft.studio.bio[1] || ''; v.setDesignStudioBio2 = setDesignBio(1);
+      const editableDesignStudioList = (key) => (draft.studio[key] || []).map((item, i) => ({
+        title: item.title || '', body: item.body || '',
+        setTitle: (e) => { const list = draft.studio[key].slice(); list[i] = { ...list[i], title: e.target.value }; setDraft({ studio: { ...draft.studio, [key]: list } }); },
+        setBody: (e) => { const list = draft.studio[key].slice(); list[i] = { ...list[i], body: e.target.value }; setDraft({ studio: { ...draft.studio, [key]: list } }); }
+      }));
+      v.designStudioStats = editableDesignStudioList('stats');
+      v.designStudioServices = editableDesignStudioList('services');
 
       v.designNote = draft.note;
       v.setDesignNote = (e) => setDraft({ note: e.target.value });
@@ -3504,6 +3594,9 @@ class Component extends DCLogic {
         });
         try {
           await this.persist({
+            tagline: d.intro.title, client: d.intro.client, location: d.intro.location, address: d.intro.address, addressCity: d.intro.city,
+            scope: d.intro.scope, scopeNote: d.intro.scopeNote, stage: d.intro.stage, stageNote: d.intro.stageNote,
+            intro: d.intro.body, hero: d.intro.hero, studioProfile: d.studio,
             designPoints: d.points, designMaterials: d.materials, designFloorPlans: d.floorPlans,
             rooms: roomsNext, reportHidden: { ...(this.state.proj.reportHidden || {}), ...d.hidden },
             phases: { ...p.phases, design: { ...(ph.design || {}), concept: d.note } },
