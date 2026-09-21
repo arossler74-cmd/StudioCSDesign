@@ -15,6 +15,13 @@ firestore.rules            security rules
 
 Concept is edited natively in the project workspace and exported as a standalone client document; it is not an embedded HTML file. Furniture lives in the shared catalog and each project references catalog pieces by id (live link: editing the catalog updates every project using the piece).
 
+## Versioning
+
+`APP_VERSION` and `CHANGELOG` (near the top of the `Studio Platform.dc.html` script) are the
+only deploy signal this static site has — no build step, no CI badge. The version shows as a
+badge in the top bar and at Studio → Changelog (admin only). Every change bumps the version and
+adds a changelog entry in the same commit; see CLAUDE.md.
+
 ## Firestore
 
 ```

@@ -336,6 +336,7 @@
           </sc-if>
           <sc-if value="{{ isAdmin }}">
             <button type="button" onClick="{{ goStudio }}" class="btn btn-ghost" style="white-space: nowrap; flex: none;">Studio</button>
+            <button type="button" onClick="{{ goChangelog }}" class="tag tag-outline" style="cursor: pointer; font: inherit; flex: none;" title="What's new in this deploy">{{ appVersion }}</button>
           </sc-if>
           <div class="cs-user" style="display: flex; align-items: center; gap: 10px; padding-left: 16px; border-left: 1px solid var(--color-neutral-300); flex: none;">
             <div style="width: 32px; height: 32px; border-radius: 999px; background: var(--color-accent-2); color: #fff; display: grid; place-items: center; font-size: 13px; font-weight: 500; flex: none;">{{ initials }}</div>
@@ -1327,7 +1328,35 @@
               <span style="font-family: var(--font-heading); font-size: 24px; color: var(--color-accent-900);">Trade programs</span>
               <span style="font-size: 14px; color: var(--color-neutral-600);">Store accounts, representatives, discounts and partnership documents.</span>
             </button>
+            <button type="button" onClick="{{ goChangelog }}" class="card cs-tappable" style="border: 1px solid var(--color-neutral-300); text-align: left; color: inherit; font: inherit;">
+              <span style="font-family: var(--font-heading); font-size: 24px; color: var(--color-accent-900);">Changelog · {{ appVersion }}</span>
+              <span style="font-size: 14px; color: var(--color-neutral-600);">What changed in each version of the platform, and which one is live right now.</span>
+            </button>
           </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showChangelog }}">
+        <div class="cs-page" style="max-width: 760px; margin: 0 auto; padding: 40px 32px 96px; animation: csFade .35s var(--ease-spring) both;">
+          <button type="button" onClick="{{ goStudio }}" class="btn btn-ghost" style="margin-bottom: 18px; padding: 4px 0;">← Studio settings</button>
+          <div style="margin-bottom: 28px;">
+            <div style="font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--color-accent-700); margin-bottom: 8px;">Studio administration</div>
+            <h1 class="cs-h1-display" style="font-family: var(--font-heading); font-size: 44px; margin: 0 0 6px; color: var(--color-accent-900);">Changelog</h1>
+            <p style="margin: 0; color: var(--color-neutral-700); max-width: 60ch;">This browser is running {{ appVersion }}. If a change you're expecting isn't listed at the top, the commit hasn't been deployed yet — refreshing won't help until it has.</p>
+          </div>
+          <sc-for list="{{ changelog }}" as="rel" hint-placeholder-count="2">
+            <div class="card" style="padding: 22px 26px; margin-bottom: 16px; border: 1px solid var(--color-neutral-200);">
+              <div style="display: flex; align-items: baseline; gap: 12px; margin-bottom: 10px;">
+                <span style="font-family: var(--font-heading); font-size: 26px; color: var(--color-accent-900);">{{ rel.version }}</span>
+                <span style="font-size: 12.5px; color: var(--color-neutral-600);">{{ rel.date }}</span>
+              </div>
+              <ul style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px;">
+                <sc-for list="{{ rel.changes }}" as="chg" hint-placeholder-count="2">
+                  <li style="font-size: 14px; color: var(--color-neutral-800); line-height: 1.5;">{{ chg }}</li>
+                </sc-for>
+              </ul>
+            </div>
+          </sc-for>
         </div>
       </sc-if>
 
@@ -1527,6 +1556,19 @@ const PHASES = [
   { key: 'styling', n: '4', title: 'Styling & reveal', short: 'Styling', tagline: 'Delivery, placement, final styling', when: 'By arrangement' },
 ];
 const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review': 'In review', 'done': 'Done', 'answered': 'Feedback received' };
+
+// App version + changelog, so the studio can tell a real deploy from a stale
+// cached tab. Bump APP_VERSION and add an entry here with every change that
+// reaches this file — the version badge in the top bar and the Studio →
+// Changelog page both read straight from this, nothing else to update.
+// Versioning starts at 1.1; anything before that lives only in git log.
+const APP_VERSION = '1.1';
+const CHANGELOG = [
+  { version: '1.1', date: '2026-09-21', changes: [
+    'Concept: hide/unhide any report section (studio intro, how we work, goals, direction, palette, materials, floor plans, moodboards) from the exported HTML/PDF without deleting it — unhide and re-export any time.',
+    'Studio: version badge in the top bar and this changelog, so a deploy can be confirmed at a glance.',
+  ] },
+];
 const TABS = [
   // Details comes first: it is the brief the client report's cover page is
   // built from, so it is filled in before any phase work starts.
@@ -1820,10 +1862,14 @@ class Component extends DCLogic {
         try { this.setState({ tradePrograms: await api.getTradePrograms() }); }
         catch (e) { this.setState({ tradePrograms: [], tradeNotice: 'Could not load trade programs — ' + ((e && e.code) || (e && e.message) || e) }); }
       },
+      goChangelog: () => this.setState({ view: 'changelog' }),
+      appVersion: 'v' + APP_VERSION,
       showDash: s.view === 'dash', showProj: s.view === 'proj' && !!s.proj,
       showCatalog: s.view === 'catalog', showStudio: s.view === 'studio' && admin, showTeam: s.view === 'team' && admin,
       showRates: s.view === 'rates' && admin,
       showTradePrograms: s.view === 'trade-programs' && admin,
+      showChangelog: s.view === 'changelog' && admin,
+      changelog: CHANGELOG.map((rel) => ({ version: 'v' + rel.version, date: rel.date, changes: rel.changes })),
       confirmOpen: !!s.confirm,
       confirmTitle: s.confirm ? s.confirm.title : '',
       confirmBody: s.confirm ? s.confirm.body : '',
