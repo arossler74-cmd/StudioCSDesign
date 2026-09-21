@@ -38,17 +38,25 @@ projects/{id}
   members: [uid], createdAt, updatedAt
   phases: { discovery|concept|design: { status, progress, doc, note, concept? } }
   goals: [{ title, body }]
-  conceptPoints: [{ title, body }]
+  conceptPoints: [{ title, body }]            — Concept direction points
   palette: [{ name, hex, pantone? }]
-  materials: [{ name, note, image }]
-  floorPlans: [{ title, image, comment }]
+  materials: [{ name, note, image }]          — Concept materials
+  floorPlans: [{ title, image, comment }]     — Concept floor plans
+  designPoints: [{ title, body }]             — Design & Sourcing's own direction points
+  designMaterials: [{ name, note, image }]    — Design & Sourcing's own materials
+  designFloorPlans: [{ title, image, comment }] — Design & Sourcing's own floor plans
   answers: { [questionId]: string | string[] }
-  reportHidden: { [sectionKey]: bool }  — sections hidden from exported HTML/PDF reports (studio,
-                       process, goals, direction, palette, materials, plan, mood); toggled in the
-                       Concept tab, applies to every phase's report until unhidden
+  reportHidden: { [sectionKey]: bool }  — sections hidden from exported HTML/PDF reports; toggled
+                       from a "Hide from export" button on the section itself (Concept: studio,
+                       process, goals, direction, palette, materials, plan, mood — studio/process/
+                       goals apply to every phase's report, the rest are Concept-only. Design &
+                       Sourcing: designDirection, designMaterials, designPlan, designMood, sourcing)
   rooms:   [{ id, name, goal, brief,
               conceptMedia: [{ id, type: 'moodboard'|'floorplan'|'sketchup'|'rendering', title, url }],
+              designMedia:  [{ id, type: 'rendering'|'sketchup'|'floorplan'|'video', title, url }],
               selected: [{refId, qty}], alternatives: [{refId, qty}] }]
+              — designPoints/designMaterials/designFloorPlans/designMedia start as a one-time "Copy
+              from Concept" in the Design & Sourcing tab, then diverge freely; never live-linked
   reviews: [{ id, roomId, itemId, verdict: 'up'|'down', comment, by, at, resolved }]
   shares:  [{ token, clientName, phases: ['concept'|'design'], createdAt }]
 
@@ -106,3 +114,11 @@ actually guarding the data. Two consequences worth keeping in mind:
 2. Per-piece approval history (who approved what, when) beyond the latest verdict.
 3. PDF export per phase.
 4. Client annotations directly on Concept floor plans and visual carousels.
+5. Design & Sourcing tab, phase 2: drag-and-drop from the catalog (filterable by `ITEM_TYPES`)
+   into a room's furniture list, with reordering — generalizing the pointer-drag-to-reorder already
+   built for the catalog admin list (`startCardDrag`/`_onDragMove`/`_onDragEnd`) — plus a live
+   investment-table preview in the tab.
+6. Design & Sourcing tab, phase 3: the client's review link exposes substitutes (`room.alternatives`)
+   alongside the current furniture, with a live-recalculating total; what the client tries stays
+   local to their browser and is submitted as feedback, never a direct write to `room.selected` —
+   the designer still decides.

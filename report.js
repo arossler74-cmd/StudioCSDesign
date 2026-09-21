@@ -94,19 +94,32 @@ async function embed(url, cache, timeoutMs) {
  *  first so the caller can show real progress instead of a spinner. A section
  *  the studio has hidden for this export has its images skipped too — no
  *  point spending the embed budget on a picture nobody will see. */
-function imageList(project, phaseKey, hidden) {
+function imageList(project, phaseKey, hidden, byId) {
   hidden = hidden || {};
   const profile = project.studioProfile || STUDIO;
   const out = [STUDIO.logo];
   if (!hidden.studio) out.push(profile.portrait || STUDIO.portrait);
   if (!hidden.process) out.push(...PHASES.map((f) => f.icon));
   if (project.hero) out.push(project.hero);
-  if (!hidden.materials) for (const m of project.materials || []) if (m.image) out.push(m.image);
-  if (!hidden.plan) for (const f of project.floorPlans || []) if (f.image) out.push(f.image);
+  if (phaseKey === 'concept' && !hidden.materials) for (const m of project.materials || []) if (m.image) out.push(m.image);
+  if (phaseKey === 'design' && !hidden.designMaterials) for (const m of project.designMaterials || []) if (m.image) out.push(m.image);
+  if (phaseKey === 'concept' && !hidden.plan) for (const f of project.floorPlans || []) if (f.image) out.push(f.image);
+  if (phaseKey === 'design' && !hidden.designPlan) for (const f of project.designFloorPlans || []) if (f.image) out.push(f.image);
   for (const r of project.rooms || []) {
+    // Legacy CAD/moodboard fields render for either phase (never split per-phase),
+    // so they stay gated by the concept-era 'plan'/'mood' flags for both.
     if (r.cad && !hidden.plan) out.push(r.cad);
-    if ((phaseKey === 'concept' || phaseKey === 'design') && !hidden.mood) for (const m of r.moodboard || []) out.push(m);
+    if (!hidden.mood) for (const m of r.moodboard || []) out.push(m);
     if (phaseKey === 'concept' && !hidden.mood) for (const m of r.conceptMedia || []) if (m.url) out.push(m.url);
+    // Design's own media carousel: images embed like everywhere else, but
+    // videos always stay remote links (never base64) so the export stays
+    // light enough to email — excluding them here is what keeps them out of
+    // the embed pass; buildReport falls back to the raw URL for anything
+    // not in this list.
+    if (phaseKey === 'design' && !hidden.designMood) for (const m of r.designMedia || []) if (m.url && m.type !== 'video') out.push(m.url);
+    if ((phaseKey === 'design' || phaseKey === 'styling') && !hidden.sourcing && byId) {
+      for (const sel of r.selected || []) { const c = byId[sel.refId]; if (c && c.image) out.push(c.image); }
+    }
   }
   return [...new Set(out.filter(Boolean))];
 }
@@ -155,7 +168,7 @@ background:var(--accent);color:#fff;border-radius:999px;padding:3px 10px;vertica
 .room .code{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
 .plan{width:100%;border:1px solid var(--line2);border-radius:14px;background:#fff;margin-top:14px}
 .zoomable{cursor:zoom-in}
-.carousel{margin-top:28px}.carousel-stage{position:relative;width:100%;aspect-ratio:16/10;max-height:1100px;background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:clamp(18px,2.5vw,48px);overflow:hidden}.slide{display:none;width:100%;height:100%}.slide.active{display:flex;flex-direction:column;align-items:center;justify-content:center}.slide img{max-width:100%;max-height:calc(100% - 58px);width:auto;height:auto;object-fit:contain;background:#fff;border-radius:12px}.slide-meta{display:flex;justify-content:space-between;align-self:stretch;gap:20px;margin-top:14px}.slide-type{font-size:.7em;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}.carousel-arrow{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:1px solid var(--line2);background:rgba(251,247,241,.94);font-size:24px;color:var(--ink);cursor:pointer;z-index:2}.carousel-arrow.prev{left:14px}.carousel-arrow.next{right:14px}.carousel-tools{display:flex;align-items:center;justify-content:space-between;margin-top:16px}.carousel-thumbs{display:flex;gap:10px;overflow:auto;padding:2px}.carousel-thumb{width:74px;height:56px;padding:3px;border:1px solid var(--line2);border-radius:12px;background:var(--surface);cursor:pointer;flex:0 0 auto}.carousel-thumb.active{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}.carousel-thumb img{width:100%;height:100%;object-fit:cover;border-radius:9px}.carousel-count{font-size:.75em;letter-spacing:.13em;color:var(--mute)}
+.carousel{margin-top:28px}.carousel-stage{position:relative;width:100%;aspect-ratio:16/10;max-height:1100px;background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:clamp(18px,2.5vw,48px);overflow:hidden}.slide{display:none;width:100%;height:100%}.slide.active{display:flex;flex-direction:column;align-items:center;justify-content:center}.slide img,.slide video{max-width:100%;max-height:calc(100% - 58px);width:auto;height:auto;object-fit:contain;background:#fff;border-radius:12px}.slide-meta{display:flex;justify-content:space-between;align-self:stretch;gap:20px;margin-top:14px}.slide-type{font-size:.7em;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}.carousel-arrow{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:1px solid var(--line2);background:rgba(251,247,241,.94);font-size:24px;color:var(--ink);cursor:pointer;z-index:2}.carousel-arrow.prev{left:14px}.carousel-arrow.next{right:14px}.carousel-tools{display:flex;align-items:center;justify-content:space-between;margin-top:16px}.carousel-thumbs{display:flex;gap:10px;overflow:auto;padding:2px}.carousel-thumb{width:74px;height:56px;padding:3px;border:1px solid var(--line2);border-radius:12px;background:var(--surface);cursor:pointer;flex:0 0 auto}.carousel-thumb.active{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}.carousel-thumb img{width:100%;height:100%;object-fit:cover;border-radius:9px}.carousel-count{font-size:.75em;letter-spacing:.13em;color:var(--mute)}
 .lightbox{position:fixed;inset:0;display:none;place-items:center;background:rgba(30,25,20,.92);padding:30px;z-index:9999}.lightbox.open{display:grid}.lightbox img{max-width:96vw;max-height:92vh;object-fit:contain}.lightbox-close{position:fixed;right:24px;top:20px;border:1px solid rgba(255,255,255,.5);background:rgba(0,0,0,.2);color:#fff;border-radius:50%;width:52px;height:52px;font-size:28px;cursor:pointer}
 table{width:100%;border-collapse:collapse;margin-top:14px;font-size:13.5px}
 th{text-align:left;font-weight:500;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
@@ -252,9 +265,8 @@ function goalsSection(p) {
 </div></section>`;
 }
 
-function directionSection(p, phaseData) {
-  const text = phaseData.concept || phaseData.note || '';
-  const points = (p.conceptPoints || []).filter((c) => c && (c.title || c.body));
+function directionSection(text, points) {
+  points = (points || []).filter((c) => c && (c.title || c.body));
   if (!text && !points.length) return '';
   return `
 <section><div class="wrap">
@@ -286,8 +298,8 @@ function paletteSection(p) {
 </div></section>`;
 }
 
-function materialsSection(p, img) {
-  const materials = (p.materials || []).filter((m) => m && (m.name || m.note));
+function materialsSection(materialList, img) {
+  const materials = (materialList || []).filter((m) => m && (m.name || m.note));
   if (!materials.length) return '';
   return `
 <section><div class="wrap">
@@ -301,14 +313,14 @@ function materialsSection(p, img) {
 </div></section>`;
 }
 
-function planSection(p, img) {
-  const floors = (p.floorPlans || []).filter((f) => f.image);
+function planSection(floorPlans, rooms, img) {
+  const floors = (floorPlans || []).filter((f) => f.image);
   if (floors.length) return `
 <section><div class="wrap">
   <div class="kicker">First &amp; second floor</div><h2>Space plan · 2D</h2>
   ${floors.map((f) => `<div class="room"><h3>${esc(f.title || 'Floor plan')}</h3>${f.comment ? `<p class="lead" style="font-size:13.5px;margin-top:8px">${esc(f.comment)}</p>` : ''}<img class="plan zoomable" src="${esc(img[f.image] || f.image)}" alt="${esc(f.title || 'Floor plan')}"></div>`).join('')}
 </div></section>`;
-  const rooms = (p.rooms || []).filter((r) => r.cad);
+  rooms = (rooms || []).filter((r) => r.cad);
   if (!rooms.length) return '';
   return `
 <section><div class="wrap">
@@ -321,24 +333,35 @@ function planSection(p, img) {
 </div></section>`;
 }
 
-function moodSection(p, img) {
-  const rooms = (p.rooms || []).filter((r) => ((r.conceptMedia || []).length || (r.moodboard || []).length));
+const MEDIA_TYPE_NAME = { moodboard: 'Moodboard', floorplan: '2D Floor Plan', sketchup: 'SketchUp rendering', rendering: 'Ultra-realistic rendering', video: 'Walkthrough video' };
+
+/** The visual carousel per room. Shared by Concept (moodboards, mediaKey
+ *  'conceptMedia', with a legacy plain-URL 'moodboard' array as a fallback for
+ *  projects from before conceptMedia existed) and Design (renderings/video
+ *  walkthroughs, mediaKey 'designMedia', no legacy fallback — it's new). Video
+ *  slides never come from the embedded `img` map (see imageList) — they stay
+ *  a remote <video src>, everything else is a <img>. */
+function moodSection(rooms, mediaKey, img, heading) {
+  heading = heading || { kicker: 'The feeling', title: 'Moodboards' };
+  rooms = (rooms || []).filter((r) => ((r[mediaKey] || []).length || (mediaKey === 'conceptMedia' && (r.moodboard || []).length)));
   if (!rooms.length) return '';
   return `
 <section><div class="wrap">
-  <div class="kicker">The feeling</div><h2>Moodboards</h2>
+  <div class="kicker">${esc(heading.kicker)}</div><h2>${esc(heading.title)}</h2>
   ${rooms.map((r, roomIndex) => {
-    const media = (r.conceptMedia || []).length ? r.conceptMedia : (r.moodboard || []).map((url) => ({ url, title: '', type: 'moodboard' }));
-    const typeName = { moodboard: 'Moodboard', floorplan: '2D Floor Plan', sketchup: 'SketchUp rendering', rendering: 'Ultra-realistic rendering' };
+    const media = (r[mediaKey] || []).length ? r[mediaKey]
+      : (mediaKey === 'conceptMedia' ? (r.moodboard || []).map((url) => ({ url, title: '', type: 'moodboard' })) : []);
     return `<div class="room">
     <h3>${esc(r.name)}</h3>
     ${r.goal ? `<p class="lead" style="font-size:15px;margin-top:8px"><strong>Goal:</strong> ${esc(r.goal)}</p>` : ''}
     ${r.brief ? `<p class="lead" style="font-size:13.5px;margin-top:8px">${esc(r.brief)}</p>` : ''}
     ${r.moodNote ? `<p class="lead" style="font-size:13.5px;margin-top:8px">${esc(r.moodNote)}</p>` : ''}
     <div class="carousel" data-carousel="room-${roomIndex}"><div class="carousel-stage">
-      ${media.map((m, i) => `<div class="slide${i === 0 ? ' active' : ''}" data-slide="${i}"><img class="zoomable" src="${esc(img[m.url] || m.url)}" alt="${esc(m.title || r.name)}"><div class="slide-meta"><div>${esc(m.title || r.name)}</div><div class="slide-type">${esc(typeName[m.type] || m.type || '')}</div></div></div>`).join('')}
+      ${media.map((m, i) => `<div class="slide${i === 0 ? ' active' : ''}" data-slide="${i}">${m.type === 'video'
+        ? `<video src="${esc(m.url)}" controls playsinline></video>`
+        : `<img class="zoomable" src="${esc(img[m.url] || m.url)}" alt="${esc(m.title || r.name)}">`}<div class="slide-meta"><div>${esc(m.title || r.name)}</div><div class="slide-type">${esc(MEDIA_TYPE_NAME[m.type] || m.type || '')}</div></div></div>`).join('')}
       ${media.length > 1 ? '<button class="carousel-arrow prev" type="button" aria-label="Previous image">‹</button><button class="carousel-arrow next" type="button" aria-label="Next image">›</button>' : ''}
-    </div><div class="carousel-tools"><div class="carousel-thumbs">${media.map((m, i) => `<button class="carousel-thumb${i === 0 ? ' active' : ''}" type="button" data-go="${i}" aria-label="Image ${i + 1}"><img src="${esc(img[m.url] || m.url)}" alt=""></button>`).join('')}</div><div class="carousel-count"><span>1</span> / ${media.length}</div></div></div>
+    </div><div class="carousel-tools"><div class="carousel-thumbs">${media.map((m, i) => `<button class="carousel-thumb${i === 0 ? ' active' : ''}" type="button" data-go="${i}" aria-label="Image ${i + 1}">${m.type === 'video' ? '<span style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:18px">▶</span>' : `<img src="${esc(img[m.url] || m.url)}" alt="">`}</button>`).join('')}</div><div class="carousel-count"><span>1</span> / ${media.length}</div></div></div>
   </div>`;
   }).join('')}
 </div></section>`;
@@ -480,7 +503,7 @@ export async function buildReport(project, phaseKey, catalog, onProgress) {
   // project data. Persisted on the project itself, so it applies to every
   // phase's report, not just the one currently open.
   const hidden = p.reportHidden || {};
-  const urls = imageList(p, phase.key, hidden);
+  const urls = imageList(p, phase.key, hidden, byId);
   const cache = {};
   const img = {};
   let done = 0, kept = 0;
@@ -493,6 +516,10 @@ export async function buildReport(project, phaseKey, catalog, onProgress) {
   }
   if (onProgress) onProgress({ done, total: urls.length, label: 'writing the document' });
 
+  const conceptText = ((p.phases && p.phases.concept) || {}).concept || ((p.phases && p.phases.concept) || {}).note || '';
+  const designText = ((p.phases && p.phases.design) || {}).concept || '';
+  const designHeading = { kicker: 'In the space', title: 'Renderings & walkthroughs' };
+
   const body = [
     coverSection(p, phase, img),
     hidden.studio ? '' : studioSection(p, img),
@@ -500,13 +527,20 @@ export async function buildReport(project, phaseKey, catalog, onProgress) {
     hidden.goals ? '' : goalsSection(p),
     // Concept agrees a direction; Design & sourcing commits to pieces. Showing
     // furniture in the concept report turns a conversation about feeling into
-    // one about price, which is why the phases carry different sections.
-    phase.key === 'concept' && !hidden.direction ? directionSection(p, (p.phases && p.phases.concept) || {}) : '',
+    // one about price, which is why the phases carry different sections. Each
+    // phase edits and hides its own copy of direction/materials/plan/media —
+    // see ARCHITECTURE.md — so a change to one never silently touches the
+    // other's already-sent report.
+    phase.key === 'concept' && !hidden.direction ? directionSection(conceptText, p.conceptPoints) : '',
+    phase.key === 'design' && !hidden.designDirection ? directionSection(designText, p.designPoints) : '',
     phase.key === 'concept' && !hidden.palette ? paletteSection(p) : '',
-    phase.key === 'concept' && !hidden.materials ? materialsSection(p, img) : '',
-    (phase.key === 'concept' || phase.key === 'design') && !hidden.plan ? planSection(p, img) : '',
-    (phase.key === 'concept' || phase.key === 'design') && !hidden.mood ? moodSection(p, img) : '',
-    phase.key === 'design' || phase.key === 'styling' ? sourcingSection(p, byId, img) : '',
+    phase.key === 'concept' && !hidden.materials ? materialsSection(p.materials, img) : '',
+    phase.key === 'design' && !hidden.designMaterials ? materialsSection(p.designMaterials, img) : '',
+    phase.key === 'concept' && !hidden.plan ? planSection(p.floorPlans, p.rooms, img) : '',
+    phase.key === 'design' && !hidden.designPlan ? planSection(p.designFloorPlans, p.rooms, img) : '',
+    phase.key === 'concept' && !hidden.mood ? moodSection(p.rooms, 'conceptMedia', img) : '',
+    phase.key === 'design' && !hidden.designMood ? moodSection(p.rooms, 'designMedia', img, designHeading) : '',
+    (phase.key === 'design' || phase.key === 'styling') && !hidden.sourcing ? sourcingSection(p, byId, img) : '',
     // Costs stay out of Concept: this phase is for direction, plans and imagery.
     phase.key === 'design' ? feesSection(p) : '',
     footerSection(img),
