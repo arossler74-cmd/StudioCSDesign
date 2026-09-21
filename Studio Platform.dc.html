@@ -2117,8 +2117,12 @@ const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review
 // reaches this file — the version badge in the top bar and the Studio →
 // Changelog page both read straight from this, nothing else to update.
 // Versioning starts at 1.1; anything before that lives only in git log.
-const APP_VERSION = '1.5';
+const APP_VERSION = '1.6';
 const CHANGELOG = [
+  { version: '1.6', date: '2026-09-21', changes: [
+    'Design & sourcing export: dropped the Design fee section — it is negotiated separately from the sourcing proposal and no longer rides along in this document.',
+    'Design & sourcing export: each room\'s Sourcing & investment section now opens with a photo-card grid per piece (image, name, retailer, price), the same card treatment Materials already uses, with the exact-numbers table (dimensions, qty, subtotal) right underneath it.',
+  ] },
   { version: '1.5', date: '2026-09-21', changes: [
     'Selection and Design & sourcing: the "Add from catalog" picker got a furniture-type dropdown (sofas, coffee tables, rugs…) next to the search box, so a long catalog narrows fast.',
     'Design & sourcing: each room now shows its own furnishings schedule — item, dimensions, qty, unit estimate, line total and a subtotal — plus a total investment card at the bottom, computed live from what is actually in the room, the same math the export uses.',
