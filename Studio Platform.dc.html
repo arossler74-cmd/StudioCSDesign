@@ -945,16 +945,7 @@
               <sc-if value="{{ exportNote }}" hint-placeholder-val="{{ false }}">
                 <div class="card" style="padding: 12px 16px; margin-bottom: 18px; font-size: 13.5px; color: var(--color-accent-900);">{{ exportNote }}</div>
               </sc-if>
-
-              <div class="card" style="padding: 20px 26px; margin-bottom: 22px;">
-                <div style="font-family: var(--font-heading); font-size: 20px; color: var(--color-accent-900); margin-bottom: 4px;">Sections in this export</div>
-                <div style="font-size: 13.5px; color: var(--color-neutral-600); margin-bottom: 14px;">Not ready to send materials, or the palette, or any other section? Hide it here — the content stays put, and Export HTML / Export PDF leaves it out. Unhide and save to bring it back into the next export.</div>
-                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-                  <sc-for list="{{ exportSections }}" as="sec" hint-placeholder-count="8">
-                    <button type="button" onClick="{{ sec.toggle }}" class="tag {{ sec.cls }}" style="cursor: pointer; border: 0; font: inherit; display: flex; align-items: center; gap: 7px;">{{ sec.label }}<span style="font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; opacity: .75;">{{ sec.statusLabel }}</span></button>
-                  </sc-for>
-                </div>
-              </div>
+              <div style="font-size: 12.5px; color: var(--color-neutral-600); margin-bottom: 18px;">Not ready to send a section — materials, the palette, anything below? Use "Hide from export" at the top of it. The content stays put; Export HTML / Export PDF just leaves it out until you unhide and save again.</div>
 
               <div class="card" style="padding: 24px 26px; margin-bottom: 22px;">
                 <div style="font-family: var(--font-heading); font-size: 22px; color: var(--color-accent-900); margin-bottom: 4px;">Presentation introduction</div>
@@ -977,8 +968,23 @@
                 </div>
               </div>
 
-              <div class="card" style="padding: 24px 26px; margin-bottom: 22px;">
-                <div style="font-family: var(--font-heading); font-size: 22px; color: var(--color-accent-900); margin-bottom: 4px;">Studio introduction</div>
+              <div class="card" style="padding: 24px 26px; margin-bottom: 22px; opacity: {{ secStudio.opacity }};">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 4px;">
+                  <div style="font-family: var(--font-heading); font-size: 22px; color: var(--color-accent-900);">Studio introduction</div>
+                  <div style="flex: 1;"></div>
+                  <sc-if value="{{ !secStudio.hidden }}">
+                    <button type="button" onClick="{{ secStudio.toggle }}" class="btn btn-ghost" style="font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px; color: var(--color-neutral-600); flex: none;">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                      Hide from export
+                    </button>
+                  </sc-if>
+                  <sc-if value="{{ secStudio.hidden }}">
+                    <button type="button" onClick="{{ secStudio.toggle }}" class="btn btn-ghost" style="font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px; color: var(--color-accent-800); background: var(--color-accent-100); border-radius: 999px; padding: 6px 12px; flex: none;">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-7-11-7a21.6 21.6 0 0 1 5.06-6.06M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 7 11 7a21.6 21.6 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                      Hidden — Unhide
+                    </button>
+                  </sc-if>
+                </div>
                 <div style="font-size: 13.5px; color: var(--color-neutral-600); margin-bottom: 18px;">Cybelle’s portrait, biography, studio facts and services — all editable for this presentation.</div>
                 <div class="cs-concept-intro" style="display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 22px;">
                   <div>
@@ -1002,16 +1008,63 @@
                 </div>
               </div>
 
-              <div class="card" style="padding: 24px 26px; margin-bottom: 22px;">
-                <div style="font-family: var(--font-heading); font-size: 20px; color: var(--color-accent-900); margin-bottom: 4px;">Direction</div>
+              <div class="card" style="padding: 18px 26px; margin-bottom: 22px; display: flex; align-items: center; gap: 12px; opacity: {{ secProcess.opacity }};">
+                <div>
+                  <div style="font-family: var(--font-heading); font-size: 20px; color: var(--color-accent-900);">How we work</div>
+                  <div style="font-size: 12.5px; color: var(--color-neutral-600); margin-top: 2px;">The four-step process explainer — the same on every project, not edited here.</div>
+                </div>
+                <div style="flex: 1;"></div>
+                <sc-if value="{{ !secProcess.hidden }}">
+                  <button type="button" onClick="{{ secProcess.toggle }}" class="btn btn-ghost" style="font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px; color: var(--color-neutral-600); flex: none;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    Hide from export
+                  </button>
+                </sc-if>
+                <sc-if value="{{ secProcess.hidden }}">
+                  <button type="button" onClick="{{ secProcess.toggle }}" class="btn btn-ghost" style="font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px; color: var(--color-accent-800); background: var(--color-accent-100); border-radius: 999px; padding: 6px 12px; flex: none;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-7-11-7a21.6 21.6 0 0 1 5.06-6.06M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 7 11 7a21.6 21.6 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                    Hidden — Unhide
+                  </button>
+                </sc-if>
+              </div>
+
+              <div class="card" style="padding: 24px 26px; margin-bottom: 22px; opacity: {{ secDirection.opacity }};">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 4px;">
+                  <div style="font-family: var(--font-heading); font-size: 20px; color: var(--color-accent-900);">Direction</div>
+                  <div style="flex: 1;"></div>
+                  <sc-if value="{{ !secDirection.hidden }}">
+                    <button type="button" onClick="{{ secDirection.toggle }}" class="btn btn-ghost" style="font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px; color: var(--color-neutral-600); flex: none;">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                      Hide from export
+                    </button>
+                  </sc-if>
+                  <sc-if value="{{ secDirection.hidden }}">
+                    <button type="button" onClick="{{ secDirection.toggle }}" class="btn btn-ghost" style="font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px; color: var(--color-accent-800); background: var(--color-accent-100); border-radius: 999px; padding: 6px 12px; flex: none;">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-7-11-7a21.6 21.6 0 0 1 5.06-6.06M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 7 11 7a21.6 21.6 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                      Hidden — Unhide
+                    </button>
+                  </sc-if>
+                </div>
                 <div style="font-size: 13.5px; color: var(--color-neutral-600); margin-bottom: 14px;">The story this concept tells — what the client reads first.</div>
                 <textarea class="input" rows="4" value="{{ conceptNote }}" onChange="{{ setConceptNote }}" placeholder="A home that lives the way you do…" style="resize: vertical; font-family: var(--font-body);"></textarea>
               </div>
 
-              <div class="card" style="padding: 24px 26px; margin-bottom: 22px;">
+              <div class="card" style="padding: 24px 26px; margin-bottom: 22px; opacity: {{ secGoals.opacity }};">
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
                   <div style="font-family: var(--font-heading); font-size: 20px; color: var(--color-accent-900);">Goals</div>
                   <div style="flex: 1;"></div>
+                  <sc-if value="{{ !secGoals.hidden }}">
+                    <button type="button" onClick="{{ secGoals.toggle }}" class="btn btn-ghost" style="font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px; color: var(--color-neutral-600); flex: none;">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                      Hide from export
+                    </button>
+                  </sc-if>
+                  <sc-if value="{{ secGoals.hidden }}">
+                    <button type="button" onClick="{{ secGoals.toggle }}" class="btn btn-ghost" style="font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px; color: var(--color-accent-800); background: var(--color-accent-100); border-radius: 999px; padding: 6px 12px; flex: none;">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-7-11-7a21.6 21.6 0 0 1 5.06-6.06M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 7 11 7a21.6 21.6 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                      Hidden — Unhide
+                    </button>
+                  </sc-if>
                   <button type="button" onClick="{{ addGoal }}" class="btn btn-ghost" style="font-size: 13px;">+ Add goal</button>
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px;">
@@ -1027,10 +1080,22 @@
                 </div>
               </div>
 
-              <div class="card" style="padding: 24px 26px; margin-bottom: 22px;">
+              <div class="card" style="padding: 24px 26px; margin-bottom: 22px; opacity: {{ secDirection.opacity }};">
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
                   <div style="font-family: var(--font-heading); font-size: 20px; color: var(--color-accent-900);">Concept direction</div>
                   <div style="flex: 1;"></div>
+                  <sc-if value="{{ !secDirection.hidden }}">
+                    <button type="button" onClick="{{ secDirection.toggle }}" class="btn btn-ghost" style="font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px; color: var(--color-neutral-600); flex: none;">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                      Hide from export
+                    </button>
+                  </sc-if>
+                  <sc-if value="{{ secDirection.hidden }}">
+                    <button type="button" onClick="{{ secDirection.toggle }}" class="btn btn-ghost" style="font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px; color: var(--color-accent-800); background: var(--color-accent-100); border-radius: 999px; padding: 6px 12px; flex: none;">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-7-11-7a21.6 21.6 0 0 1 5.06-6.06M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 7 11 7a21.6 21.6 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                      Hidden — Unhide
+                    </button>
+                  </sc-if>
                   <button type="button" onClick="{{ addPoint }}" class="btn btn-ghost" style="font-size: 13px;">+ Add point</button>
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px;">
@@ -1046,10 +1111,22 @@
                 </div>
               </div>
 
-              <div class="card" style="padding: 24px 26px; margin-bottom: 22px;">
+              <div class="card" style="padding: 24px 26px; margin-bottom: 22px; opacity: {{ secPalette.opacity }};">
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
                   <div style="font-family: var(--font-heading); font-size: 20px; color: var(--color-accent-900);">Palette</div>
                   <div style="flex: 1;"></div>
+                  <sc-if value="{{ !secPalette.hidden }}">
+                    <button type="button" onClick="{{ secPalette.toggle }}" class="btn btn-ghost" style="font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px; color: var(--color-neutral-600); flex: none;">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                      Hide from export
+                    </button>
+                  </sc-if>
+                  <sc-if value="{{ secPalette.hidden }}">
+                    <button type="button" onClick="{{ secPalette.toggle }}" class="btn btn-ghost" style="font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px; color: var(--color-accent-800); background: var(--color-accent-100); border-radius: 999px; padding: 6px 12px; flex: none;">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-7-11-7a21.6 21.6 0 0 1 5.06-6.06M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 7 11 7a21.6 21.6 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                      Hidden — Unhide
+                    </button>
+                  </sc-if>
                   <button type="button" onClick="{{ addColor }}" class="btn btn-ghost" style="font-size: 13px;">+ Add color</button>
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 14px;">
@@ -1068,10 +1145,22 @@
                 </div>
               </div>
 
-              <div class="card" style="padding: 24px 26px; margin-bottom: 22px;">
+              <div class="card" style="padding: 24px 26px; margin-bottom: 22px; opacity: {{ secMaterials.opacity }};">
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
                   <div style="font-family: var(--font-heading); font-size: 20px; color: var(--color-accent-900);">Materials</div>
                   <div style="flex: 1;"></div>
+                  <sc-if value="{{ !secMaterials.hidden }}">
+                    <button type="button" onClick="{{ secMaterials.toggle }}" class="btn btn-ghost" style="font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px; color: var(--color-neutral-600); flex: none;">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                      Hide from export
+                    </button>
+                  </sc-if>
+                  <sc-if value="{{ secMaterials.hidden }}">
+                    <button type="button" onClick="{{ secMaterials.toggle }}" class="btn btn-ghost" style="font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px; color: var(--color-accent-800); background: var(--color-accent-100); border-radius: 999px; padding: 6px 12px; flex: none;">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-7-11-7a21.6 21.6 0 0 1 5.06-6.06M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 7 11 7a21.6 21.6 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                      Hidden — Unhide
+                    </button>
+                  </sc-if>
                   <button type="button" onClick="{{ addMaterial }}" class="btn btn-ghost" style="font-size: 13px;">+ Add material</button>
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px;">
@@ -1089,8 +1178,21 @@
                 </div>
               </div>
 
-              <div class="card" style="padding: 24px 26px; margin-bottom: 22px;">
-                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 4px;"><div style="font-family: var(--font-heading); font-size: 22px; color: var(--color-accent-900);">Floor plans</div><div style="flex: 1;"></div><button type="button" onClick="{{ addConceptFloor }}" class="btn btn-secondary">+ Add level</button></div>
+              <div class="card" style="padding: 24px 26px; margin-bottom: 22px; opacity: {{ secPlan.opacity }};">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 4px;"><div style="font-family: var(--font-heading); font-size: 22px; color: var(--color-accent-900);">Floor plans</div><div style="flex: 1;"></div>
+                  <sc-if value="{{ !secPlan.hidden }}">
+                    <button type="button" onClick="{{ secPlan.toggle }}" class="btn btn-ghost" style="font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px; color: var(--color-neutral-600); flex: none;">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                      Hide from export
+                    </button>
+                  </sc-if>
+                  <sc-if value="{{ secPlan.hidden }}">
+                    <button type="button" onClick="{{ secPlan.toggle }}" class="btn btn-ghost" style="font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px; color: var(--color-accent-800); background: var(--color-accent-100); border-radius: 999px; padding: 6px 12px; flex: none;">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-7-11-7a21.6 21.6 0 0 1 5.06-6.06M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 7 11 7a21.6 21.6 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                      Hidden — Unhide
+                    </button>
+                  </sc-if>
+                  <button type="button" onClick="{{ addConceptFloor }}" class="btn btn-secondary">+ Add level</button></div>
                 <div style="font-size: 13.5px; color: var(--color-neutral-600); margin-bottom: 18px;">One card per level, with its own drawing and presentation comment.</div>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px;">
                   <sc-for list="{{ conceptFloors }}" as="floor" hint-placeholder-count="2">
@@ -1104,8 +1206,21 @@
                 </div>
               </div>
 
-              <div style="display: flex; flex-direction: column; gap: 20px; margin-bottom: 22px;">
-                <div style="display: flex; align-items: center; gap: 12px;"><div style="font-family: var(--font-heading); font-size: 24px; color: var(--color-accent-900);">Spaces</div><div style="flex: 1;"></div><button type="button" onClick="{{ addConceptRoom }}" class="btn btn-secondary">+ Add space</button></div>
+              <div style="display: flex; flex-direction: column; gap: 20px; margin-bottom: 22px; opacity: {{ secMood.opacity }};">
+                <div style="display: flex; align-items: center; gap: 12px;"><div style="font-family: var(--font-heading); font-size: 24px; color: var(--color-accent-900);">Spaces</div><div style="flex: 1;"></div>
+                  <sc-if value="{{ !secMood.hidden }}">
+                    <button type="button" onClick="{{ secMood.toggle }}" class="btn btn-ghost" style="font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px; color: var(--color-neutral-600); flex: none;">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                      Hide from export
+                    </button>
+                  </sc-if>
+                  <sc-if value="{{ secMood.hidden }}">
+                    <button type="button" onClick="{{ secMood.toggle }}" class="btn btn-ghost" style="font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px; color: var(--color-accent-800); background: var(--color-accent-100); border-radius: 999px; padding: 6px 12px; flex: none;">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-7-11-7a21.6 21.6 0 0 1 5.06-6.06M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 7 11 7a21.6 21.6 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                      Hidden — Unhide
+                    </button>
+                  </sc-if>
+                  <button type="button" onClick="{{ addConceptRoom }}" class="btn btn-secondary">+ Add space</button></div>
                 <sc-for list="{{ conceptRooms }}" as="room" hint-placeholder-count="2">
                   <div class="card" style="padding: 24px 26px;">
                     <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 12px;"><input class="input" value="{{ room.name }}" onChange="{{ room.setName }}" placeholder="Space name" style="font-family: var(--font-heading); font-size: 20px;"><button type="button" onClick="{{ room.remove }}" class="btn btn-ghost">Delete space</button></div>
@@ -1562,8 +1677,12 @@ const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review
 // reaches this file — the version badge in the top bar and the Studio →
 // Changelog page both read straight from this, nothing else to update.
 // Versioning starts at 1.1; anything before that lives only in git log.
-const APP_VERSION = '1.1';
+const APP_VERSION = '1.2';
 const CHANGELOG = [
+  { version: '1.2', date: '2026-09-21', changes: [
+    'Concept: the hide/unhide control for each report section moved onto that section itself — an "Hide from export" / "Unhide" button (with icon) at the top of Studio introduction, How we work, Goals, Concept direction, Palette, Materials, Floor plans and Spaces, in place of the single checklist card.',
+    'Concept: a hidden section now dims in the editor too, so it is obvious at a glance what will not leave the studio in the next export.',
+  ] },
   { version: '1.1', date: '2026-09-21', changes: [
     'Concept: hide/unhide any report section (studio intro, how we work, goals, direction, palette, materials, floor plans, moodboards) from the exported HTML/PDF without deleting it — unhide and re-export any time.',
     'Studio: version badge in the top bar and this changelog, so a deploy can be confirmed at a glance.',
@@ -2671,24 +2790,22 @@ class Component extends DCLogic {
       // Sections the studio can hide from the exported HTML/PDF without
       // deleting anything — e.g. materials or the palette aren't final yet.
       // Stored on the project (reportHidden), so it takes effect the moment
-      // it's saved and reverses the same way: unhide, save, re-export.
+      // it's saved and reverses the same way: unhide, save, re-export. Each
+      // card below carries its own "Hide from export" / "Unhide" button, so
+      // the control sits right on the thing it affects.
       const toggleHidden = (key) => () => setDraft({ hidden: { ...draft.hidden, [key]: !draft.hidden[key] } });
-      const EXPORT_SECTIONS = [
-        { key: 'studio', label: 'Studio introduction' },
-        { key: 'process', label: 'How we work' },
-        { key: 'goals', label: 'Goals' },
-        { key: 'direction', label: 'Concept direction' },
-        { key: 'palette', label: 'Colour palette' },
-        { key: 'materials', label: 'Materials' },
-        { key: 'plan', label: 'Floor plans' },
-        { key: 'mood', label: 'Moodboards' },
-      ];
-      v.exportSections = EXPORT_SECTIONS.map((def) => ({
-        label: def.label,
-        cls: draft.hidden[def.key] ? 'tag-neutral' : 'tag-accent',
-        statusLabel: draft.hidden[def.key] ? 'Hidden' : 'Included',
-        toggle: toggleHidden(def.key),
-      }));
+      const sectionToggle = (key) => {
+        const on = !!draft.hidden[key];
+        return { hidden: on, opacity: on ? '0.55' : '1', toggle: toggleHidden(key) };
+      };
+      v.secStudio = sectionToggle('studio');
+      v.secProcess = sectionToggle('process');
+      v.secGoals = sectionToggle('goals');
+      v.secDirection = sectionToggle('direction');
+      v.secPalette = sectionToggle('palette');
+      v.secMaterials = sectionToggle('materials');
+      v.secPlan = sectionToggle('plan');
+      v.secMood = sectionToggle('mood');
 
       const setIntro = (key) => (e) => setDraft({ intro: { ...draft.intro, [key]: e.target.value } });
       v.introTitle = draft.intro.title; v.setIntroTitle = setIntro('title');
