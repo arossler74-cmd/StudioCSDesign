@@ -945,6 +945,16 @@
                 <div class="card" style="padding: 12px 16px; margin-bottom: 18px; font-size: 13.5px; color: var(--color-accent-900);">{{ exportNote }}</div>
               </sc-if>
 
+              <div class="card" style="padding: 20px 26px; margin-bottom: 22px;">
+                <div style="font-family: var(--font-heading); font-size: 20px; color: var(--color-accent-900); margin-bottom: 4px;">Sections in this export</div>
+                <div style="font-size: 13.5px; color: var(--color-neutral-600); margin-bottom: 14px;">Not ready to send materials, or the palette, or any other section? Hide it here — the content stays put, and Export HTML / Export PDF leaves it out. Unhide and save to bring it back into the next export.</div>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                  <sc-for list="{{ exportSections }}" as="sec" hint-placeholder-count="8">
+                    <button type="button" onClick="{{ sec.toggle }}" class="tag {{ sec.cls }}" style="cursor: pointer; border: 0; font: inherit; display: flex; align-items: center; gap: 7px;">{{ sec.label }}<span style="font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; opacity: .75;">{{ sec.statusLabel }}</span></button>
+                  </sc-for>
+                </div>
+              </div>
+
               <div class="card" style="padding: 24px 26px; margin-bottom: 22px;">
                 <div style="font-family: var(--font-heading); font-size: 22px; color: var(--color-accent-900); margin-bottom: 4px;">Presentation introduction</div>
                 <div style="font-size: 13.5px; color: var(--color-neutral-600); margin-bottom: 18px;">The complete opening page from the original proposal.</div>
@@ -2591,6 +2601,7 @@ class Component extends DCLogic {
       // draft is rebuilt from the project the first time this tab is opened,
       // then kept in state until Save concept or a project switch clears it.
       const draft = s.concept || {
+        hidden: { ...(p.reportHidden || {}) },
         note: (ph.concept && (ph.concept.concept || ph.concept.note)) || '',
         intro: {
           title: p.tagline || '', client: p.client || '', location: p.location || '', address: p.address || '', city: p.addressCity || '',
@@ -2610,6 +2621,28 @@ class Component extends DCLogic {
         rooms: this.rooms().map((r) => ({ ...r, goal: r.goal || '', conceptMedia: (r.conceptMedia || (r.moodboard || []).map((url, i) => ({ id: 'legacy-' + i, type: 'moodboard', title: r.name + ' moodboard', url }))).map((x) => ({ ...x })) })),
       };
       const setDraft = (patch) => this.setState({ concept: { ...draft, ...patch } });
+
+      // Sections the studio can hide from the exported HTML/PDF without
+      // deleting anything — e.g. materials or the palette aren't final yet.
+      // Stored on the project (reportHidden), so it takes effect the moment
+      // it's saved and reverses the same way: unhide, save, re-export.
+      const toggleHidden = (key) => () => setDraft({ hidden: { ...draft.hidden, [key]: !draft.hidden[key] } });
+      const EXPORT_SECTIONS = [
+        { key: 'studio', label: 'Studio introduction' },
+        { key: 'process', label: 'How we work' },
+        { key: 'goals', label: 'Goals' },
+        { key: 'direction', label: 'Concept direction' },
+        { key: 'palette', label: 'Colour palette' },
+        { key: 'materials', label: 'Materials' },
+        { key: 'plan', label: 'Floor plans' },
+        { key: 'mood', label: 'Moodboards' },
+      ];
+      v.exportSections = EXPORT_SECTIONS.map((def) => ({
+        label: def.label,
+        cls: draft.hidden[def.key] ? 'tag-neutral' : 'tag-accent',
+        statusLabel: draft.hidden[def.key] ? 'Hidden' : 'Included',
+        toggle: toggleHidden(def.key),
+      }));
 
       const setIntro = (key) => (e) => setDraft({ intro: { ...draft.intro, [key]: e.target.value } });
       v.introTitle = draft.intro.title; v.setIntroTitle = setIntro('title');
@@ -2752,7 +2785,7 @@ class Component extends DCLogic {
             scope: d.intro.scope, scopeNote: d.intro.scopeNote, stage: d.intro.stage, stageNote: d.intro.stageNote,
             intro: d.intro.body, hero: d.intro.hero, studioProfile: d.studio,
             goals: d.goals, conceptPoints: d.points, palette: d.palette, materials: d.materials, floorPlans: d.floorPlans,
-            rooms: roomsNext,
+            rooms: roomsNext, reportHidden: d.hidden,
             phases: { ...p.phases, concept: { ...(ph.concept || {}), concept: d.note } },
           });
           this.setState({ concept: null, conceptSaving: false, conceptNotice: 'Saved.' });

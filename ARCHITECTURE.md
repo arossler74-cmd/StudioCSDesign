@@ -36,6 +36,9 @@ projects/{id}
   materials: [{ name, note, image }]
   floorPlans: [{ title, image, comment }]
   answers: { [questionId]: string | string[] }
+  reportHidden: { [sectionKey]: bool }  — sections hidden from exported HTML/PDF reports (studio,
+                       process, goals, direction, palette, materials, plan, mood); toggled in the
+                       Concept tab, applies to every phase's report until unhidden
   rooms:   [{ id, name, goal, brief,
               conceptMedia: [{ id, type: 'moodboard'|'floorplan'|'sketchup'|'rendering', title, url }],
               selected: [{refId, qty}], alternatives: [{refId, qty}] }]

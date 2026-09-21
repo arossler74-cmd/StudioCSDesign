@@ -15,6 +15,10 @@
 //              and any alternatives. The decisions concept deliberately
 //              deferred.
 //   discovery / styling — the brief and the closing summary respectively.
+//
+// Within whatever a phase shows, the studio can hide individual sections per
+// project (project.reportHidden, e.g. { palette: true }) — a section not
+// ready to share yet, without deleting its content. See buildReport below.
 
 const PHASES = [
   { key: 'discovery', n: 1, icon: 'assets/icon-discovery.png', title: 'Discovery', blurb: 'We start with the questionnaire and a conversation, then I visit and measure the space. This is where I learn how you live.' },
@@ -87,17 +91,22 @@ async function embed(url, cache, timeoutMs) {
 }
 
 /** Every image the report will reference, in the order it appears. Collected
- *  first so the caller can show real progress instead of a spinner. */
-function imageList(project, phaseKey) {
+ *  first so the caller can show real progress instead of a spinner. A section
+ *  the studio has hidden for this export has its images skipped too — no
+ *  point spending the embed budget on a picture nobody will see. */
+function imageList(project, phaseKey, hidden) {
+  hidden = hidden || {};
   const profile = project.studioProfile || STUDIO;
-  const out = [profile.portrait || STUDIO.portrait, STUDIO.logo, ...PHASES.map((f) => f.icon)];
+  const out = [STUDIO.logo];
+  if (!hidden.studio) out.push(profile.portrait || STUDIO.portrait);
+  if (!hidden.process) out.push(...PHASES.map((f) => f.icon));
   if (project.hero) out.push(project.hero);
-  for (const m of project.materials || []) if (m.image) out.push(m.image);
-  for (const f of project.floorPlans || []) if (f.image) out.push(f.image);
+  if (!hidden.materials) for (const m of project.materials || []) if (m.image) out.push(m.image);
+  if (!hidden.plan) for (const f of project.floorPlans || []) if (f.image) out.push(f.image);
   for (const r of project.rooms || []) {
-    if (r.cad) out.push(r.cad);
-    if (phaseKey === 'concept' || phaseKey === 'design') for (const m of r.moodboard || []) out.push(m);
-    if (phaseKey === 'concept') for (const m of r.conceptMedia || []) if (m.url) out.push(m.url);
+    if (r.cad && !hidden.plan) out.push(r.cad);
+    if ((phaseKey === 'concept' || phaseKey === 'design') && !hidden.mood) for (const m of r.moodboard || []) out.push(m);
+    if (phaseKey === 'concept' && !hidden.mood) for (const m of r.conceptMedia || []) if (m.url) out.push(m.url);
   }
   return [...new Set(out.filter(Boolean))];
 }
@@ -243,11 +252,10 @@ function goalsSection(p) {
 </div></section>`;
 }
 
-function conceptSection(p, phaseData) {
+function directionSection(p, phaseData) {
   const text = phaseData.concept || phaseData.note || '';
   const points = (p.conceptPoints || []).filter((c) => c && (c.title || c.body));
-  const palette = (p.palette || []).filter((c) => c && (c.name || c.hex));
-  if (!text && !points.length && !palette.length) return '';
+  if (!text && !points.length) return '';
   return `
 <section><div class="wrap">
   <div class="concept-head"><div><div class="kicker">Direction</div><h2>Design concept</h2></div>
@@ -257,12 +265,24 @@ function conceptSection(p, phaseData) {
       <div class="point-title">${esc(c.title || '')}</div>
       <div class="lead">${esc(c.body || '')}</div></div>`).join('')}
   </div>` : ''}
-  ${palette.length ? `<div class="palette-grid">
+</div></section>`;
+}
+
+/** Colour palette, on its own so it can be hidden independently of the
+ *  concept text above it — a common ask when the palette isn't final but
+ *  the direction is. */
+function paletteSection(p) {
+  const palette = (p.palette || []).filter((c) => c && (c.name || c.hex));
+  if (!palette.length) return '';
+  return `
+<section><div class="wrap">
+  <div class="kicker">Direction</div><h2>Colour palette</h2>
+  <div class="palette-grid">
     ${palette.map((c) => `<div class="sw">
       <div class="chip" style="background:${esc(c.hex || '#EEE')}"></div>
       <div class="n">${esc(c.name || '')}</div>
       ${c.pantone || c.ref || c.hex ? `<div class="h">${esc([c.pantone || c.ref, c.hex].filter(Boolean).join(' · '))}</div>` : ''}</div>`).join('')}
-  </div>` : ''}
+  </div>
 </div></section>`;
 }
 
@@ -455,7 +475,12 @@ export async function buildReport(project, phaseKey, catalog, onProgress) {
   const byId = {};
   for (const c of catalog || []) byId[c.id] = c;
 
-  const urls = imageList(p, phase.key);
+  // Sections the studio has hidden for this export — 'unhide' just flips the
+  // flag back and the next export/print includes it again, from the same
+  // project data. Persisted on the project itself, so it applies to every
+  // phase's report, not just the one currently open.
+  const hidden = p.reportHidden || {};
+  const urls = imageList(p, phase.key, hidden);
   const cache = {};
   const img = {};
   let done = 0, kept = 0;
@@ -470,16 +495,17 @@ export async function buildReport(project, phaseKey, catalog, onProgress) {
 
   const body = [
     coverSection(p, phase, img),
-    studioSection(p, img),
-    processSection(phase, img),
-    goalsSection(p),
+    hidden.studio ? '' : studioSection(p, img),
+    hidden.process ? '' : processSection(phase, img),
+    hidden.goals ? '' : goalsSection(p),
     // Concept agrees a direction; Design & sourcing commits to pieces. Showing
     // furniture in the concept report turns a conversation about feeling into
     // one about price, which is why the phases carry different sections.
-    phase.key === 'concept' ? conceptSection(p, (p.phases && p.phases.concept) || {}) : '',
-    phase.key === 'concept' ? materialsSection(p, img) : '',
-    phase.key === 'concept' || phase.key === 'design' ? planSection(p, img) : '',
-    phase.key === 'concept' || phase.key === 'design' ? moodSection(p, img) : '',
+    phase.key === 'concept' && !hidden.direction ? directionSection(p, (p.phases && p.phases.concept) || {}) : '',
+    phase.key === 'concept' && !hidden.palette ? paletteSection(p) : '',
+    phase.key === 'concept' && !hidden.materials ? materialsSection(p, img) : '',
+    (phase.key === 'concept' || phase.key === 'design') && !hidden.plan ? planSection(p, img) : '',
+    (phase.key === 'concept' || phase.key === 'design') && !hidden.mood ? moodSection(p, img) : '',
     phase.key === 'design' || phase.key === 'styling' ? sourcingSection(p, byId, img) : '',
     // Costs stay out of Concept: this phase is for direction, plans and imagery.
     phase.key === 'design' ? feesSection(p) : '',
