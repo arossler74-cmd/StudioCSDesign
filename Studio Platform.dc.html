@@ -1549,6 +1549,10 @@
                     <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 16px;">
                       <div style="font-family: var(--font-heading); font-size: 20px; color: var(--color-accent-900);">{{ pickTitle }}</div>
                       <div style="flex: 1;"></div>
+                      <select class="input" value="{{ pickType }}" onChange="{{ setPickType }}" style="max-width: 190px;">
+                        <option value="">All types</option>
+                        <sc-for list="{{ pickTypeOptions }}" as="o" hint-placeholder-count="6"><option value="{{ o }}">{{ o }}</option></sc-for>
+                      </select>
                       <input class="input" value="{{ pickQ }}" onChange="{{ setPickQ }}" placeholder="Search the catalog" style="max-width: 320px;">
                       <button type="button" onClick="{{ closePick }}" class="btn btn-ghost">Close</button>
                     </div>
@@ -1623,8 +1627,48 @@
                         </div>
                       </sc-for>
                     </div>
+
+                    <sc-if value="{{ room.investmentRows.length }}" hint-placeholder-val="{{ false }}">
+                      <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--color-neutral-200);">
+                        <div style="font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--color-accent-700); margin-bottom: 10px;">Furnishings schedule</div>
+                        <table style="width: 100%; border-collapse: collapse; font-size: 13.5px;">
+                          <thead><tr>
+                            <th style="text-align: left; font-weight: 500; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-600); padding: 8px 10px; border-bottom: 1px solid var(--color-neutral-200);">Item · store</th>
+                            <th style="text-align: left; font-weight: 500; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-600); padding: 8px 10px; border-bottom: 1px solid var(--color-neutral-200);">Dimensions</th>
+                            <th style="text-align: right; font-weight: 500; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-600); padding: 8px 10px; border-bottom: 1px solid var(--color-neutral-200);">Qty</th>
+                            <th style="text-align: right; font-weight: 500; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-600); padding: 8px 10px; border-bottom: 1px solid var(--color-neutral-200);">Unit est.</th>
+                            <th style="text-align: right; font-weight: 500; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-600); padding: 8px 10px; border-bottom: 1px solid var(--color-neutral-200);">Line total</th>
+                          </tr></thead>
+                          <tbody>
+                            <sc-for list="{{ room.investmentRows }}" as="row" hint-placeholder-count="3">
+                              <tr>
+                                <td style="padding: 9px 10px; border-bottom: 1px solid var(--color-neutral-100); vertical-align: top;">
+                                  <div style="font-weight: 500;">{{ row.name }}</div>
+                                  <div style="font-size: 12px; color: var(--color-neutral-500);">{{ row.meta }}</div>
+                                </td>
+                                <td style="padding: 9px 10px; border-bottom: 1px solid var(--color-neutral-100); vertical-align: top; color: var(--color-neutral-600);">{{ row.dimensions }}</td>
+                                <td style="padding: 9px 10px; border-bottom: 1px solid var(--color-neutral-100); vertical-align: top; text-align: right;">{{ row.qty }}</td>
+                                <td style="padding: 9px 10px; border-bottom: 1px solid var(--color-neutral-100); vertical-align: top; text-align: right; color: var(--color-neutral-600);">{{ row.unit }}</td>
+                                <td style="padding: 9px 10px; border-bottom: 1px solid var(--color-neutral-100); vertical-align: top; text-align: right; font-weight: 500;">{{ row.line }}</td>
+                              </tr>
+                            </sc-for>
+                          </tbody>
+                          <tfoot><tr>
+                            <td colspan="4" style="padding: 10px; text-align: right; font-weight: 600; border-top: 2px solid var(--color-neutral-200);">{{ room.name }} subtotal</td>
+                            <td style="padding: 10px; text-align: right; font-weight: 600; border-top: 2px solid var(--color-neutral-200);">{{ room.investmentSubtotal }}</td>
+                          </tr></tfoot>
+                        </table>
+                      </div>
+                    </sc-if>
                   </div>
                 </sc-for>
+
+                <sc-if value="{{ hasInvestment }}" hint-placeholder-val="{{ false }}">
+                  <div class="card" style="padding: 20px 26px; display: flex; justify-content: space-between; align-items: baseline;">
+                    <div style="font-family: var(--font-heading); font-size: 18px; color: var(--color-accent-900);">Total investment</div>
+                    <div style="font-family: var(--font-heading); font-size: 30px; color: var(--color-accent-900);">{{ investmentGrandTotal }}</div>
+                  </div>
+                </sc-if>
               </div>
 
               <div style="display: flex; align-items: center; gap: 14px;">
@@ -1654,6 +1698,10 @@
                   <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 16px;">
                     <div style="font-family: var(--font-heading); font-size: 20px; color: var(--color-accent-900);">{{ pickTitle }}</div>
                     <div style="flex: 1;"></div>
+                    <select class="input" value="{{ pickType }}" onChange="{{ setPickType }}" style="max-width: 190px;">
+                      <option value="">All types</option>
+                      <sc-for list="{{ pickTypeOptions }}" as="o" hint-placeholder-count="6"><option value="{{ o }}">{{ o }}</option></sc-for>
+                    </select>
                     <input class="input" value="{{ pickQ }}" onChange="{{ setPickQ }}" placeholder="Search the catalog" style="max-width: 320px;">
                     <button type="button" onClick="{{ closePick }}" class="btn btn-ghost">Close</button>
                   </div>
@@ -2069,8 +2117,12 @@ const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review
 // reaches this file — the version badge in the top bar and the Studio →
 // Changelog page both read straight from this, nothing else to update.
 // Versioning starts at 1.1; anything before that lives only in git log.
-const APP_VERSION = '1.4';
+const APP_VERSION = '1.5';
 const CHANGELOG = [
+  { version: '1.5', date: '2026-09-21', changes: [
+    'Selection and Design & sourcing: the "Add from catalog" picker got a furniture-type dropdown (sofas, coffee tables, rugs…) next to the search box, so a long catalog narrows fast.',
+    'Design & sourcing: each room now shows its own furnishings schedule — item, dimensions, qty, unit estimate, line total and a subtotal — plus a total investment card at the bottom, computed live from what is actually in the room, the same math the export uses.',
+  ] },
   { version: '1.4', date: '2026-09-21', changes: [
     'Design & sourcing: dropped the read-only "Shared with Concept" status card — every section already carries its own Hide from export / Unhide button, so a separate summary was one more thing to check.',
     'Design & sourcing: Presentation introduction (headline, client, hero image) and Studio introduction (Cybelle\'s portrait, bio, facts, services) are now fully editable here too — the same project-wide fields Concept edits, so a change in either tab shows up in both.',
@@ -2290,29 +2342,58 @@ class Component extends DCLogic {
   furnitureRoomVal(room, rooms) {
     return {
       total: (room.selected || []).length + ' in layout · ' + (room.alternatives || []).length + ' alternatives',
-      addSelected: () => this.setState({ pick: { roomId: room.id, bucket: 'selected' }, pickQ: '' }),
-      addAlt: () => this.setState({ pick: { roomId: room.id, bucket: 'alternatives' }, pickQ: '' }),
+      addSelected: () => this.setState({ pick: { roomId: room.id, bucket: 'selected' }, pickQ: '', pickType: '' }),
+      addAlt: () => this.setState({ pick: { roomId: room.id, bucket: 'alternatives' }, pickQ: '', pickType: '' }),
       selected: this.furnitureBucket(room, 'selected', rooms),
       alternatives: this.furnitureBucket(room, 'alternatives', rooms),
     };
   }
+
+  // The investment table — same line-item math report.js's sourcingSection
+  // builds for the actual export (name/retailer/finish/dimensions/qty/price),
+  // shown live in the tab so what's in the room now is exactly what the next
+  // export will price out. Substitutes are never priced in here — only
+  // pieces actually in the room count toward the total, same as the export.
+  investmentRoomVal(room) {
+    let subtotalRaw = 0;
+    const rows = (room.selected || []).map((entry) => {
+      const c = this.cat(entry.refId) || { name: 'Removed from catalog' };
+      const qty = Number(entry.qty || 1);
+      const line = c.price == null ? null : Number(c.price) * qty;
+      if (line != null && !isNaN(line)) subtotalRaw += line;
+      return {
+        name: c.name || '', image: c.image || PLACEHOLDER,
+        meta: [c.retailer, c.finish, c.color].filter(Boolean).join(' · '),
+        dimensions: c.dimensions || '—',
+        qty, unit: this.money(c.price), line: line == null ? '—' : this.money(line),
+      };
+    });
+    return { investmentRows: rows, investmentSubtotal: this.money(subtotalRaw), investmentSubtotalRaw: subtotalRaw };
+  }
   pickPanelVals(rooms) {
-    const s = this.state;
+    const s = this.state, api = s.api;
     const out = { picking: !!s.pick };
     if (s.pick) {
       const q = (s.pickQ || '').toLowerCase().trim();
+      const type = s.pickType || '';
       const room = rooms.find((r) => r.id === s.pick.roomId);
       out.pickTitle = 'Add to ' + (room ? room.name : '') + (s.pick.bucket === 'alternatives' ? ' — substitutes' : ' — furniture');
       out.pickQ = s.pickQ;
       out.setPickQ = (e) => this.setState({ pickQ: e.target.value });
-      out.closePick = () => this.setState({ pick: null, pickQ: '' });
-      out.pickList = (s.catalog || []).filter((c) => !q || [c.name, c.retailer, c.type, roomsOf(c).join(' ')].join(' ').toLowerCase().includes(q)).map((c) => ({
-        name: c.name, retailer: c.retailer || '', image: c.image || PLACEHOLDER,
-        add: async () => {
-          const next = rooms.map((r) => r.id === s.pick.roomId ? { ...r, [s.pick.bucket]: [...(r[s.pick.bucket] || []), { refId: c.id, qty: 1 }] } : r);
-          await this.setRooms(next);
-        },
-      }));
+      out.pickType = type;
+      out.setPickType = (e) => this.setState({ pickType: e.target.value });
+      out.pickTypeOptions = (api && api.ITEM_TYPES) || [];
+      out.closePick = () => this.setState({ pick: null, pickQ: '', pickType: '' });
+      out.pickList = (s.catalog || [])
+        .filter((c) => !type || c.type === type)
+        .filter((c) => !q || [c.name, c.retailer, c.type, roomsOf(c).join(' ')].join(' ').toLowerCase().includes(q))
+        .map((c) => ({
+          name: c.name, retailer: c.retailer || '', image: c.image || PLACEHOLDER,
+          add: async () => {
+            const next = rooms.map((r) => r.id === s.pick.roomId ? { ...r, [s.pick.bucket]: [...(r[s.pick.bucket] || []), { refId: c.id, qty: 1 }] } : r);
+            await this.setRooms(next);
+          },
+        }));
     }
     return out;
   }
@@ -3574,8 +3655,11 @@ class Component extends DCLogic {
           },
           copyMediaFromConcept: () => setRoom({ designMedia: (liveRoom.conceptMedia || []).map((x, i) => ({ ...x, id: 'copy-' + Date.now().toString(36) + '-' + i })) }),
           ...this.furnitureRoomVal(liveRoom, liveRooms),
+          ...this.investmentRoomVal(liveRoom),
         };
       });
+      v.hasInvestment = v.designRooms.some((r) => r.investmentRows.length > 0);
+      v.investmentGrandTotal = this.money(v.designRooms.reduce((t, r) => t + r.investmentSubtotalRaw, 0));
 
       v.designSaveLabel = s.designSaving ? 'Saving…' : 'Save design & sourcing';
       v.designNotice = s.designNotice || '';
