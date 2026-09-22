@@ -441,6 +441,18 @@ const INTERACTIONS = `
   });
   pbox.addEventListener('click',function(e){if(e.target===pbox||e.target.closest('.piece-modal-close'))pclose()});
   document.addEventListener('keydown',function(e){if(e.key==='Escape'){close();pclose();}});
+
+  // When this document is rendered live inside the client's review page
+  // (an iframe, not the downloaded file), report its real height so the
+  // page can size the iframe to it — one continuous scroll instead of a
+  // scrollbar nested inside a scrollbar. No-op outside an iframe.
+  if (window.parent && window.parent !== window) {
+    var report = function(){ try { window.parent.postMessage({ type: 'cs-report-height', height: document.documentElement.scrollHeight }, '*'); } catch(e){} };
+    window.addEventListener('load', report);
+    if (window.ResizeObserver) new ResizeObserver(report).observe(document.body);
+    else window.addEventListener('resize', report);
+    setTimeout(report, 300); setTimeout(report, 1200);
+  }
 })();
 </script>`;
 
@@ -558,31 +570,40 @@ function footerSection(img) {
  * @param phaseKey discovery | concept | design | styling
  * @param catalog  catalog items, for the sourcing table
  * @param onProgress optional ({done,total,label}) while images are embedded
+ * @param opts.embed  default true. false skips fetching/base64-encoding every
+ *   image and just points at the original URLs — pointless for a file meant
+ *   to be emailed or saved (the whole reason for embedding), but exactly
+ *   right for rendering the same report live inside the app (the client's
+ *   share link), where a network round trip per image would only slow down
+ *   a page that's already live and doesn't need to work offline.
  * @returns {Promise<{html:string, embedded:number, kept:number}>}
  */
-export async function buildReport(project, phaseKey, catalog, onProgress) {
+export async function buildReport(project, phaseKey, catalog, onProgress, opts) {
   const p = project || {};
   const phase = PHASES.find((f) => f.key === phaseKey) || PHASES[1];
   const byId = {};
   for (const c of catalog || []) byId[c.id] = c;
+  const shouldEmbed = !opts || opts.embed !== false;
 
   // Sections the studio has hidden for this export — 'unhide' just flips the
   // flag back and the next export/print includes it again, from the same
   // project data. Persisted on the project itself, so it applies to every
   // phase's report, not just the one currently open.
   const hidden = p.reportHidden || {};
-  const urls = imageList(p, phase.key, hidden, byId);
   const cache = {};
   const img = {};
   let done = 0, kept = 0;
-  for (const u of urls) {
-    if (onProgress) onProgress({ done, total: urls.length, label: String(u).split('/').pop() });
-    const v = await embed(u, cache, 20000);
-    if (v === u && !/^data:/.test(v)) kept++;
-    img[u] = v;
-    done++;
+  if (shouldEmbed) {
+    const urls = imageList(p, phase.key, hidden, byId);
+    for (const u of urls) {
+      if (onProgress) onProgress({ done, total: urls.length, label: String(u).split('/').pop() });
+      const v = await embed(u, cache, 20000);
+      if (v === u && !/^data:/.test(v)) kept++;
+      img[u] = v;
+      done++;
+    }
+    if (onProgress) onProgress({ done, total: urls.length, label: 'writing the document' });
   }
-  if (onProgress) onProgress({ done, total: urls.length, label: 'writing the document' });
 
   const conceptText = ((p.phases && p.phases.concept) || {}).concept || ((p.phases && p.phases.concept) || {}).note || '';
   const designText = ((p.phases && p.phases.design) || {}).concept || '';
@@ -627,7 +648,7 @@ export async function buildReport(project, phaseKey, catalog, onProgress) {
 <style>${CSS}</style>
 </head><body>${body}${INTERACTIONS}</body></html>`;
 
-  return { html, embedded: urls.length - kept, kept };
+  return { html, embedded: done - kept, kept };
 }
 
 /** File name for the download: project and phase, safe on every platform. */

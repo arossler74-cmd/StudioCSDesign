@@ -212,6 +212,17 @@
         </div>
       </sc-if>
 
+      <sc-if value="{{ showShareReport }}">
+        <div style="margin-bottom: 44px;">
+          <sc-if value="{{ shareReportLoading }}" hint-placeholder-val="{{ false }}">
+            <div class="card cs-client-section" style="padding: 48px; text-align: center; color: var(--color-neutral-600);">Preparing the presentation…</div>
+          </sc-if>
+          <sc-if value="{{ !shareReportLoading }}">
+            <iframe src="{{ shareReportSrc }}" title="Presentation" style="width: 100%; height: {{ shareReportHeight }}; border: 0; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); display: block;"></iframe>
+          </sc-if>
+        </div>
+      </sc-if>
+
       <sc-if value="{{ showShareQuestionnaire }}">
         <div class="card cs-client-section" style="padding: 28px 30px; margin-bottom: 36px;">
           <div style="font-family: var(--font-heading); font-size: 30px; color: var(--color-accent-900); margin-bottom: 6px;">Tell us about your home</div>
@@ -255,6 +266,7 @@
                       <sc-if value="{{ showInvestment }}" hint-placeholder-val="{{ false }}">
                         <div style="font-size: 12.5px; font-weight: 600; color: var(--color-accent-800); margin-top: 4px;">{{ it.priceLabel }}</div>
                       </sc-if>
+                      <button type="button" onClick="{{ it.viewDetails }}" class="btn btn-ghost" style="font-size: 11.5px; padding: 3px 0; color: var(--color-neutral-500); text-decoration: underline;">View details</button>
                     </div>
                     <div style="flex: 1;"></div>
                     <div style="display: flex; gap: 8px; align-items: center;">
@@ -286,6 +298,7 @@
                           <div style="font-weight: 600; font-size: 13.5px; line-height: 1.3;">{{ alt.name }}</div>
                           <div style="font-size: 12px; color: var(--color-neutral-600);">{{ alt.meta }}</div>
                           <div style="font-size: 12px; font-weight: 600; color: var(--color-accent-800); margin-top: 4px;">{{ alt.priceLabel }}</div>
+                          <button type="button" onClick="{{ alt.viewDetails }}" class="btn btn-ghost" style="font-size: 11px; padding: 2px 0; color: var(--color-neutral-500); text-decoration: underline;">View details</button>
                         </div>
                         <div style="flex: 1;"></div>
                         <div style="display: flex; gap: 6px; align-items: center;">
@@ -325,6 +338,35 @@
         <button type="button" onClick="{{ shareSubmit }}" class="btn btn-primary">{{ shareSaveLabel }}</button>
         <span style="font-size: 13.5px; color: var(--color-neutral-600);">{{ shareCount }}</span>
       </div>
+
+      <sc-if value="{{ sharePieceOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; background: rgba(30,25,20,.55); padding: 24px;" onClick="{{ closeSharePiece }}">
+          <div class="card elev-md" style="width: min(100%, 680px); max-height: 88vh; overflow: auto; padding: 0; display: grid; grid-template-columns: 1fr 1fr; position: relative;" onClick="{{ sharePieceStop }}">
+            <button type="button" onClick="{{ closeSharePiece }}" class="btn btn-ghost" style="position: absolute; right: 14px; top: 14px; width: 38px; height: 38px; border-radius: 50%; background: var(--color-surface); padding: 0; font-size: 20px;" aria-label="Close">×</button>
+            <div style="aspect-ratio: 1 / 1; background: var(--color-neutral-100); display: flex; align-items: center; justify-content: center; overflow: hidden;">
+              <img src="assets/piece-placeholder.png" data-img="{{ sharePiece.image }}" alt="" style="width: 100%; height: 100%; object-fit: contain;">
+            </div>
+            <div style="padding: clamp(24px, 3vw, 40px); display: flex; flex-direction: column; gap: 14px;">
+              <div style="font-family: var(--font-heading); font-size: clamp(24px, 2.4vw, 32px); line-height: 1.1; color: var(--color-accent-900);">{{ sharePiece.name }}</div>
+              <sc-if value="{{ sharePiece.price }}" hint-placeholder-val="{{ false }}">
+                <div style="font-size: 1.15em; font-weight: 600; color: var(--color-accent-800);">{{ sharePiece.price }}</div>
+              </sc-if>
+              <sc-if value="{{ sharePiece.retailer }}" hint-placeholder-val="{{ false }}">
+                <div style="border-top: 1px solid var(--color-neutral-200); padding-top: 12px;"><div style="font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-accent-700); margin-bottom: 4px;">Retailer</div><div>{{ sharePiece.retailer }}</div></div>
+              </sc-if>
+              <sc-if value="{{ sharePiece.finish }}" hint-placeholder-val="{{ false }}">
+                <div style="border-top: 1px solid var(--color-neutral-200); padding-top: 12px;"><div style="font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-accent-700); margin-bottom: 4px;">Finish &amp; colour</div><div>{{ sharePiece.finish }}</div></div>
+              </sc-if>
+              <sc-if value="{{ sharePiece.dimensions }}" hint-placeholder-val="{{ false }}">
+                <div style="border-top: 1px solid var(--color-neutral-200); padding-top: 12px;"><div style="font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-accent-700); margin-bottom: 4px;">Dimensions</div><div>{{ sharePiece.dimensions }}</div></div>
+              </sc-if>
+              <sc-if value="{{ sharePiece.url }}" hint-placeholder-val="{{ false }}">
+                <a href="{{ sharePiece.url }}" target="_blank" rel="noopener" class="btn btn-primary" style="margin-top: auto; align-self: flex-start;">View product ↗</a>
+              </sc-if>
+            </div>
+          </div>
+        </div>
+      </sc-if>
     </div>
   </sc-if>
 
@@ -2172,8 +2214,13 @@ const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review
 // reaches this file — the version badge in the top bar and the Studio →
 // Changelog page both read straight from this, nothing else to update.
 // Versioning starts at 1.1; anything before that lives only in git log.
-const APP_VERSION = '1.9';
+const APP_VERSION = '2.0';
 const CHANGELOG = [
+  { version: '2.0', date: '2026-09-21', changes: [
+    'Client review link: now opens with the same live presentation the export would build — intro, studio introduction, goals, direction, materials, floor plans, moodboard — respecting whatever is hidden or visible, not just the furniture list. Generated live from the current project, so it is always today\'s version, not a snapshot from whenever the link was made.',
+    'Client review link: piece cards got the "Move out" / "Bring it back" and "Bring it in" language (was "Remove from my picks" / "Add back" / "Bring this in"), and a "View details" link opens the same expanded card the export has — larger photo, retailer, finish & colour, dimensions, and a link to the real product page.',
+    'Share links: the published snapshot now carries everything the live presentation needs (studio bio, goals, direction, materials, floor plans, room media) in addition to the furniture and pricing added in 1.8/1.9 — still gated by the link\'s own token, same as before.',
+  ] },
   { version: '1.9', date: '2026-09-21', changes: [
     'Export HTML/PDF: Sourcing & investment photo cards no longer crop tall pieces (lamps, tall side tables) into a flattened strip — the full product photo now shows, letterboxed on a neutral background instead of cover-cropped.',
     'Export HTML/PDF: clicking a piece card opens an expanded detail view — larger photo, retailer, finish & colour, dimensions, price, and a "View product" link straight to the retailer page.',
@@ -2292,6 +2339,7 @@ class Component extends DCLogic {
     rates: null, ratesSaving: false, ratesNote: '',
     tradePrograms: null, tradeDraft: null, tradeQuery: '', tradeSaving: false, tradeNotice: '',
     fees: null, feesSaving: false, feesNote: '', feesQuoting: false,
+    shareReportSrc: '', shareReportHeight: 0,
     confirm: null };
 
   askConfirm(opts) { this.setState({ confirm: opts }); }
@@ -2299,6 +2347,12 @@ class Component extends DCLogic {
   async componentDidMount() {
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && this.state.confirm) this.setState({ confirm: null });
+    });
+    // The embedded live report (see buildShareReport) posts its real content
+    // height so the page can size the iframe to it — one continuous scroll
+    // instead of a scrollbar nested inside a scrollbar.
+    window.addEventListener('message', (e) => {
+      if (e.data && e.data.type === 'cs-report-height') this.setState({ shareReportHeight: e.data.height });
     });
     const api = await import('./platform-data.js');
     const mode = await api.init();
@@ -2309,11 +2363,30 @@ class Component extends DCLogic {
       if (found) {
         let catalog = [];
         try { catalog = await api.listCatalog(); } catch (e) { /* public visitors cannot read the catalog */ }
-        return this.setState({ share: found, catalog, booting: false });
+        this.setState({ share: found, catalog, booting: false });
+        this.buildShareReport(found);
+        return;
       }
     }
     api.onAuth((user) => this.hydrate(user));
     setTimeout(() => this.state.booting && this.setState({ booting: false }), 2500);
+  }
+
+  // Renders the same live report the studio would export — cover, studio
+  // intro, goals, direction, materials, floor plans, moodboard — as an
+  // embedded document, so the client's review link is a live version of the
+  // export rather than only the furniture list. Sourcing is hidden in this
+  // embedded copy specifically: the interactive furniture/substitutes
+  // section below (built natively, not from report.js) replaces it.
+  async buildShareReport(found) {
+    try {
+      const R = await import('./report.js');
+      const phase = found.share.phase || ((found.share.phases || []).includes('design') ? 'design' : 'concept');
+      const forReport = { ...found.project, reportHidden: { ...(found.project.reportHidden || {}), sourcing: true } };
+      const { html } = await R.buildReport(forReport, phase, [], null, { embed: false });
+      const url = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+      this.setState({ shareReportSrc: url });
+    } catch (e) { console.warn('[shareReport]', e); }
   }
 
   async hydrate(user) {
@@ -4248,8 +4321,9 @@ class Component extends DCLogic {
           name: c.name || 'Piece', image: c.image || PLACEHOLDER,
           meta: [c.retailer, c.dimensions].filter(Boolean).join(' · '),
           priceLabel: showInvestment ? money(c.price) : '',
-          removed, removeLabel: removed ? 'Add back' : 'Remove from my picks',
+          removed, removeLabel: removed ? 'Bring it back' : 'Move out',
           toggleRemove: () => this.setState({ shareTrial: { ...trial, [removeKey]: { on: !removed, roomId: room.id, itemId: refId, action: 'remove' } } }),
+          viewDetails: () => this.setState({ sharePiece: { name: c.name || 'Piece', image: c.image || PLACEHOLDER, retailer: c.retailer || '', finish: [c.finish, c.color].filter(Boolean).join(' · '), dimensions: c.dimensions || '', price: showInvestment ? money(c.price) : '', url: c.url || '' } }),
           comment: cur.comment || '',
           setComment: (e) => set({ comment: e.target.value }),
           up: () => set({ verdict: on('up') ? null : 'up' }),
@@ -4276,8 +4350,9 @@ class Component extends DCLogic {
           name: c.name || 'Piece', image: c.image || PLACEHOLDER,
           meta: [c.retailer, c.dimensions].filter(Boolean).join(' · '),
           priceLabel: money(c.price),
-          added, addLabel: added ? 'Remove from my picks' : 'Bring this in',
+          added, addLabel: added ? 'Move out' : 'Bring it in',
           toggleAdd: () => this.setState({ shareTrial: { ...trial, [addKey]: { on: !added, roomId: room.id, itemId: refId, action: 'add' } } }),
+          viewDetails: () => this.setState({ sharePiece: { name: c.name || 'Piece', image: c.image || PLACEHOLDER, retailer: c.retailer || '', finish: [c.finish, c.color].filter(Boolean).join(' · '), dimensions: c.dimensions || '', price: money(c.price), url: c.url || '' } }),
           comment: cur.comment || '',
           setComment: (e) => set({ comment: e.target.value }),
           up: () => set({ verdict: on('up') ? null : 'up' }),
@@ -4298,6 +4373,18 @@ class Component extends DCLogic {
       shareClient: share.clientName, shareProject: project.name, sharePhaseLabel: phaseInfo.label, shareIntro: phaseInfo.intro,
       showShareSelection: phase === 'concept' || phase === 'design', showShareQuestionnaire: phase === 'discovery',
       shareHasDoc: !!doc, shareDocHref: doc || '',
+      // The live, in-app-generated equivalent of the export — cover, studio,
+      // goals, direction, materials, plan, moodboard, respecting the same
+      // hide/unhide the studio already set. Built once in buildShareReport();
+      // this just reflects whatever state that landed in.
+      showShareReport: phase === 'concept' || phase === 'design',
+      shareReportLoading: !s.shareReportSrc,
+      shareReportSrc: s.shareReportSrc || '',
+      shareReportHeight: Math.max(480, s.shareReportHeight || 0) + 'px',
+      sharePieceOpen: !!s.sharePiece,
+      sharePiece: s.sharePiece || {},
+      closeSharePiece: () => this.setState({ sharePiece: null }),
+      sharePieceStop: (e) => e.stopPropagation(),
       shareSaveLabel: s.shareSaved || 'Send my feedback',
       shareMessage: s.shareMessage || '',
       setShareMessage: (e) => this.setState({ shareMessage: e.target.value }),

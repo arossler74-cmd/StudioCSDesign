@@ -724,7 +724,13 @@ export async function createShare(project, clientName, phase) {
   return { project: p, share };
 }
 
-// public, token-scoped mirror so an unauthenticated client can read it
+// public, token-scoped mirror so an unauthenticated client can read it.
+// Carries everything buildReport() (report.js) needs to render the same
+// presentation live in the client's review page — cover/studio/goals/
+// direction/materials/plan/moodboard — not just the furniture list, so a
+// share is the live equivalent of the export, not a stripped-down version
+// of it. reportHidden travels too, so the same "hide from export" the
+// studio already set governs what a client sees here as well.
 async function publishShare(project, share) {
   const { doc, setDoc } = fb.D;
   const cat = await listCatalog();
@@ -732,24 +738,54 @@ async function publishShare(project, share) {
   const phase = phaseOf(share);
   const questionnaire = phase !== 'discovery' ? [] : (Array.isArray(project.questionnaire) && project.questionnaire.length ? project.questionnaire : await getQuestionnaire());
   const showDocument = phase === 'concept' || phase === 'design';
+  const isDesign = phase === 'design';
   // Price (and substitutes at all) only ever goes into this public,
   // unauthenticated-readable document for a Design-scope link — Concept is
   // about agreeing a feeling, not a number, and this doc is world-readable
   // by anyone holding the token, so what it doesn't need, it doesn't get.
-  const showPrice = phase === 'design';
+  const showPrice = isDesign;
   const toItem = (e) => {
     const c = find(e.refId);
-    const item = { id: e.refId, name: c.name || '', image: c.image || '', retailer: c.retailer || '', dimensions: c.dimensions || '' };
+    const item = {
+      id: e.refId, name: c.name || '', image: c.image || '', retailer: c.retailer || '',
+      dimensions: c.dimensions || '', finish: c.finish || '', color: c.color || '', url: c.url || '',
+    };
     if (showPrice) item.price = c.price == null ? null : Number(c.price);
     return item;
   };
+  const ph = project.phases || {};
   const payload = {
     token: share.token, projectId: project.id, projectName: project.name,
     clientName: share.clientName, phase, phases: [phase], questionnaire,
     doc: showDocument ? (project.phases[phase] || {}).doc || null : null,
     currency: project.currency || 'USD',
+    reportHidden: project.reportHidden || {},
+    // Presentation content — same fields Concept/Design & sourcing edit,
+    // same ones the export reads. Cover and studio sections aren't
+    // phase-gated by hide/unhide, so they always travel.
+    tagline: project.tagline || '', client: project.client || '', location: project.location || '',
+    address: project.address || '', addressCity: project.addressCity || '',
+    scope: project.scope || '', scopeNote: project.scopeNote || '', stage: project.stage || '', stageNote: project.stageNote || '',
+    intro: project.intro || '', hero: project.hero || '', studioProfile: project.studioProfile || null,
+    goals: project.goals || [],
+    // The rest is phase-specific, mirroring exactly what that phase's report
+    // section reads from — no point sending a Design link the Concept
+    // palette, or vice versa.
+    projectPhases: isDesign
+      ? { design: { concept: (ph.design || {}).concept || '' } }
+      : { concept: { concept: (ph.concept || {}).concept || (ph.concept || {}).note || '' } },
+    conceptPoints: isDesign ? [] : (project.conceptPoints || []),
+    palette: isDesign ? [] : (project.palette || []),
+    materials: isDesign ? [] : (project.materials || []),
+    floorPlans: isDesign ? [] : (project.floorPlans || []),
+    designPoints: isDesign ? (project.designPoints || []) : [],
+    designMaterials: isDesign ? (project.designMaterials || []) : [],
+    designFloorPlans: isDesign ? (project.designFloorPlans || []) : [],
     rooms: (project.rooms || []).map((r) => ({
-      id: r.id, name: r.name,
+      id: r.id, name: r.name, goal: r.goal || '', brief: r.brief || '', cad: r.cad || '',
+      conceptMedia: isDesign ? [] : (r.conceptMedia || []),
+      moodboard: isDesign ? [] : (r.moodboard || []),
+      designMedia: isDesign ? (r.designMedia || []) : [],
       items: (r.selected || []).map(toItem),
       alternatives: showPrice ? (r.alternatives || []).map(toItem) : [],
     })),
@@ -782,7 +818,21 @@ export async function findByShare(token) {
     return {
       public: true,
       share: { token, clientName: d.clientName, phase: d.phase || phaseOf(d), phases: d.phases || ['concept'] },
-      project: { id: d.projectId, name: d.projectName, rooms: d.rooms || [], phases: {}, questionnaire: d.questionnaire || [] },
+      project: {
+        id: d.projectId, name: d.projectName, rooms: d.rooms || [], questionnaire: d.questionnaire || [],
+        // phases here is project.phases (concept/design direction text),
+        // not this share's own scope — publishShare() sends that under
+        // projectPhases specifically so the two never collide.
+        phases: d.projectPhases || {},
+        currency: d.currency || 'USD', reportHidden: d.reportHidden || {},
+        tagline: d.tagline || '', client: d.client || '', location: d.location || '',
+        address: d.address || '', addressCity: d.addressCity || '',
+        scope: d.scope || '', scopeNote: d.scopeNote || '', stage: d.stage || '', stageNote: d.stageNote || '',
+        intro: d.intro || '', hero: d.hero || '', studioProfile: d.studioProfile || null,
+        goals: d.goals || [], conceptPoints: d.conceptPoints || [], palette: d.palette || [],
+        materials: d.materials || [], floorPlans: d.floorPlans || [],
+        designPoints: d.designPoints || [], designMaterials: d.designMaterials || [], designFloorPlans: d.designFloorPlans || [],
+      },
       doc: d.doc || null,
     };
   }

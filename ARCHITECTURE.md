@@ -98,6 +98,14 @@ any save, and a catalog price/detail edit refreshes every share that actually us
 (`refreshSharesForCatalogItem`) — so the mirror is never more than one save behind, without loosening
 what a bare token can reach.
 
+The share page itself opens with the same presentation the studio would export — cover, studio
+intro, goals, direction, materials, floor plans, moodboard, respecting `reportHidden` — rendered
+live client-side (`buildShareReport()` in `Studio Platform.dc.html`, calling `buildReport()` from
+`report.js` with `{ embed: false }` so it skips the image-embedding pass an offline download needs
+and just points at the live URLs, and with `reportHidden.sourcing` forced on since the interactive
+furniture section below replaces it). Rendered into a blob-URL iframe that posts its content height
+back via `postMessage` so the page scrolls as one continuous page rather than a box inside a box.
+
 Prices: hidden on Concept-scope links; visible to admins and designers everywhere. Design-scope links
 also show price and substitutes (`rooms[].alternatives` in the public `shares/{token}` doc — see
 `publishShare()` in `platform-data.js`, gated to `phase === 'design'`), with a total that recalculates
