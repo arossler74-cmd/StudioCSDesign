@@ -206,19 +206,13 @@
         <p style="margin: 0; max-width: 62ch; color: var(--color-neutral-700); text-wrap: pretty;">{{ shareIntro }}</p>
       </div>
 
-      <sc-if value="{{ shareHasDoc }}">
-        <div style="margin-bottom: 44px;">
-          <a class="btn btn-secondary" href="{{ shareDocHref }}" target="_blank">Open the full presentation</a>
-        </div>
-      </sc-if>
-
       <sc-if value="{{ showShareReport }}">
         <div style="margin-bottom: 44px;">
           <sc-if value="{{ shareReportLoading }}" hint-placeholder-val="{{ false }}">
             <div class="card cs-client-section" style="padding: 48px; text-align: center; color: var(--color-neutral-600);">Preparing the presentation…</div>
           </sc-if>
           <sc-if value="{{ !shareReportLoading }}">
-            <iframe src="{{ shareReportSrc }}" title="Presentation" style="width: 100%; height: {{ shareReportHeight }}; border: 0; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); display: block;"></iframe>
+            <iframe src="{{ shareReportSrc }}" onLoad="{{ shareReportLoaded }}" title="Presentation" style="width: 100%; height: {{ shareReportHeight }}; border: 0; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); display: block;"></iframe>
           </sc-if>
         </div>
       </sc-if>
@@ -2214,8 +2208,13 @@ const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review
 // reaches this file — the version badge in the top bar and the Studio →
 // Changelog page both read straight from this, nothing else to update.
 // Versioning starts at 1.1; anything before that lives only in git log.
-const APP_VERSION = '2.0';
+const APP_VERSION = '2.1';
 const CHANGELOG = [
+  { version: '2.1', date: '2026-09-21', changes: [
+    'Client review link: fixed the embedded presentation showing blank — the studio\'s logo, portrait and process icons use paths relative to the app itself, which broke once that HTML was generated on the fly instead of downloaded (a blob document has no folder of its own to resolve them against). They now resolve to the real site regardless of where the HTML ends up.',
+    'Client review link: dropped the separate "Open the full presentation" button (a manually-pasted, easily stale document link) now that the presentation above is the live, always-current one.',
+    'Client review link: the embedded presentation sizes itself by reading its own page height directly once it loads, instead of waiting for it to report back — simpler and more reliable than the two-way messaging that shipped in 2.0.',
+  ] },
   { version: '2.0', date: '2026-09-21', changes: [
     'Client review link: now opens with the same live presentation the export would build — intro, studio introduction, goals, direction, materials, floor plans, moodboard — respecting whatever is hidden or visible, not just the furniture list. Generated live from the current project, so it is always today\'s version, not a snapshot from whenever the link was made.',
     'Client review link: piece cards got the "Move out" / "Bring it back" and "Bring it in" language (was "Remove from my picks" / "Add back" / "Bring this in"), and a "View details" link opens the same expanded card the export has — larger photo, retailer, finish & colour, dimensions, and a link to the real product page.',
@@ -2347,12 +2346,6 @@ class Component extends DCLogic {
   async componentDidMount() {
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && this.state.confirm) this.setState({ confirm: null });
-    });
-    // The embedded live report (see buildShareReport) posts its real content
-    // height so the page can size the iframe to it — one continuous scroll
-    // instead of a scrollbar nested inside a scrollbar.
-    window.addEventListener('message', (e) => {
-      if (e.data && e.data.type === 'cs-report-height') this.setState({ shareReportHeight: e.data.height });
     });
     const api = await import('./platform-data.js');
     const mode = await api.init();
@@ -4280,7 +4273,6 @@ class Component extends DCLogic {
     const isPublic = !!s.share.public;
     const cat = s.catalog || [];
     const find = (id) => cat.find((c) => c.id === id) || {};
-    const doc = s.share.doc;
     const st = s.shareState;
     const trial = s.shareTrial || {};
     const phase = share.phase || ((share.phases || []).includes('design') ? 'design' : 'concept');
@@ -4372,15 +4364,29 @@ class Component extends DCLogic {
     return {
       shareClient: share.clientName, shareProject: project.name, sharePhaseLabel: phaseInfo.label, shareIntro: phaseInfo.intro,
       showShareSelection: phase === 'concept' || phase === 'design', showShareQuestionnaire: phase === 'discovery',
-      shareHasDoc: !!doc, shareDocHref: doc || '',
       // The live, in-app-generated equivalent of the export — cover, studio,
       // goals, direction, materials, plan, moodboard, respecting the same
       // hide/unhide the studio already set. Built once in buildShareReport();
-      // this just reflects whatever state that landed in.
+      // this just reflects whatever state that landed in. Height is read
+      // straight off the iframe's own document once it loads (same-origin —
+      // a blob: URL this page created is readable, no postMessage needed),
+      // re-measured after fonts settle since those can reflow the layout.
       showShareReport: phase === 'concept' || phase === 'design',
       shareReportLoading: !s.shareReportSrc,
       shareReportSrc: s.shareReportSrc || '',
       shareReportHeight: Math.max(480, s.shareReportHeight || 0) + 'px',
+      shareReportLoaded: (e) => {
+        try {
+          const doc2 = e.target.contentDocument;
+          if (!doc2) return;
+          const measure = () => { try { this.setState({ shareReportHeight: doc2.documentElement.scrollHeight }); } catch (err) {} };
+          measure();
+          const win = doc2.defaultView;
+          if (win && win.ResizeObserver) new win.ResizeObserver(measure).observe(doc2.body);
+          else { setTimeout(measure, 300); setTimeout(measure, 1000); }
+          if (doc2.fonts && doc2.fonts.ready) doc2.fonts.ready.then(measure).catch(() => {});
+        } catch (err) { console.warn('[shareReportLoaded]', err); }
+      },
       sharePieceOpen: !!s.sharePiece,
       sharePiece: s.sharePiece || {},
       closeSharePiece: () => this.setState({ sharePiece: null }),

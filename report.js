@@ -441,18 +441,6 @@ const INTERACTIONS = `
   });
   pbox.addEventListener('click',function(e){if(e.target===pbox||e.target.closest('.piece-modal-close'))pclose()});
   document.addEventListener('keydown',function(e){if(e.key==='Escape'){close();pclose();}});
-
-  // When this document is rendered live inside the client's review page
-  // (an iframe, not the downloaded file), report its real height so the
-  // page can size the iframe to it — one continuous scroll instead of a
-  // scrollbar nested inside a scrollbar. No-op outside an iframe.
-  if (window.parent && window.parent !== window) {
-    var report = function(){ try { window.parent.postMessage({ type: 'cs-report-height', height: document.documentElement.scrollHeight }, '*'); } catch(e){} };
-    window.addEventListener('load', report);
-    if (window.ResizeObserver) new ResizeObserver(report).observe(document.body);
-    else window.addEventListener('resize', report);
-    setTimeout(report, 300); setTimeout(report, 1200);
-  }
 })();
 </script>`;
 
@@ -603,6 +591,18 @@ export async function buildReport(project, phaseKey, catalog, onProgress, opts) 
       done++;
     }
     if (onProgress) onProgress({ done, total: urls.length, label: 'writing the document' });
+  } else if (typeof location !== 'undefined') {
+    // Not embedding — but this HTML can end up inside a blob: document (the
+    // live share preview), which has no directory of its own to resolve a
+    // relative path like "assets/cybelle-logo.png" against. Studio-owned
+    // defaults (logo, portrait, process icons) are the only relative paths
+    // this file ever produces — Storage URLs and catalog images are already
+    // absolute — so resolving against the *app's* location fixes them
+    // without needing to know anything about where this HTML is displayed.
+    for (const u of imageList(p, phase.key, hidden, byId)) {
+      if (/^(https?:)?\/\//.test(u) || /^data:/.test(u)) continue;
+      try { img[u] = new URL(u, location.href).href; } catch (e) {}
+    }
   }
 
   const conceptText = ((p.phases && p.phases.concept) || {}).concept || ((p.phases && p.phases.concept) || {}).note || '';
