@@ -210,10 +210,12 @@
 
       <sc-if value="{{ showShareReport }}">
         <div style="margin: -56px -32px 44px;">
-          <sc-if value="{{ !shareReportReady }}" hint-placeholder-val="{{ true }}">
+          <sc-if value="{{ shareReportLoading }}" hint-placeholder-val="{{ true }}">
             <div style="padding: 96px 32px; text-align: center; color: var(--color-neutral-600);">Preparing the presentation…</div>
           </sc-if>
-          <div id="cs-report-host"></div>
+          <sc-if value="{{ !shareReportLoading }}">
+            <iframe src="{{ shareReportSrc }}" onLoad="{{ shareReportLoaded }}" title="Presentation" style="width: 100%; height: {{ shareReportHeight }}; border: 0; display: block;"></iframe>
+          </sc-if>
         </div>
       </sc-if>
 
@@ -270,7 +272,7 @@
                       <button type="button" onClick="{{ it.up }}" class="btn btn-ghost" style="border: 1px solid {{ it.upRing }}; background: {{ it.upBg }}; padding: 6px 14px;">Love it</button>
                       <button type="button" onClick="{{ it.down }}" class="btn btn-ghost" style="border: 1px solid {{ it.downRing }}; background: {{ it.downBg }}; padding: 6px 14px;">Reconsider</button>
                       <sc-if value="{{ showInvestment }}" hint-placeholder-val="{{ false }}">
-                        <button type="button" onClick="{{ it.toggleRemove }}" class="btn btn-ghost" style="padding: 6px 14px; color: var(--color-neutral-600);">{{ it.removeLabel }}</button>
+                        <button type="button" onClick="{{ it.toggleAction }}" class="btn btn-ghost" style="padding: 6px 14px; color: var(--color-neutral-600);">{{ it.actionLabel }}</button>
                       </sc-if>
                     </div>
                     <input class="input" value="{{ it.comment }}" onChange="{{ it.setComment }}" placeholder="Add a note" style="padding: 7px 12px; font-size: 13px;">
@@ -301,7 +303,7 @@
                         <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
                           <button type="button" onClick="{{ alt.up }}" class="btn btn-ghost" style="border: 1px solid {{ alt.upRing }}; background: {{ alt.upBg }}; padding: 5px 10px; font-size: 12.5px;">Love it</button>
                           <button type="button" onClick="{{ alt.down }}" class="btn btn-ghost" style="border: 1px solid {{ alt.downRing }}; background: {{ alt.downBg }}; padding: 5px 10px; font-size: 12.5px;">Reconsider</button>
-                          <button type="button" onClick="{{ alt.toggleAdd }}" class="btn btn-ghost" style="padding: 5px 10px; font-size: 12.5px; color: var(--color-accent-800); font-weight: 600;">{{ alt.addLabel }}</button>
+                          <button type="button" onClick="{{ alt.toggleAction }}" class="btn btn-ghost" style="padding: 5px 10px; font-size: 12.5px; color: var(--color-accent-800); font-weight: 600;">{{ alt.actionLabel }}</button>
                         </div>
                       </div>
                     </div>
@@ -2236,8 +2238,12 @@ const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review
 // reaches this file — the version badge in the top bar and the Studio →
 // Changelog page both read straight from this, nothing else to update.
 // Versioning starts at 1.1; anything before that lives only in git log.
-const APP_VERSION = '2.3';
+const APP_VERSION = '2.4';
 const CHANGELOG = [
+  { version: '2.4', date: '2026-09-22', changes: [
+    'Client review link: the embedded presentation is back to a real, separate document (loaded in an iframe) instead of the shadow-root injection from 2.2 — that injection was quietly stripping out the styling (goal-number circles, the design-concept table layout, material cards) and swapping the renderings/walkthrough carousel for a plain side-by-side row with no expand. Everything now looks and behaves exactly like the downloaded export, carousel and photo zoom included.',
+    'Client review link: "Move out" now actually moves a piece from "Your selections" into "Potential substitutes" (and "Bring it in" moves it back), instead of just leaving it in place and only pulling it out of the price table.',
+  ] },
   { version: '2.3', date: '2026-09-22', changes: [
     'Client review link: "Move out" now sits right next to Love it / Reconsider on every piece card, instead of on its own row underneath — same for "Bring it in" on a substitute.',
     'Client review link: the page is noticeably wider now (was capped at 1100px), so the furniture cards get more columns instead of squeezing down to one or two on a normal screen.',
@@ -2376,7 +2382,7 @@ class Component extends DCLogic {
     rates: null, ratesSaving: false, ratesNote: '',
     tradePrograms: null, tradeDraft: null, tradeQuery: '', tradeSaving: false, tradeNotice: '',
     fees: null, feesSaving: false, feesNote: '', feesQuoting: false,
-    shareReportReady: false,
+    shareReportSrc: '', shareReportHeight: 0,
     confirm: null };
 
   askConfirm(opts) { this.setState({ confirm: opts }); }
@@ -2404,45 +2410,26 @@ class Component extends DCLogic {
   }
 
   // Renders the same live report the studio would export — cover, studio
-  // intro, goals, direction, materials, floor plans, moodboard — right into
-  // the page, so the client's review link reads exactly like the exported
-  // document rather than a page holding a separate page. Sourcing is hidden
-  // in this embedded copy specifically: the interactive furniture/
+  // intro, goals, direction, materials, floor plans, moodboard, carousels,
+  // click-to-zoom — as an actual document in its own <iframe>, so it is
+  // exactly the export, not a re-interpretation of it. (A shadow-root
+  // injection was tried instead — no iframe, one page scrollbar — but the
+  // report's own carousel/lightbox <script> can't run scoped to a shadow
+  // root the way it expects `document` to work, and enough of the CSS lost
+  // its effect along the way that it wasn't worth the trade. An <iframe> is
+  // the one thing that reliably reproduces the export as-is.) Sourcing is
+  // hidden in this embedded copy specifically: the interactive furniture/
   // substitutes section below (built natively, not from report.js) replaces
-  // it. Injected into a shadow root (not an <iframe>) — same document flow
-  // as the rest of the page (one scrollbar, no box-inside-a-box), with the
-  // report's own CSS still fully isolated from the app's (both use classes
-  // like .card, .room — a plain innerHTML injection would collide).
+  // it.
   async buildShareReport(found) {
     try {
       const R = await import('./report.js');
       const phase = found.share.phase || ((found.share.phases || []).includes('design') ? 'design' : 'concept');
       const forReport = { ...found.project, reportHidden: { ...(found.project.reportHidden || {}), sourcing: true } };
       const { html } = await R.buildReport(forReport, phase, [], null, { embed: false });
-      const styleMatch = html.match(/<style>([\s\S]*?)<\/style>/);
-      const bodyMatch = html.match(/<body>([\s\S]*?)<\/body>/);
-      this.setState({ shareReportReady: true });
-      this.mountShareReport(styleMatch ? styleMatch[1] : '', bodyMatch ? bodyMatch[1] : '', 0);
+      const url = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+      this.setState({ shareReportSrc: url });
     } catch (e) { console.warn('[shareReport]', e); }
-  }
-
-  // The host div only exists once shareReportReady flips the sc-if on, so
-  // this polls briefly for it rather than needing a render-complete hook the
-  // framework doesn't expose. Finds it within a render or two in practice.
-  mountShareReport(css, body, tries) {
-    const host = document.getElementById('cs-report-host');
-    if (!host) { if (tries < 40) setTimeout(() => this.mountShareReport(css, body, tries + 1), 50); return; }
-    if (host.shadowRoot) return;
-    const root = host.attachShadow({ mode: 'open' });
-    // body{...} in the report's own CSS targets an element that doesn't
-    // exist in here (no real <body> inside a shadow root) — :host is that
-    // same rule's equivalent for the element hosting this shadow tree.
-    const styleEl = document.createElement('style');
-    styleEl.textContent = css.replace(/(^|\})\s*body\{/g, '$1:host{');
-    root.appendChild(styleEl);
-    const wrap = document.createElement('div');
-    wrap.innerHTML = body;
-    root.appendChild(wrap);
   }
 
   async hydrate(user) {
@@ -4360,77 +4347,69 @@ class Component extends DCLogic {
     // or a substitute in recalculates the total instantly, but nothing is
     // written to the real project until Cybelle reviews the request in her
     // Feedback queue and applies it herself.
+    // "Move out"/"Bring it in" actually relocates the card between the two
+    // grids (not just a strike-through in place) — buildCard below returns
+    // one card shape for either source, and the caller sorts it into
+    // selectedGrid or substituteGrid by where it currently trial-belongs.
+    const buildCard = (c, opts) => {
+      const refId = c.id;
+      const key = opts.roomId + '|' + opts.bucket + '|' + refId;
+      const cur = st[key] || {};
+      const on = (val) => cur.verdict === val;
+      const set = (patch) => this.setState({ shareState: { ...this.state.shareState, [key]: { ...cur, ...patch, roomId: opts.roomId, itemId: refId } } });
+      return {
+        name: c.name || 'Piece', image: c.image || PLACEHOLDER,
+        meta: [c.retailer, c.dimensions].filter(Boolean).join(' · '),
+        priceLabel: opts.showPrice ? money(c.price) : '',
+        actionLabel: opts.actionLabel, toggleAction: opts.toggleAction,
+        viewDetails: () => this.setState({ sharePiece: { name: c.name || 'Piece', image: c.image || PLACEHOLDER, retailer: c.retailer || '', finish: [c.finish, c.color].filter(Boolean).join(' · '), dimensions: c.dimensions || '', price: opts.showPrice ? money(c.price) : '', url: c.url || '' } }),
+        comment: cur.comment || '',
+        setComment: (e) => set({ comment: e.target.value }),
+        up: () => set({ verdict: on('up') ? null : 'up' }),
+        down: () => set({ verdict: on('down') ? null : 'down' }),
+        dragStart: (e) => this.startReviewDrag(e, (v) => set({ verdict: v })),
+        upRing: on('up') ? 'var(--color-accent-2)' : 'var(--color-neutral-300)',
+        upBg: on('up') ? 'var(--color-accent-2-200)' : 'transparent',
+        downRing: on('down') ? 'var(--color-accent)' : 'var(--color-neutral-300)',
+        downBg: on('down') ? 'var(--color-accent-100)' : 'transparent',
+        verdictRing: on('up') ? 'var(--color-accent-2)' : on('down') ? 'var(--color-accent)' : 'transparent',
+      };
+    };
     const shareRooms = (project.rooms || []).map((room) => {
       let sub = 0;
       const investmentRows = [];
-      const items = (isPublic ? (room.items || []) : (room.selected || []).map((e) => ({ ...find(e.refId), id: e.refId, qty: Number(e.qty) || 1 }))).map((c) => {
-        const refId = c.id;
-        const key = room.id + '|' + refId;
-        const cur = st[key] || {};
-        const on = (val) => cur.verdict === val;
-        const set = (patch) => this.setState({ shareState: { ...this.state.shareState, [key]: { ...cur, ...patch, roomId: room.id, itemId: refId } } });
-        const removeKey = room.id + '|remove|' + refId;
+      const selectedGrid = [];
+      const substituteGrid = [];
+
+      (isPublic ? (room.items || []) : (room.selected || []).map((e) => ({ ...find(e.refId), id: e.refId, qty: Number(e.qty) || 1 }))).forEach((c) => {
+        const removeKey = room.id + '|remove|' + c.id;
         const removed = !!(trial[removeKey] && trial[removeKey].on);
-        const qty = Number(c.qty) || 1;
-        const priceNum = Number(c.price);
-        const lineNum = priceNum * qty;
-        if (showInvestment && !removed && !isNaN(priceNum)) {
+        const toggleAction = () => this.setState({ shareTrial: { ...trial, [removeKey]: { on: !removed, roomId: room.id, itemId: c.id, action: 'remove' } } });
+        const card = buildCard(c, { roomId: room.id, bucket: 'sel', showPrice: showInvestment, actionLabel: removed ? 'Bring it back' : 'Move out', toggleAction });
+        if (removed) { substituteGrid.push(card); return; }
+        selectedGrid.push(card);
+        const qty = Number(c.qty) || 1, priceNum = Number(c.price), lineNum = priceNum * qty;
+        if (showInvestment && !isNaN(priceNum)) {
           sub += lineNum;
           investmentRows.push({ name: c.name || 'Piece', meta: [c.retailer, c.dimensions].filter(Boolean).join(' · '), qty, unit: money(c.price), line: money(lineNum) });
         }
-        return {
-          name: c.name || 'Piece', image: c.image || PLACEHOLDER,
-          meta: [c.retailer, c.dimensions].filter(Boolean).join(' · '),
-          priceLabel: showInvestment ? money(c.price) : '',
-          removed, removeLabel: removed ? 'Bring it back' : 'Move out',
-          toggleRemove: () => this.setState({ shareTrial: { ...trial, [removeKey]: { on: !removed, roomId: room.id, itemId: refId, action: 'remove' } } }),
-          viewDetails: () => this.setState({ sharePiece: { name: c.name || 'Piece', image: c.image || PLACEHOLDER, retailer: c.retailer || '', finish: [c.finish, c.color].filter(Boolean).join(' · '), dimensions: c.dimensions || '', price: showInvestment ? money(c.price) : '', url: c.url || '' } }),
-          comment: cur.comment || '',
-          setComment: (e) => set({ comment: e.target.value }),
-          up: () => set({ verdict: on('up') ? null : 'up' }),
-          down: () => set({ verdict: on('down') ? null : 'down' }),
-          dragStart: (e) => this.startReviewDrag(e, (v) => set({ verdict: v })),
-          upRing: on('up') ? 'var(--color-accent-2)' : 'var(--color-neutral-300)',
-          upBg: on('up') ? 'var(--color-accent-2-200)' : 'transparent',
-          downRing: on('down') ? 'var(--color-accent)' : 'var(--color-neutral-300)',
-          downBg: on('down') ? 'var(--color-accent-100)' : 'transparent',
-          verdictRing: removed ? 'var(--color-neutral-300)' : on('up') ? 'var(--color-accent-2)' : on('down') ? 'var(--color-accent)' : 'transparent',
-        };
       });
-      const alternatives = !showInvestment ? [] : (isPublic ? (room.alternatives || []) : (room.alternatives || []).map((e) => ({ ...find(e.refId), id: e.refId, qty: Number(e.qty) || 1 }))).map((c) => {
-        const refId = c.id;
-        const key = room.id + '|alt|' + refId;
-        const cur = st[key] || {};
-        const on = (val) => cur.verdict === val;
-        const set = (patch) => this.setState({ shareState: { ...this.state.shareState, [key]: { ...cur, ...patch, roomId: room.id, itemId: refId } } });
-        const addKey = room.id + '|add|' + refId;
+
+      (!showInvestment ? [] : (isPublic ? (room.alternatives || []) : (room.alternatives || []).map((e) => ({ ...find(e.refId), id: e.refId, qty: Number(e.qty) || 1 })))).forEach((c) => {
+        const addKey = room.id + '|add|' + c.id;
         const added = !!(trial[addKey] && trial[addKey].on);
-        const qty = Number(c.qty) || 1;
-        const priceNum = Number(c.price);
-        const lineNum = priceNum * qty;
-        if (added && !isNaN(priceNum)) {
+        const toggleAction = () => this.setState({ shareTrial: { ...trial, [addKey]: { on: !added, roomId: room.id, itemId: c.id, action: 'add' } } });
+        const card = buildCard(c, { roomId: room.id, bucket: 'alt', showPrice: true, actionLabel: added ? 'Move out' : 'Bring it in', toggleAction });
+        if (!added) { substituteGrid.push(card); return; }
+        selectedGrid.push(card);
+        const qty = Number(c.qty) || 1, priceNum = Number(c.price), lineNum = priceNum * qty;
+        if (!isNaN(priceNum)) {
           sub += lineNum;
           investmentRows.push({ name: c.name || 'Piece', meta: [c.retailer, c.dimensions].filter(Boolean).join(' · '), qty, unit: money(c.price), line: money(lineNum) });
         }
-        return {
-          name: c.name || 'Piece', image: c.image || PLACEHOLDER,
-          meta: [c.retailer, c.dimensions].filter(Boolean).join(' · '),
-          priceLabel: money(c.price),
-          added, addLabel: added ? 'Move out' : 'Bring it in',
-          toggleAdd: () => this.setState({ shareTrial: { ...trial, [addKey]: { on: !added, roomId: room.id, itemId: refId, action: 'add' } } }),
-          viewDetails: () => this.setState({ sharePiece: { name: c.name || 'Piece', image: c.image || PLACEHOLDER, retailer: c.retailer || '', finish: [c.finish, c.color].filter(Boolean).join(' · '), dimensions: c.dimensions || '', price: money(c.price), url: c.url || '' } }),
-          comment: cur.comment || '',
-          setComment: (e) => set({ comment: e.target.value }),
-          up: () => set({ verdict: on('up') ? null : 'up' }),
-          down: () => set({ verdict: on('down') ? null : 'down' }),
-          dragStart: (e) => this.startReviewDrag(e, (v) => set({ verdict: v })),
-          upRing: on('up') ? 'var(--color-accent-2)' : 'var(--color-neutral-300)',
-          upBg: on('up') ? 'var(--color-accent-2-200)' : 'transparent',
-          downRing: on('down') ? 'var(--color-accent)' : 'var(--color-neutral-300)',
-          downBg: on('down') ? 'var(--color-accent-100)' : 'transparent',
-          verdictRing: added ? 'var(--color-accent-2)' : on('up') ? 'var(--color-accent-2)' : on('down') ? 'var(--color-accent)' : 'transparent',
-        };
       });
+
+      const items = selectedGrid, alternatives = substituteGrid;
       return {
         name: room.name, items, alternatives, hasAlternatives: alternatives.length > 0,
         investmentRows, hasInvestmentRows: investmentRows.length > 0,
@@ -4443,12 +4422,27 @@ class Component extends DCLogic {
       shareClient: share.clientName, shareProject: project.name, sharePhaseLabel: phaseInfo.label, shareIntro: phaseInfo.intro,
       showShareSelection: phase === 'concept' || phase === 'design', showShareQuestionnaire: phase === 'discovery',
       // The live, in-app-generated equivalent of the export — cover, studio,
-      // goals, direction, materials, plan, moodboard, respecting the same
-      // hide/unhide the studio already set. Injected into a shadow root by
-      // buildShareReport()/mountShareReport() once shareReportReady flips —
-      // this just gates the host div existing for them to find.
+      // goals, direction, materials, plan, moodboard, carousels and zoom,
+      // respecting the same hide/unhide the studio already set. Height is
+      // read straight off the iframe's own document once it loads (a blob:
+      // URL this page created is same-origin readable — no postMessage
+      // needed), and again once fonts settle, since those reflow the layout.
       showShareReport: phase === 'concept' || phase === 'design',
-      shareReportReady: !!s.shareReportReady,
+      shareReportLoading: !s.shareReportSrc,
+      shareReportSrc: s.shareReportSrc || '',
+      shareReportHeight: Math.max(480, s.shareReportHeight || 0) + 'px',
+      shareReportLoaded: (e) => {
+        try {
+          const doc2 = e.target.contentDocument;
+          if (!doc2) return;
+          const measure = () => { try { this.setState({ shareReportHeight: doc2.documentElement.scrollHeight }); } catch (err) {} };
+          measure();
+          const win = doc2.defaultView;
+          if (win && win.ResizeObserver) new win.ResizeObserver(measure).observe(doc2.body);
+          else { setTimeout(measure, 300); setTimeout(measure, 1000); }
+          if (doc2.fonts && doc2.fonts.ready) doc2.fonts.ready.then(measure).catch(() => {});
+        } catch (err) { console.warn('[shareReportLoaded]', err); }
+      },
       sharePieceOpen: !!s.sharePiece,
       sharePiece: s.sharePiece || {},
       closeSharePiece: () => this.setState({ sharePiece: null }),

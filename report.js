@@ -643,8 +643,12 @@ export async function buildReport(project, phaseKey, catalog, onProgress, opts) 
     phase.key === 'design' && !hidden.designMaterials ? materialsSection(p.designMaterials, img) : '',
     phase.key === 'concept' && !hidden.plan ? planSection(p.floorPlans, p.rooms, img) : '',
     phase.key === 'design' && !hidden.designPlan ? planSection(p.designFloorPlans, p.rooms, img) : '',
-    phase.key === 'concept' && !hidden.mood ? moodSection(p.rooms, 'conceptMedia', img, null, !shouldEmbed) : '',
-    phase.key === 'design' && !hidden.designMood ? moodSection(p.rooms, 'designMedia', img, designHeading, !shouldEmbed) : '',
+    // staticGrid (moodSection's 5th arg) stays off here — the live share
+    // preview renders this report in a real <iframe>, so the carousel's own
+    // script works unmodified; the flag exists for embedding techniques that
+    // can't run that script (tried once, reverted — see buildShareReport).
+    phase.key === 'concept' && !hidden.mood ? moodSection(p.rooms, 'conceptMedia', img) : '',
+    phase.key === 'design' && !hidden.designMood ? moodSection(p.rooms, 'designMedia', img, designHeading) : '',
     (phase.key === 'design' || phase.key === 'styling') && !hidden.sourcing ? sourcingSection(p, byId, img) : '',
     // The design fee is negotiated separately from the sourcing proposal, so
     // it no longer rides along in this export — feesSection() stays defined

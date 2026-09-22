@@ -105,19 +105,24 @@ live client-side (`buildShareReport()` in `Studio Platform.dc.html`, calling `bu
 and just points at the live URLs — resolving report.js's own relative asset paths, e.g. the studio
 logo, to absolute URLs first, since this HTML never becomes a real document with a directory of its
 own to resolve them against — and with `reportHidden.sourcing` forced on since the interactive
-furniture section below replaces it). Injected into a shadow root (`mountShareReport()`), not an
-`<iframe>` — same document flow as the rest of the page (one scrollbar, no box inside a box), with
-the report's own CSS still fully isolated from the app's own (both use classes like `.card`/`.room`).
-`moodSection()` takes a `staticGrid` flag (on whenever `embed:false`) that swaps its carousel for a
-plain image grid — the downloaded file's own carousel/lightbox `<script>` can't safely run against
-markup that was injected as `innerHTML` rather than loaded as its own document.
+furniture section below replaces it). Loaded into a real `<iframe>` (via `URL.createObjectURL` on a
+`Blob`), not injected as markup — the report becomes its own separate document with its own script
+context, so its CSS and its renderings/walkthrough carousel work exactly as they do in the downloaded
+export, nothing re-scoped or stripped out. The parent page reads `iframe.contentDocument.
+documentElement.scrollHeight` once the iframe loads (plus a `ResizeObserver` and a font-load check)
+to size the iframe to its content, so the page still reads as one continuous scroll with a single
+scrollbar rather than a box inside a box. (An earlier attempt injected the report into a shadow root
+instead, trading away CSS fidelity and the carousel for same-document flow — reverted once that
+regression surfaced, since the iframe's original drawbacks — relative asset paths, height sync — turned
+out to be independently fixable.)
 
 Prices: hidden on Concept-scope links; visible to admins and designers everywhere. Design-scope links
 also show price and substitutes (`rooms[].alternatives` in the public `shares/{token}` doc — see
 `publishShare()` in `platform-data.js`, gated to `phase === 'design'`), with a total that recalculates
-live as the client tries removing a piece or bringing in a substitute. That trial arrangement is
-local to the client's browser only; nothing writes to the project until the designer reviews the
-resulting `kind: 'swap'` entries in Feedback and applies them by hand.
+live as the client tries removing a piece or bringing in a substitute — moving the card itself between
+the "Your selections" and "Potential substitutes" grids, not just excluding it from the total in place.
+That trial arrangement is local to the client's browser only; nothing writes to the project until the
+designer reviews the resulting `kind: 'swap'` entries in Feedback and applies them by hand.
 
 ## Deploy — GitHub Pages
 
