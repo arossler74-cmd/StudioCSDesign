@@ -252,19 +252,68 @@
                     <div>
                       <div style="font-weight: 600; font-size: 14.5px; line-height: 1.3;">{{ it.name }}</div>
                       <div style="font-size: 12.5px; color: var(--color-neutral-600);">{{ it.meta }}</div>
+                      <sc-if value="{{ showInvestment }}" hint-placeholder-val="{{ false }}">
+                        <div style="font-size: 12.5px; font-weight: 600; color: var(--color-accent-800); margin-top: 4px;">{{ it.priceLabel }}</div>
+                      </sc-if>
                     </div>
                     <div style="flex: 1;"></div>
                     <div style="display: flex; gap: 8px; align-items: center;">
                       <button type="button" onClick="{{ it.up }}" class="btn btn-ghost" style="border: 1px solid {{ it.upRing }}; background: {{ it.upBg }}; padding: 6px 14px;">Love it</button>
                       <button type="button" onClick="{{ it.down }}" class="btn btn-ghost" style="border: 1px solid {{ it.downRing }}; background: {{ it.downBg }}; padding: 6px 14px;">Reconsider</button>
                     </div>
+                    <sc-if value="{{ showInvestment }}" hint-placeholder-val="{{ false }}">
+                      <button type="button" onClick="{{ it.toggleRemove }}" class="btn btn-ghost" style="font-size: 12.5px; padding: 3px 0; text-align: left; color: var(--color-neutral-600);">{{ it.removeLabel }}</button>
+                    </sc-if>
                     <input class="input" value="{{ it.comment }}" onChange="{{ it.setComment }}" placeholder="Add a note" style="padding: 7px 12px; font-size: 13px;">
                   </div>
                 </div>
               </sc-for>
             </div>
+
+            <sc-if value="{{ room.hasAlternatives }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top: 24px;">
+                <div style="font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-600); margin-bottom: 12px;">Potential substitutes</div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px;">
+                  <sc-for list="{{ room.alternatives }}" as="alt" hint-placeholder-count="3">
+                    <div class="card cs-review-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; border: 2px solid {{ alt.verdictRing }}; opacity: .94;">
+                      <div class="cs-review-photo" onPointerDown="{{ alt.dragStart }}" style="aspect-ratio: 1 / 1; background: var(--color-neutral-100); position: relative;">
+                        <img src="assets/piece-placeholder.png" data-img="{{ alt.image }}" alt="" style="width: 100%; height: 100%; object-fit: cover; pointer-events: none;">
+                        <span class="cs-review-stamp cs-review-stamp-up">Love it</span>
+                        <span class="cs-review-stamp cs-review-stamp-down">Reconsider</span>
+                      </div>
+                      <div style="padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 8px; flex: 1;">
+                        <div>
+                          <div style="font-weight: 600; font-size: 13.5px; line-height: 1.3;">{{ alt.name }}</div>
+                          <div style="font-size: 12px; color: var(--color-neutral-600);">{{ alt.meta }}</div>
+                          <div style="font-size: 12px; font-weight: 600; color: var(--color-accent-800); margin-top: 4px;">{{ alt.priceLabel }}</div>
+                        </div>
+                        <div style="flex: 1;"></div>
+                        <div style="display: flex; gap: 6px; align-items: center;">
+                          <button type="button" onClick="{{ alt.up }}" class="btn btn-ghost" style="border: 1px solid {{ alt.upRing }}; background: {{ alt.upBg }}; padding: 5px 10px; font-size: 12.5px;">Love it</button>
+                          <button type="button" onClick="{{ alt.down }}" class="btn btn-ghost" style="border: 1px solid {{ alt.downRing }}; background: {{ alt.downBg }}; padding: 5px 10px; font-size: 12.5px;">Reconsider</button>
+                        </div>
+                        <button type="button" onClick="{{ alt.toggleAdd }}" class="btn btn-ghost" style="font-size: 12.5px; padding: 3px 0; text-align: left; color: var(--color-accent-800); font-weight: 600;">{{ alt.addLabel }}</button>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ showInvestment }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top: 18px; display: flex; justify-content: flex-end; font-size: 14px; color: var(--color-neutral-700);">
+                <div><strong>{{ room.name }} total</strong> — {{ room.roomTotal }}</div>
+              </div>
+            </sc-if>
           </div>
         </sc-for>
+
+        <sc-if value="{{ showInvestment }}" hint-placeholder-val="{{ false }}">
+          <div class="card" style="padding: 20px 24px; display: flex; justify-content: space-between; align-items: baseline; max-width: 420px;">
+            <div style="font-family: var(--font-heading); font-size: 18px; color: var(--color-accent-900);">Total investment</div>
+            <div style="font-family: var(--font-heading); font-size: 28px; color: var(--color-accent-900);">{{ shareGrandTotal }}</div>
+          </div>
+        </sc-if>
       </div></sc-if>
 
       <div class="card cs-client-section" style="padding: 24px 26px; margin-top: 36px; max-width: 720px;">
@@ -2123,8 +2172,12 @@ const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review
 // reaches this file — the version badge in the top bar and the Studio →
 // Changelog page both read straight from this, nothing else to update.
 // Versioning starts at 1.1; anything before that lives only in git log.
-const APP_VERSION = '1.7';
+const APP_VERSION = '1.8';
 const CHANGELOG = [
+  { version: '1.8', date: '2026-09-21', changes: [
+    'Client review link (Design & sourcing scope): now shows price on every selected piece, a "Potential substitutes" grid the client can vote on, and a live total that recalculates as they try removing a piece or bringing in a substitute — all local to their browser until they send it.',
+    'Feedback queue: what a client tried on their review link (remove / bring in a substitute) now lands as its own entry, separate from a plain thumbs up/down — nothing changes in the room until the designer applies it by hand, same as a thumbs-down always has.',
+  ] },
   { version: '1.7', date: '2026-09-21', changes: [
     'Concept and Design & sourcing: the editor no longer boxes content into a narrow 980px column — it now uses the same width as the rest of the app, so furniture cards, renderings and the schedule table all get proper room to breathe on a normal screen instead of being squeezed into a strip down the middle.',
     'Design & sourcing: drag to reorder furniture within a room (both "In the room" and "Substitutes") and drag to reorder the rendering/video carousel — same drag feel already used for reordering the catalog, generalized to work anywhere a grid needs it.',
@@ -4029,6 +4082,11 @@ class Component extends DCLogic {
         const room = this.rooms().find((x) => x.id === r.roomId);
         const isQuestionnaire = r.kind === 'questionnaire';
         const isMessage = r.kind === 'message';
+        // A client's "remove this" / "bring this in" from their trial
+        // arrangement on the share link — a request, not yet a change. Only
+        // the designer applying it in Selection/Design & sourcing moves the
+        // real project; this is just the client's ask landing in the queue.
+        const isSwap = r.kind === 'swap';
         const isSpacesAnswer = isQuestionnaire && questionType(r.itemId) === 'spaces';
         const spaceNames = isSpacesAnswer ? String(r.answer || '').split(',').map((x) => x.trim()).filter(Boolean) : [];
         const newSpaces = spaceNames.filter((n) => !this.rooms().some((rm) => rm.name === n));
@@ -4037,8 +4095,8 @@ class Component extends DCLogic {
           image: isQuestionnaire || isMessage ? PLACEHOLDER : (c.image || PLACEHOLDER),
           line: [room && room.name, r.by, new Date(r.at).toLocaleDateString('en-US')].filter(Boolean).join(' · '),
           comment: isQuestionnaire ? (r.answer || '') : (r.comment || ''),
-          badge: isQuestionnaire ? 'Answered' : isMessage ? 'Note' : r.verdict === 'up' ? 'Loved' : 'Reconsider',
-          badgeBg: isQuestionnaire ? 'var(--color-accent-2)' : isMessage ? 'var(--color-accent-700)' : r.verdict === 'up' ? 'var(--color-accent-2)' : 'var(--color-accent-700)',
+          badge: isQuestionnaire ? 'Answered' : isMessage ? 'Note' : isSwap ? (r.action === 'add' ? 'Wants to add' : 'Wants to remove') : r.verdict === 'up' ? 'Loved' : 'Reconsider',
+          badgeBg: isQuestionnaire ? 'var(--color-accent-2)' : isMessage ? 'var(--color-accent-700)' : isSwap ? (r.action === 'add' ? 'var(--color-accent-2)' : 'var(--color-accent-700)') : r.verdict === 'up' ? 'var(--color-accent-2)' : 'var(--color-accent-700)',
           dim: r.resolved ? '.55' : '1', open: !r.resolved,
           showApplyRooms: newSpaces.length > 0,
           applyRoomsLabel: 'Add ' + newSpaces.length + ' room' + (newSpaces.length === 1 ? '' : 's'),
@@ -4141,16 +4199,91 @@ class Component extends DCLogic {
     const find = (id) => cat.find((c) => c.id === id) || {};
     const doc = s.share.doc;
     const st = s.shareState;
+    const trial = s.shareTrial || {};
     const phase = share.phase || ((share.phases || []).includes('design') ? 'design' : 'concept');
+    // Price and substitutes only ever show on a Design-scope link — matches
+    // what publishShare() actually puts in the public, unauthenticated
+    // document (see platform-data.js): Concept is a feeling, not a number.
+    const showInvestment = phase === 'design';
+    const money = (n) => (n == null || n === '' || isNaN(Number(n))) ? ''
+      : new Intl.NumberFormat('en-US', { style: 'currency', currency: project.currency || 'USD', maximumFractionDigits: 0 }).format(Number(n));
     const phaseInfo = {
       discovery: { label: 'Discovery', intro: 'Answer the questionnaire so Cybelle can shape the project around your home, routines and priorities.' },
       concept: { label: 'Concept review', intro: 'Review the direction and selections below. Your feedback goes directly to Cybelle before the design develops further.' },
-      design: { label: 'Design & sourcing review', intro: 'Review the specified selections and presentation. Mark what feels right and leave a note wherever you would like an adjustment.' },
+      design: { label: 'Design & sourcing review', intro: 'Review the specified selections and presentation. Mark what feels right, try a substitute if you would like to see an alternative, and leave a note wherever you would like an adjustment. Nothing here changes the project until Cybelle applies it.' },
       styling: { label: 'Styling & reveal', intro: 'Share any final thoughts for the styling and reveal phase. Cybelle will see them in the project feedback queue.' },
     }[phase] || { label: 'Project review', intro: 'Share your thoughts with Cybelle.' };
     const answers = s.shareAnswers || {};
     const questionnaire = project.questionnaire || [];
-    const touched = Object.keys(st).filter((k) => st[k] && (st[k].verdict || (st[k].comment || '').trim())).length;
+    const touched = Object.keys(st).filter((k) => st[k] && (st[k].verdict || (st[k].comment || '').trim())).length
+      + Object.keys(trial).filter((k) => trial[k] && trial[k].on).length;
+
+    // A trial arrangement, local to this browser only: swapping a piece out
+    // or a substitute in recalculates the total instantly, but nothing is
+    // written to the real project until Cybelle reviews the request in her
+    // Feedback queue and applies it herself.
+    const shareRooms = (project.rooms || []).map((room) => {
+      let sub = 0;
+      const items = (isPublic ? (room.items || []) : (room.selected || []).map((e) => ({ ...find(e.refId), id: e.refId }))).map((c) => {
+        const refId = c.id;
+        const key = room.id + '|' + refId;
+        const cur = st[key] || {};
+        const on = (val) => cur.verdict === val;
+        const set = (patch) => this.setState({ shareState: { ...this.state.shareState, [key]: { ...cur, ...patch, roomId: room.id, itemId: refId } } });
+        const removeKey = room.id + '|remove|' + refId;
+        const removed = !!(trial[removeKey] && trial[removeKey].on);
+        const priceNum = Number(c.price);
+        if (showInvestment && !removed && !isNaN(priceNum)) sub += priceNum;
+        return {
+          name: c.name || 'Piece', image: c.image || PLACEHOLDER,
+          meta: [c.retailer, c.dimensions].filter(Boolean).join(' · '),
+          priceLabel: showInvestment ? money(c.price) : '',
+          removed, removeLabel: removed ? 'Add back' : 'Remove from my picks',
+          toggleRemove: () => this.setState({ shareTrial: { ...trial, [removeKey]: { on: !removed, roomId: room.id, itemId: refId, action: 'remove' } } }),
+          comment: cur.comment || '',
+          setComment: (e) => set({ comment: e.target.value }),
+          up: () => set({ verdict: on('up') ? null : 'up' }),
+          down: () => set({ verdict: on('down') ? null : 'down' }),
+          dragStart: (e) => this.startReviewDrag(e, (v) => set({ verdict: v })),
+          upRing: on('up') ? 'var(--color-accent-2)' : 'var(--color-neutral-300)',
+          upBg: on('up') ? 'var(--color-accent-2-200)' : 'transparent',
+          downRing: on('down') ? 'var(--color-accent)' : 'var(--color-neutral-300)',
+          downBg: on('down') ? 'var(--color-accent-100)' : 'transparent',
+          verdictRing: removed ? 'var(--color-neutral-300)' : on('up') ? 'var(--color-accent-2)' : on('down') ? 'var(--color-accent)' : 'transparent',
+        };
+      });
+      const alternatives = !showInvestment ? [] : (isPublic ? (room.alternatives || []) : (room.alternatives || []).map((e) => ({ ...find(e.refId), id: e.refId }))).map((c) => {
+        const refId = c.id;
+        const key = room.id + '|alt|' + refId;
+        const cur = st[key] || {};
+        const on = (val) => cur.verdict === val;
+        const set = (patch) => this.setState({ shareState: { ...this.state.shareState, [key]: { ...cur, ...patch, roomId: room.id, itemId: refId } } });
+        const addKey = room.id + '|add|' + refId;
+        const added = !!(trial[addKey] && trial[addKey].on);
+        const priceNum = Number(c.price);
+        if (added && !isNaN(priceNum)) sub += priceNum;
+        return {
+          name: c.name || 'Piece', image: c.image || PLACEHOLDER,
+          meta: [c.retailer, c.dimensions].filter(Boolean).join(' · '),
+          priceLabel: money(c.price),
+          added, addLabel: added ? 'Remove from my picks' : 'Bring this in',
+          toggleAdd: () => this.setState({ shareTrial: { ...trial, [addKey]: { on: !added, roomId: room.id, itemId: refId, action: 'add' } } }),
+          comment: cur.comment || '',
+          setComment: (e) => set({ comment: e.target.value }),
+          up: () => set({ verdict: on('up') ? null : 'up' }),
+          down: () => set({ verdict: on('down') ? null : 'down' }),
+          dragStart: (e) => this.startReviewDrag(e, (v) => set({ verdict: v })),
+          upRing: on('up') ? 'var(--color-accent-2)' : 'var(--color-neutral-300)',
+          upBg: on('up') ? 'var(--color-accent-2-200)' : 'transparent',
+          downRing: on('down') ? 'var(--color-accent)' : 'var(--color-neutral-300)',
+          downBg: on('down') ? 'var(--color-accent-100)' : 'transparent',
+          verdictRing: added ? 'var(--color-accent-2)' : on('up') ? 'var(--color-accent-2)' : on('down') ? 'var(--color-accent)' : 'transparent',
+        };
+      });
+      return { name: room.name, items, alternatives, hasAlternatives: alternatives.length > 0, roomSubRaw: sub, roomTotal: showInvestment ? money(sub) : '' };
+    });
+    const shareGrandTotal = showInvestment ? money(shareRooms.reduce((t, r) => t + r.roomSubRaw, 0)) : '';
+
     return {
       shareClient: share.clientName, shareProject: project.name, sharePhaseLabel: phaseInfo.label, shareIntro: phaseInfo.intro,
       showShareSelection: phase === 'concept' || phase === 'design', showShareQuestionnaire: phase === 'discovery',
@@ -4181,38 +4314,22 @@ class Component extends DCLogic {
           };
         }),
       })),
-      shareCount: phase === 'discovery' ? 'Complete as much as you can. You can return to this link until Cybelle closes it.' : touched ? touched + ' selections marked' : 'Mark only the pieces you have an opinion about.',
-      shareRooms: (project.rooms || []).map((room) => ({
-        name: room.name,
-        items: (isPublic ? (room.items || []) : (room.selected || [])).map((entry) => {
-          const c = isPublic ? entry : find(entry.refId);
-          const refId = isPublic ? entry.id : entry.refId;
-          const key = room.id + '|' + refId;
-          const cur = st[key] || {};
-          const on = (val) => cur.verdict === val;
-          const set = (patch) => this.setState({ shareState: { ...this.state.shareState, [key]: { ...cur, ...patch, roomId: room.id, itemId: refId } } });
-          return {
-            name: c.name || 'Piece', image: c.image || PLACEHOLDER,
-            meta: [c.retailer, c.dimensions].filter(Boolean).join(' · '),
-            comment: cur.comment || '',
-            setComment: (e) => set({ comment: e.target.value }),
-            up: () => set({ verdict: on('up') ? null : 'up' }),
-            down: () => set({ verdict: on('down') ? null : 'down' }),
-            dragStart: (e) => this.startReviewDrag(e, (v) => set({ verdict: v })),
-            upRing: on('up') ? 'var(--color-accent-2)' : 'var(--color-neutral-300)',
-            upBg: on('up') ? 'var(--color-accent-2-200)' : 'transparent',
-            downRing: on('down') ? 'var(--color-accent)' : 'var(--color-neutral-300)',
-            downBg: on('down') ? 'var(--color-accent-100)' : 'transparent',
-            verdictRing: on('up') ? 'var(--color-accent-2)' : on('down') ? 'var(--color-accent)' : 'transparent',
-          };
-        }),
-      })),
+      shareCount: phase === 'discovery' ? 'Complete as much as you can. You can return to this link until Cybelle closes it.'
+        : touched ? touched + ' change' + (touched === 1 ? '' : 's') + ' marked' : 'Mark only the pieces you have an opinion about.',
+      showInvestment,
+      shareRooms,
+      shareGrandTotal,
       shareSubmit: async () => {
         let proj = project;
         for (const key of Object.keys(st)) {
           const e = st[key];
           if (!e || (!e.verdict && !(e.comment || '').trim())) continue;
           proj = await api.addReview(proj, { kind: 'selection', phase, roomId: e.roomId, itemId: e.itemId, verdict: e.verdict || null, comment: e.comment || '', by: share.clientName, viaShare: isPublic ? share.token : null });
+        }
+        for (const key of Object.keys(trial)) {
+          const t = trial[key];
+          if (!t || !t.on) continue;
+          proj = await api.addReview(proj, { kind: 'swap', phase, roomId: t.roomId, itemId: t.itemId, action: t.action, by: share.clientName, viaShare: isPublic ? share.token : null });
         }
         for (const sec of questionnaire) for (const q of (sec.questions || [])) {
           const answer = answers[q.id];
@@ -4224,7 +4341,7 @@ class Component extends DCLogic {
           proj = await api.addReview(proj, { kind: 'message', phase, itemId: 'note:' + phase, comment: s.shareMessage.trim(), by: share.clientName, viaShare: isPublic ? share.token : null });
         }
         this.setState({ share: { ...this.state.share, project: proj }, shareSaved: 'Thank you — sent' });
-        this.setState({ shareState: {}, shareAnswers: {}, shareMessage: '' });
+        this.setState({ shareState: {}, shareTrial: {}, shareAnswers: {}, shareMessage: '' });
         setTimeout(() => this.setState({ shareSaved: '' }), 2600);
       },
     };

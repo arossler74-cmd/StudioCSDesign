@@ -714,16 +714,26 @@ async function publishShare(project, share) {
   const phase = phaseOf(share);
   const questionnaire = phase !== 'discovery' ? [] : (Array.isArray(project.questionnaire) && project.questionnaire.length ? project.questionnaire : await getQuestionnaire());
   const showDocument = phase === 'concept' || phase === 'design';
+  // Price (and substitutes at all) only ever goes into this public,
+  // unauthenticated-readable document for a Design-scope link — Concept is
+  // about agreeing a feeling, not a number, and this doc is world-readable
+  // by anyone holding the token, so what it doesn't need, it doesn't get.
+  const showPrice = phase === 'design';
+  const toItem = (e) => {
+    const c = find(e.refId);
+    const item = { id: e.refId, name: c.name || '', image: c.image || '', retailer: c.retailer || '', dimensions: c.dimensions || '' };
+    if (showPrice) item.price = c.price == null ? null : Number(c.price);
+    return item;
+  };
   const payload = {
     token: share.token, projectId: project.id, projectName: project.name,
     clientName: share.clientName, phase, phases: [phase], questionnaire,
     doc: showDocument ? (project.phases[phase] || {}).doc || null : null,
+    currency: project.currency || 'USD',
     rooms: (project.rooms || []).map((r) => ({
       id: r.id, name: r.name,
-      items: (r.selected || []).map((e) => {
-        const c = find(e.refId);
-        return { id: e.refId, name: c.name || '', image: c.image || '', retailer: c.retailer || '', dimensions: c.dimensions || '' };
-      }),
+      items: (r.selected || []).map(toItem),
+      alternatives: showPrice ? (r.alternatives || []).map(toItem) : [],
     })),
     updatedAt: nowISO(),
   };

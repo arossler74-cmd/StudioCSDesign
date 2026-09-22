@@ -60,7 +60,12 @@ projects/{id}
               tagline/client/location/address/addressCity/scope/scopeNote/stage/stageNote/intro/
               hero/studioProfile are project-wide (not phase-specific) and are edited from both the
               Concept and Design & Sourcing tabs — same fields, no copy involved
-  reviews: [{ id, roomId, itemId, verdict: 'up'|'down', comment, by, at, resolved }]
+  reviews: [{ id, roomId, itemId, verdict: 'up'|'down', comment, by, at, resolved }
+            | { id, kind: 'swap', roomId, itemId, action: 'remove'|'add', by, at, resolved }]
+            — 'swap' entries come from a client's share-link trial arrangement (see shares/{token}
+            below): a request to remove a selected piece or bring in a substitute, never a direct
+            write to rooms.selected/alternatives — the designer applies it manually, same principle
+            as a thumbs-down changing nothing on its own
   shares:  [{ token, clientName, phases: ['concept'|'design'], createdAt }]
 
 settings/questionnaire  sections: [{ id, title, questions: [{ id, label, type, options? }] }]
@@ -86,7 +91,12 @@ Storage: `catalog/{ts}-{file}` and `{projectId}/{ts}-{file}`.
 
 Sharing tab → enter the client's name → a link `#share=<token>` stamped with that name. No login. The client sees the selected pieces per room, gives thumbs up/down and a note; everything lands signed in that project's **Feedback** queue. A thumbs-down changes nothing automatically — the designer decides. Links show Concept only by default; the Design scope also exposes the sourcing document. Revoke any time.
 
-Prices: hidden on Concept-scope links; visible to admins and designers everywhere.
+Prices: hidden on Concept-scope links; visible to admins and designers everywhere. Design-scope links
+also show price and substitutes (`rooms[].alternatives` in the public `shares/{token}` doc — see
+`publishShare()` in `platform-data.js`, gated to `phase === 'design'`), with a total that recalculates
+live as the client tries removing a piece or bringing in a substitute. That trial arrangement is
+local to the client's browser only; nothing writes to the project until the designer reviews the
+resulting `kind: 'swap'` entries in Feedback and applies them by hand.
 
 ## Deploy — GitHub Pages
 
@@ -117,11 +127,7 @@ actually guarding the data. Two consequences worth keeping in mind:
 2. Per-piece approval history (who approved what, when) beyond the latest verdict.
 3. PDF export per phase.
 4. Client annotations directly on Concept floor plans and visual carousels.
-5. Design & Sourcing tab, phase 2: drag-and-drop from the catalog (filterable by `ITEM_TYPES`)
-   into a room's furniture list, with reordering — generalizing the pointer-drag-to-reorder already
-   built for the catalog admin list (`startCardDrag`/`_onDragMove`/`_onDragEnd`) — plus a live
-   investment-table preview in the tab.
-6. Design & Sourcing tab, phase 3: the client's review link exposes substitutes (`room.alternatives`)
-   alongside the current furniture, with a live-recalculating total; what the client tries stays
-   local to their browser and is submitted as feedback, never a direct write to `room.selected` —
-   the designer still decides.
+5. Design & Sourcing tab: still click-to-add from the catalog picker (filterable by `ITEM_TYPES`
+   dropdown, shipped) rather than actual drag-in — reordering within a room and a live
+   investment-table preview are both done, via the generalized `startReorderDrag`/`_onReorderMove`/
+   `_onReorderEnd` (also used by the catalog admin list and the rendering carousel).
