@@ -749,6 +749,7 @@ async function publishShare(project, share) {
     const item = {
       id: e.refId, name: c.name || '', image: c.image || '', retailer: c.retailer || '',
       dimensions: c.dimensions || '', finish: c.finish || '', color: c.color || '', url: c.url || '',
+      qty: Number(e.qty) || 1,
     };
     if (showPrice) item.price = c.price == null ? null : Number(c.price);
     return item;

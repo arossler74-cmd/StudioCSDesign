@@ -196,7 +196,7 @@
 
   <!-- ============ client share view ============ -->
   <sc-if value="{{ showShare }}">
-    <div class="cs-share-page" style="max-width: 1100px; margin: 0 auto; padding: 56px 32px 96px; animation: csFade .4s var(--ease-spring) both;">
+    <div class="cs-share-page" style="max-width: 1440px; margin: 0 auto; padding: 56px 32px 96px; animation: csFade .4s var(--ease-spring) both;">
       <sc-if value="{{ !showShareReport }}">
         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 40px;">
           <img src="assets/cybelle-logo-header.png" alt="Cybelle Sampaio Studio" style="height: 126px; width: auto; display: block;">
@@ -266,13 +266,13 @@
                       <button type="button" onClick="{{ it.viewDetails }}" class="btn btn-ghost" style="font-size: 11.5px; padding: 3px 0; color: var(--color-neutral-500); text-decoration: underline;">View details</button>
                     </div>
                     <div style="flex: 1;"></div>
-                    <div style="display: flex; gap: 8px; align-items: center;">
+                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                       <button type="button" onClick="{{ it.up }}" class="btn btn-ghost" style="border: 1px solid {{ it.upRing }}; background: {{ it.upBg }}; padding: 6px 14px;">Love it</button>
                       <button type="button" onClick="{{ it.down }}" class="btn btn-ghost" style="border: 1px solid {{ it.downRing }}; background: {{ it.downBg }}; padding: 6px 14px;">Reconsider</button>
+                      <sc-if value="{{ showInvestment }}" hint-placeholder-val="{{ false }}">
+                        <button type="button" onClick="{{ it.toggleRemove }}" class="btn btn-ghost" style="padding: 6px 14px; color: var(--color-neutral-600);">{{ it.removeLabel }}</button>
+                      </sc-if>
                     </div>
-                    <sc-if value="{{ showInvestment }}" hint-placeholder-val="{{ false }}">
-                      <button type="button" onClick="{{ it.toggleRemove }}" class="btn btn-ghost" style="font-size: 12.5px; padding: 3px 0; text-align: left; color: var(--color-neutral-600);">{{ it.removeLabel }}</button>
-                    </sc-if>
                     <input class="input" value="{{ it.comment }}" onChange="{{ it.setComment }}" placeholder="Add a note" style="padding: 7px 12px; font-size: 13px;">
                   </div>
                 </div>
@@ -298,11 +298,11 @@
                           <button type="button" onClick="{{ alt.viewDetails }}" class="btn btn-ghost" style="font-size: 11px; padding: 2px 0; color: var(--color-neutral-500); text-decoration: underline;">View details</button>
                         </div>
                         <div style="flex: 1;"></div>
-                        <div style="display: flex; gap: 6px; align-items: center;">
+                        <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
                           <button type="button" onClick="{{ alt.up }}" class="btn btn-ghost" style="border: 1px solid {{ alt.upRing }}; background: {{ alt.upBg }}; padding: 5px 10px; font-size: 12.5px;">Love it</button>
                           <button type="button" onClick="{{ alt.down }}" class="btn btn-ghost" style="border: 1px solid {{ alt.downRing }}; background: {{ alt.downBg }}; padding: 5px 10px; font-size: 12.5px;">Reconsider</button>
+                          <button type="button" onClick="{{ alt.toggleAdd }}" class="btn btn-ghost" style="padding: 5px 10px; font-size: 12.5px; color: var(--color-accent-800); font-weight: 600;">{{ alt.addLabel }}</button>
                         </div>
-                        <button type="button" onClick="{{ alt.toggleAdd }}" class="btn btn-ghost" style="font-size: 12.5px; padding: 3px 0; text-align: left; color: var(--color-accent-800); font-weight: 600;">{{ alt.addLabel }}</button>
                       </div>
                     </div>
                   </sc-for>
@@ -310,9 +310,34 @@
               </div>
             </sc-if>
 
-            <sc-if value="{{ showInvestment }}" hint-placeholder-val="{{ false }}">
-              <div style="margin-top: 18px; display: flex; justify-content: flex-end; font-size: 14px; color: var(--color-neutral-700);">
-                <div><strong>{{ room.name }} total</strong> — {{ room.roomTotal }}</div>
+            <sc-if value="{{ room.hasInvestmentRows }}" hint-placeholder-val="{{ false }}">
+              <div class="card cs-client-section" style="padding: 20px 24px; margin-top: 24px;">
+                <div style="font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--color-accent-700); margin-bottom: 10px;">Furnishings schedule</div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 13.5px;">
+                  <thead><tr>
+                    <th style="text-align: left; font-weight: 500; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-600); padding: 8px 10px; border-bottom: 1px solid var(--color-neutral-200);">Item · store</th>
+                    <th style="text-align: right; font-weight: 500; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-600); padding: 8px 10px; border-bottom: 1px solid var(--color-neutral-200);">Qty</th>
+                    <th style="text-align: right; font-weight: 500; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-600); padding: 8px 10px; border-bottom: 1px solid var(--color-neutral-200);">Unit est.</th>
+                    <th style="text-align: right; font-weight: 500; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-600); padding: 8px 10px; border-bottom: 1px solid var(--color-neutral-200);">Line total</th>
+                  </tr></thead>
+                  <tbody>
+                    <sc-for list="{{ room.investmentRows }}" as="row" hint-placeholder-count="3">
+                      <tr>
+                        <td style="padding: 9px 10px; border-bottom: 1px solid var(--color-neutral-100); vertical-align: top;">
+                          <div style="font-weight: 500;">{{ row.name }}</div>
+                          <div style="font-size: 12px; color: var(--color-neutral-500);">{{ row.meta }}</div>
+                        </td>
+                        <td style="padding: 9px 10px; border-bottom: 1px solid var(--color-neutral-100); vertical-align: top; text-align: right;">{{ row.qty }}</td>
+                        <td style="padding: 9px 10px; border-bottom: 1px solid var(--color-neutral-100); vertical-align: top; text-align: right; color: var(--color-neutral-600);">{{ row.unit }}</td>
+                        <td style="padding: 9px 10px; border-bottom: 1px solid var(--color-neutral-100); vertical-align: top; text-align: right; font-weight: 500;">{{ row.line }}</td>
+                      </tr>
+                    </sc-for>
+                  </tbody>
+                  <tfoot><tr>
+                    <td colspan="3" style="padding: 10px; text-align: right; font-weight: 600; border-top: 2px solid var(--color-neutral-200);">{{ room.name }} subtotal</td>
+                    <td style="padding: 10px; text-align: right; font-weight: 600; border-top: 2px solid var(--color-neutral-200);">{{ room.roomTotal }}</td>
+                  </tr></tfoot>
+                </table>
               </div>
             </sc-if>
           </div>
@@ -2211,8 +2236,13 @@ const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review
 // reaches this file — the version badge in the top bar and the Studio →
 // Changelog page both read straight from this, nothing else to update.
 // Versioning starts at 1.1; anything before that lives only in git log.
-const APP_VERSION = '2.2';
+const APP_VERSION = '2.3';
 const CHANGELOG = [
+  { version: '2.3', date: '2026-09-22', changes: [
+    'Client review link: "Move out" now sits right next to Love it / Reconsider on every piece card, instead of on its own row underneath — same for "Bring it in" on a substitute.',
+    'Client review link: the page is noticeably wider now (was capped at 1100px), so the furniture cards get more columns instead of squeezing down to one or two on a normal screen.',
+    'Client review link: each room now ends with a proper furnishings-schedule table (item, quantity, unit estimate, line total, subtotal) under the cards, not just a single total line — recalculating live as pieces are moved out or substitutes brought in, same as the grand total already did.',
+  ] },
   { version: '2.2', date: '2026-09-22', changes: [
     'Client review link: replaced the embedded presentation\'s <iframe> with a shadow-root injection — no more nested scrollbar or blank-looking box. The presentation now reads top to bottom as one continuous page, the same as scrolling through the exported file, instead of a document sitting inside a document.',
     'Client review link: dropped the app\'s own duplicate headline/intro above the presentation (it repeated what the presentation\'s own cover section already says) — the "how to vote" instructions moved down to sit right above your selections instead.',
@@ -4332,7 +4362,8 @@ class Component extends DCLogic {
     // Feedback queue and applies it herself.
     const shareRooms = (project.rooms || []).map((room) => {
       let sub = 0;
-      const items = (isPublic ? (room.items || []) : (room.selected || []).map((e) => ({ ...find(e.refId), id: e.refId }))).map((c) => {
+      const investmentRows = [];
+      const items = (isPublic ? (room.items || []) : (room.selected || []).map((e) => ({ ...find(e.refId), id: e.refId, qty: Number(e.qty) || 1 }))).map((c) => {
         const refId = c.id;
         const key = room.id + '|' + refId;
         const cur = st[key] || {};
@@ -4340,8 +4371,13 @@ class Component extends DCLogic {
         const set = (patch) => this.setState({ shareState: { ...this.state.shareState, [key]: { ...cur, ...patch, roomId: room.id, itemId: refId } } });
         const removeKey = room.id + '|remove|' + refId;
         const removed = !!(trial[removeKey] && trial[removeKey].on);
+        const qty = Number(c.qty) || 1;
         const priceNum = Number(c.price);
-        if (showInvestment && !removed && !isNaN(priceNum)) sub += priceNum;
+        const lineNum = priceNum * qty;
+        if (showInvestment && !removed && !isNaN(priceNum)) {
+          sub += lineNum;
+          investmentRows.push({ name: c.name || 'Piece', meta: [c.retailer, c.dimensions].filter(Boolean).join(' · '), qty, unit: money(c.price), line: money(lineNum) });
+        }
         return {
           name: c.name || 'Piece', image: c.image || PLACEHOLDER,
           meta: [c.retailer, c.dimensions].filter(Boolean).join(' · '),
@@ -4361,7 +4397,7 @@ class Component extends DCLogic {
           verdictRing: removed ? 'var(--color-neutral-300)' : on('up') ? 'var(--color-accent-2)' : on('down') ? 'var(--color-accent)' : 'transparent',
         };
       });
-      const alternatives = !showInvestment ? [] : (isPublic ? (room.alternatives || []) : (room.alternatives || []).map((e) => ({ ...find(e.refId), id: e.refId }))).map((c) => {
+      const alternatives = !showInvestment ? [] : (isPublic ? (room.alternatives || []) : (room.alternatives || []).map((e) => ({ ...find(e.refId), id: e.refId, qty: Number(e.qty) || 1 }))).map((c) => {
         const refId = c.id;
         const key = room.id + '|alt|' + refId;
         const cur = st[key] || {};
@@ -4369,8 +4405,13 @@ class Component extends DCLogic {
         const set = (patch) => this.setState({ shareState: { ...this.state.shareState, [key]: { ...cur, ...patch, roomId: room.id, itemId: refId } } });
         const addKey = room.id + '|add|' + refId;
         const added = !!(trial[addKey] && trial[addKey].on);
+        const qty = Number(c.qty) || 1;
         const priceNum = Number(c.price);
-        if (added && !isNaN(priceNum)) sub += priceNum;
+        const lineNum = priceNum * qty;
+        if (added && !isNaN(priceNum)) {
+          sub += lineNum;
+          investmentRows.push({ name: c.name || 'Piece', meta: [c.retailer, c.dimensions].filter(Boolean).join(' · '), qty, unit: money(c.price), line: money(lineNum) });
+        }
         return {
           name: c.name || 'Piece', image: c.image || PLACEHOLDER,
           meta: [c.retailer, c.dimensions].filter(Boolean).join(' · '),
@@ -4390,7 +4431,11 @@ class Component extends DCLogic {
           verdictRing: added ? 'var(--color-accent-2)' : on('up') ? 'var(--color-accent-2)' : on('down') ? 'var(--color-accent)' : 'transparent',
         };
       });
-      return { name: room.name, items, alternatives, hasAlternatives: alternatives.length > 0, roomSubRaw: sub, roomTotal: showInvestment ? money(sub) : '' };
+      return {
+        name: room.name, items, alternatives, hasAlternatives: alternatives.length > 0,
+        investmentRows, hasInvestmentRows: investmentRows.length > 0,
+        roomSubRaw: sub, roomTotal: showInvestment ? money(sub) : '',
+      };
     });
     const shareGrandTotal = showInvestment ? money(shareRooms.reduce((t, r) => t + r.roomSubRaw, 0)) : '';
 
