@@ -108,13 +108,15 @@ own to resolve them against — and with `reportHidden.sourcing` forced on since
 furniture section below replaces it). Loaded into a real `<iframe>` (via `URL.createObjectURL` on a
 `Blob`), not injected as markup — the report becomes its own separate document with its own script
 context, so its CSS and its renderings/walkthrough carousel work exactly as they do in the downloaded
-export, nothing re-scoped or stripped out. The parent page reads `iframe.contentDocument.
-documentElement.scrollHeight` once the iframe loads (plus a `ResizeObserver` and a font-load check)
-to size the iframe to its content, so the page still reads as one continuous scroll with a single
-scrollbar rather than a box inside a box. (An earlier attempt injected the report into a shadow root
-instead, trading away CSS fidelity and the carousel for same-document flow — reverted once that
-regression surfaced, since the iframe's original drawbacks — relative asset paths, height sync — turned
-out to be independently fixable.)
+export, nothing re-scoped or stripped out. The iframe gets a fixed, viewport-relative height (`82vh`)
+and scrolls internally, rather than being resized to match its own content: the report's sections are
+full-screen "slides" (`min-height:100vh`), so sizing the iframe from its own `scrollHeight` feeds back
+into what `100vh` means inside it — growing the iframe grows the sections, which grows the measured
+height, without bound (this shipped once and produced a runaway/infinite-scroll page; fixed in 2.5 by
+decoupling the iframe's height from its content entirely). (An earlier attempt injected the report into
+a shadow root instead, trading away CSS fidelity and the carousel for same-document flow — reverted
+once that regression surfaced, since the iframe's original drawbacks — relative asset paths, a stale
+sizing approach — turned out to be independently fixable.)
 
 Prices: hidden on Concept-scope links; visible to admins and designers everywhere. Design-scope links
 also show price and substitutes (`rooms[].alternatives` in the public `shares/{token}` doc — see

@@ -214,7 +214,7 @@
             <div style="padding: 96px 32px; text-align: center; color: var(--color-neutral-600);">Preparing the presentation…</div>
           </sc-if>
           <sc-if value="{{ !shareReportLoading }}">
-            <iframe src="{{ shareReportSrc }}" onLoad="{{ shareReportLoaded }}" title="Presentation" style="width: 100%; height: {{ shareReportHeight }}; border: 0; display: block;"></iframe>
+            <iframe src="{{ shareReportSrc }}" title="Presentation" style="width: 100%; height: 82vh; min-height: 560px; border: 0; display: block;"></iframe>
           </sc-if>
         </div>
       </sc-if>
@@ -2238,8 +2238,11 @@ const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review
 // reaches this file — the version badge in the top bar and the Studio →
 // Changelog page both read straight from this, nothing else to update.
 // Versioning starts at 1.1; anything before that lives only in git log.
-const APP_VERSION = '2.4';
+const APP_VERSION = '2.5';
 const CHANGELOG = [
+  { version: '2.5', date: '2026-09-22', changes: [
+    'Client review link: fixed the embedded presentation growing into an endless scroll. The report\'s own sections are designed as full-screen "slides" (each fills the browser window), and resizing the iframe to match that content kept redefining what "full screen" meant inside it, so it grew, and grew again, without stopping. The iframe now gets a fixed, sensible height and scrolls on its own, the way the downloaded file would if opened directly.',
+  ] },
   { version: '2.4', date: '2026-09-22', changes: [
     'Client review link: the embedded presentation is back to a real, separate document (loaded in an iframe) instead of the shadow-root injection from 2.2 — that injection was quietly stripping out the styling (goal-number circles, the design-concept table layout, material cards) and swapping the renderings/walkthrough carousel for a plain side-by-side row with no expand. Everything now looks and behaves exactly like the downloaded export, carousel and photo zoom included.',
     'Client review link: "Move out" now actually moves a piece from "Your selections" into "Potential substitutes" (and "Bring it in" moves it back), instead of just leaving it in place and only pulling it out of the price table.',
@@ -2382,7 +2385,7 @@ class Component extends DCLogic {
     rates: null, ratesSaving: false, ratesNote: '',
     tradePrograms: null, tradeDraft: null, tradeQuery: '', tradeSaving: false, tradeNotice: '',
     fees: null, feesSaving: false, feesNote: '', feesQuoting: false,
-    shareReportSrc: '', shareReportHeight: 0,
+    shareReportSrc: '',
     confirm: null };
 
   askConfirm(opts) { this.setState({ confirm: opts }); }
@@ -4423,26 +4426,15 @@ class Component extends DCLogic {
       showShareSelection: phase === 'concept' || phase === 'design', showShareQuestionnaire: phase === 'discovery',
       // The live, in-app-generated equivalent of the export — cover, studio,
       // goals, direction, materials, plan, moodboard, carousels and zoom,
-      // respecting the same hide/unhide the studio already set. Height is
-      // read straight off the iframe's own document once it loads (a blob:
-      // URL this page created is same-origin readable — no postMessage
-      // needed), and again once fonts settle, since those reflow the layout.
+      // respecting the same hide/unhide the studio already set. The iframe
+      // gets a fixed, viewport-relative height and scrolls internally —
+      // the report's own sections are full-screen "slides" (min-height:
+      // 100vh), so sizing the iframe FROM its own content height would
+      // feed back into what 100vh means inside it and grow without bound
+      // (confirmed: this produced the runaway/infinite-scroll bug).
       showShareReport: phase === 'concept' || phase === 'design',
       shareReportLoading: !s.shareReportSrc,
       shareReportSrc: s.shareReportSrc || '',
-      shareReportHeight: Math.max(480, s.shareReportHeight || 0) + 'px',
-      shareReportLoaded: (e) => {
-        try {
-          const doc2 = e.target.contentDocument;
-          if (!doc2) return;
-          const measure = () => { try { this.setState({ shareReportHeight: doc2.documentElement.scrollHeight }); } catch (err) {} };
-          measure();
-          const win = doc2.defaultView;
-          if (win && win.ResizeObserver) new win.ResizeObserver(measure).observe(doc2.body);
-          else { setTimeout(measure, 300); setTimeout(measure, 1000); }
-          if (doc2.fonts && doc2.fonts.ready) doc2.fonts.ready.then(measure).catch(() => {});
-        } catch (err) { console.warn('[shareReportLoaded]', err); }
-      },
       sharePieceOpen: !!s.sharePiece,
       sharePiece: s.sharePiece || {},
       closeSharePiece: () => this.setState({ sharePiece: null }),
