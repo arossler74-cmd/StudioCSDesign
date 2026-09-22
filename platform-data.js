@@ -456,6 +456,23 @@ async function deleteStorageFileByUrl(url) {
   } catch (e) { /* ignore */ }
 }
 
+// A catalog price/detail edit doesn't touch the project itself, so it can't
+// go through persist()'s own refresh — but a Design-scope share shows that
+// same price, and it should go stale no more than a project edit does. Find
+// every project that actually uses this piece and refresh only those.
+async function refreshSharesForCatalogItem(itemId) {
+  if (mode !== 'firebase' || !itemId) return;
+  try {
+    const all = await listProjects({ role: 'admin' });
+    for (const p of all) {
+      if (!(p.shares || []).length) continue;
+      const used = (p.rooms || []).some((r) =>
+        (r.selected || []).some((e) => e.refId === itemId) || (r.alternatives || []).some((e) => e.refId === itemId));
+      if (used) await refreshShares(p);
+    }
+  } catch (e) {}
+}
+
 export async function saveCatalogItem(item) {
   const rec = { ...item, updatedAt: nowISO() };
   if (mode === 'firebase') {
@@ -466,6 +483,7 @@ export async function saveCatalogItem(item) {
       const prevImage = prev.exists() ? prev.data().image : '';
       await setDoc(ref, rec, { merge: true });
       if (prevImage && prevImage !== rec.image) deleteStorageFileByUrl(prevImage);
+      refreshSharesForCatalogItem(rec.id);
       return rec;
     }
     rec.createdAt = nowISO();

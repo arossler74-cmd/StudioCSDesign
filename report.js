@@ -163,7 +163,7 @@ background:var(--accent);color:#fff;border-radius:999px;padding:3px 10px;vertica
 .concept-head{display:grid;grid-template-columns:.85fr 1.15fr;gap:clamp(50px,8vw,140px);align-items:start}.concept-grid{display:grid;grid-template-columns:repeat(3,1fr);margin-top:clamp(45px,7vh,90px);border:1px solid var(--line2);border-radius:22px;overflow:hidden}.concept-point{min-height:230px;padding:clamp(28px,3vw,52px);background:var(--surface);border-right:1px solid var(--line2);border-bottom:1px solid var(--line2)}.concept-point:nth-child(3n){border-right:0}.concept-point:nth-last-child(-n+3){border-bottom:0}.point-title{font-size:.72em;letter-spacing:.17em;text-transform:uppercase;color:var(--accent);margin-bottom:20px}
 .palette-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:24px;margin-top:42px}.sw .chip{height:120px;border-radius:24px;border:1px solid var(--line)}.sw .n{font-size:.9em;margin-top:12px}.sw .h{font-size:.7em;color:var(--mute);letter-spacing:.08em;text-transform:uppercase;overflow-wrap:anywhere}
 .materials-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-top:40px}.material-card{padding:16px;overflow:hidden;border-radius:20px}.material-card img{width:100%;height:168px;object-fit:cover;border-radius:14px}.material-copy{padding:14px 2px 0}.material-title{font-family:'Cormorant Garamond',Georgia,serif;font-size:1.45em;line-height:1.2}
-.sourcing-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:22px}.sourcing-card{padding:14px;overflow:hidden;border-radius:18px}.sourcing-card img{width:100%;height:152px;object-fit:cover;border-radius:12px}.sourcing-card-copy{padding:12px 2px 0}.sourcing-card-name{font-family:'Cormorant Garamond',Georgia,serif;font-size:1.2em;line-height:1.2}.sourcing-card-meta{font-size:.78em;color:var(--mute);margin-top:3px}.sourcing-card-price{font-size:.9em;font-weight:600;color:var(--accent-dark);margin-top:8px}
+.sourcing-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:22px}.sourcing-card{padding:14px;overflow:hidden;border-radius:18px;cursor:pointer}.sourcing-card-img{width:100%;aspect-ratio:1/1;background:var(--surface2);border-radius:12px;display:flex;align-items:center;justify-content:center;overflow:hidden}.sourcing-card-img img{width:100%;height:100%;object-fit:contain}.sourcing-card-copy{padding:12px 2px 0}.sourcing-card-name{font-family:'Cormorant Garamond',Georgia,serif;font-size:1.2em;line-height:1.2}.sourcing-card-meta{font-size:.78em;color:var(--mute);margin-top:3px}.sourcing-card-price{font-size:.9em;font-weight:600;color:var(--accent-dark);margin-top:8px}
 .room{margin-top:44px}
 .room h3{font-size:clamp(34px,3vw,52px);color:var(--accent-dark)}
 .room .code{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
@@ -171,6 +171,8 @@ background:var(--accent);color:#fff;border-radius:999px;padding:3px 10px;vertica
 .zoomable{cursor:zoom-in}
 .carousel{margin-top:28px}.carousel-stage{position:relative;width:100%;aspect-ratio:16/10;max-height:1100px;background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:clamp(18px,2.5vw,48px);overflow:hidden}.slide{display:none;width:100%;height:100%}.slide.active{display:flex;flex-direction:column;align-items:center;justify-content:center}.slide img,.slide video{max-width:100%;max-height:calc(100% - 58px);width:auto;height:auto;object-fit:contain;background:#fff;border-radius:12px}.slide-meta{display:flex;justify-content:space-between;align-self:stretch;gap:20px;margin-top:14px}.slide-type{font-size:.7em;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}.carousel-arrow{position:absolute;top:50%;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;border:1px solid var(--line2);background:rgba(251,247,241,.94);font-size:24px;color:var(--ink);cursor:pointer;z-index:2}.carousel-arrow.prev{left:14px}.carousel-arrow.next{right:14px}.carousel-tools{display:flex;align-items:center;justify-content:space-between;margin-top:16px}.carousel-thumbs{display:flex;gap:10px;overflow:auto;padding:2px}.carousel-thumb{width:74px;height:56px;padding:3px;border:1px solid var(--line2);border-radius:12px;background:var(--surface);cursor:pointer;flex:0 0 auto}.carousel-thumb.active{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}.carousel-thumb img{width:100%;height:100%;object-fit:cover;border-radius:9px}.carousel-count{font-size:.75em;letter-spacing:.13em;color:var(--mute)}
 .lightbox{position:fixed;inset:0;display:none;place-items:center;background:rgba(30,25,20,.92);padding:30px;z-index:9999}.lightbox.open{display:grid}.lightbox img{max-width:96vw;max-height:92vh;object-fit:contain}.lightbox-close{position:fixed;right:24px;top:20px;border:1px solid rgba(255,255,255,.5);background:rgba(0,0,0,.2);color:#fff;border-radius:50%;width:52px;height:52px;font-size:28px;cursor:pointer}
+.piece-modal{position:fixed;inset:0;display:none;place-items:center;background:rgba(30,25,20,.6);padding:24px;z-index:9999}.piece-modal.open{display:grid}.piece-modal-inner{position:relative;width:min(100%,780px);max-height:88vh;overflow:auto;background:var(--surface);border-radius:26px;display:grid;grid-template-columns:1fr 1fr}.piece-modal-img{aspect-ratio:1/1;background:var(--surface2);display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:26px 0 0 26px}.piece-modal-img img{width:100%;height:100%;object-fit:contain}.piece-modal-body{padding:clamp(24px,3vw,42px);display:flex;flex-direction:column;gap:14px}.piece-modal-name{font-family:'Cormorant Garamond',Georgia,serif;font-size:clamp(26px,2.6vw,36px);line-height:1.1;color:var(--ink)}.piece-modal-price{font-size:1.2em;font-weight:600;color:var(--accent-dark)}.piece-modal-row{border-top:1px solid var(--line);padding-top:12px}.piece-modal-label{display:block;font-size:.68em;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:4px}.piece-modal-link{margin-top:auto;align-self:flex-start;padding:11px 22px;border-radius:999px;background:var(--accent-dark);color:#fff;font-size:.9em;text-decoration:none}.piece-modal-close{position:absolute;right:16px;top:16px;border:1px solid var(--line2);background:var(--surface);color:var(--ink);border-radius:50%;width:40px;height:40px;font-size:22px;cursor:pointer;line-height:1}
+@media(max-width:640px){.piece-modal-inner{grid-template-columns:1fr}.piece-modal-img{border-radius:26px 26px 0 0;aspect-ratio:4/3}}
 table{width:100%;border-collapse:collapse;margin-top:14px;font-size:13.5px}
 th{text-align:left;font-weight:500;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
 color:var(--mute);border-bottom:1px solid var(--line2);padding:9px 10px}
@@ -372,6 +374,20 @@ const INTERACTIONS = `
 <div class="lightbox" id="image-lightbox" role="dialog" aria-modal="true" aria-label="Expanded image">
   <button class="lightbox-close" type="button" aria-label="Close">×</button><img alt="">
 </div>
+<div class="piece-modal" id="piece-modal" role="dialog" aria-modal="true" aria-label="Piece detail">
+  <div class="piece-modal-inner">
+    <button class="piece-modal-close" type="button" aria-label="Close">×</button>
+    <div class="piece-modal-img"><img alt=""></div>
+    <div class="piece-modal-body">
+      <div class="piece-modal-name"></div>
+      <div class="piece-modal-price"></div>
+      <div class="piece-modal-row" data-row="retailer"><span class="piece-modal-label">Retailer</span><span></span></div>
+      <div class="piece-modal-row" data-row="finish"><span class="piece-modal-label">Finish &amp; colour</span><span></span></div>
+      <div class="piece-modal-row" data-row="dimensions"><span class="piece-modal-label">Dimensions</span><span></span></div>
+      <a class="piece-modal-link" data-row="url" target="_blank" rel="noopener">View product ↗</a>
+    </div>
+  </div>
+</div>
 <script>
 (function(){
   document.querySelectorAll('[data-carousel]').forEach(function(carousel){
@@ -395,7 +411,36 @@ const INTERACTIONS = `
   function close(){box.classList.remove('open');full.removeAttribute('src');document.body.style.overflow=''}
   document.addEventListener('click',function(e){var target=e.target.closest('.zoomable');if(!target)return;full.src=target.currentSrc||target.src;full.alt=target.alt||'';box.classList.add('open');document.body.style.overflow='hidden'});
   box.addEventListener('click',function(e){if(e.target===box||e.target.closest('.lightbox-close'))close()});
-  document.addEventListener('keydown',function(e){if(e.key==='Escape')close()});
+
+  var pbox = document.getElementById('piece-modal');
+  var pimg = pbox.querySelector('.piece-modal-img img');
+  var pname = pbox.querySelector('.piece-modal-name');
+  var pprice = pbox.querySelector('.piece-modal-price');
+  function pclose(){pbox.classList.remove('open');pimg.removeAttribute('src');document.body.style.overflow=''}
+  function setRow(key, value){
+    var row = pbox.querySelector('[data-row="' + key + '"]');
+    if(!row) return;
+    if(!value){row.style.display='none';return}
+    row.style.display='';
+    if(key === 'url'){row.href = value}
+    else {row.querySelector('span:last-child').textContent = value}
+  }
+  document.addEventListener('click',function(e){
+    var card = e.target.closest('.sourcing-card');
+    if(!card) return;
+    var data;
+    try { data = JSON.parse(card.getAttribute('data-piece') || '{}'); } catch(err) { data = {}; }
+    pimg.src = data.image || ''; pimg.alt = data.name || '';
+    pname.textContent = data.name || '';
+    pprice.textContent = data.price || '';
+    setRow('retailer', data.retailer || '');
+    setRow('finish', data.finish || '');
+    setRow('dimensions', data.dimensions || '');
+    setRow('url', data.url || '');
+    pbox.classList.add('open'); document.body.style.overflow = 'hidden';
+  });
+  pbox.addEventListener('click',function(e){if(e.target===pbox||e.target.closest('.piece-modal-close'))pclose()});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'){close();pclose();}});
 })();
 </script>`;
 
@@ -407,6 +452,14 @@ const INTERACTIONS = `
 function sourcingSection(p, byId, img) {
   const rooms = (p.rooms || []).filter((r) => (r.selected || []).length);
   if (!rooms.length) return '';
+  // The card is clickable as a whole — data-piece carries what the expanded
+  // detail card needs (see the piece-modal script below), so no per-field
+  // markup has to be re-parsed out of the card's own DOM.
+  const pieceAttr = (c) => esc(JSON.stringify({
+    name: c.name || '', image: img[c.image] || c.image || '', retailer: c.retailer || '',
+    finish: [c.finish, c.color].filter(Boolean).join(' · '), dimensions: c.dimensions || '',
+    price: money(c.price, p.currency), url: c.url || '',
+  }));
   let grand = 0;
   const blocks = rooms.map((r) => {
     let sub = 0;
@@ -418,8 +471,8 @@ function sourcingSection(p, byId, img) {
       const qty = Number(sel.qty || 1);
       const line = c.price == null ? null : Number(c.price) * qty;
       if (line != null && !isNaN(line)) sub += line;
-      cards += `<div class="card sourcing-card">
-        ${img[c.image] || c.image ? `<img class="zoomable" src="${esc(img[c.image] || c.image)}" alt="${esc(c.name || '')}">` : ''}
+      cards += `<div class="card sourcing-card" data-piece="${pieceAttr(c)}">
+        <div class="sourcing-card-img">${img[c.image] || c.image ? `<img src="${esc(img[c.image] || c.image)}" alt="${esc(c.name || '')}">` : ''}</div>
         <div class="sourcing-card-copy">
           <div class="sourcing-card-name">${esc(c.name || '')}</div>
           <div class="sourcing-card-meta">${esc([c.retailer, c.finish, c.color].filter(Boolean).join(' · '))}</div>

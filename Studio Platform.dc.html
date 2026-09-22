@@ -2172,8 +2172,13 @@ const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review
 // reaches this file — the version badge in the top bar and the Studio →
 // Changelog page both read straight from this, nothing else to update.
 // Versioning starts at 1.1; anything before that lives only in git log.
-const APP_VERSION = '1.8';
+const APP_VERSION = '1.9';
 const CHANGELOG = [
+  { version: '1.9', date: '2026-09-21', changes: [
+    'Export HTML/PDF: Sourcing & investment photo cards no longer crop tall pieces (lamps, tall side tables) into a flattened strip — the full product photo now shows, letterboxed on a neutral background instead of cover-cropped.',
+    'Export HTML/PDF: clicking a piece card opens an expanded detail view — larger photo, retailer, finish & colour, dimensions, price, and a "View product" link straight to the retailer page.',
+    'Share links now stay current the moment a client opens them, not just when someone happens to touch furniture: every project save refreshes any open share, and editing a catalog piece\'s price refreshes every share that uses it. Still gated by the link\'s own token — nothing about who can open a share changed, only how fresh what they see is.',
+  ] },
   { version: '1.8', date: '2026-09-21', changes: [
     'Client review link (Design & sourcing scope): now shows price on every selected piece, a "Potential substitutes" grid the client can vote on, and a live total that recalculates as they try removing a piece or bringing in a substitute — all local to their browser until they send it.',
     'Feedback queue: what a client tried on their review link (remove / bring in a substitute) now lands as its own entry, separate from a plain thumbs up/down — nothing changes in the room until the designer applies it by hand, same as a thumbs-down always has.',
@@ -2488,13 +2493,18 @@ class Component extends DCLogic {
     await this.state.api.saveProject(p);
     this.setState({ proj: p });
     this.refresh();
+    // Keeps every open share link honest: whatever just changed — furniture,
+    // direction, materials, a room rename — shows up the moment the client
+    // (re)opens their link, not only when something happens to touch
+    // room.selected specifically. Best-effort: a share refresh failing
+    // should never block the save that triggered it.
+    try { await this.state.api.refreshShares(p); } catch (e) {}
   }
 
   rooms() { return (this.state.proj && this.state.proj.rooms) || []; }
 
   async setRooms(rooms) {
     await this.persist({ rooms });
-    try { await this.state.api.refreshShares(this.state.proj); } catch (e) {}
   }
 
   // Concept tab: goals, direction points, palette and materials are all small

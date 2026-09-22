@@ -91,6 +91,13 @@ Storage: `catalog/{ts}-{file}` and `{projectId}/{ts}-{file}`.
 
 Sharing tab → enter the client's name → a link `#share=<token>` stamped with that name. No login. The client sees the selected pieces per room, gives thumbs up/down and a note; everything lands signed in that project's **Feedback** queue. A thumbs-down changes nothing automatically — the designer decides. Links show Concept only by default; the Design scope also exposes the sourcing document. Revoke any time.
 
+The client never reads `projects/{id}` directly — `publishShare()` in `platform-data.js` writes a
+sanitized, token-scoped mirror to `shares/{token}` (`allow get: if true`, world-readable by anyone
+holding the token, nothing else). `persist()` refreshes every one of a project's open shares after
+any save, and a catalog price/detail edit refreshes every share that actually uses that piece
+(`refreshSharesForCatalogItem`) — so the mirror is never more than one save behind, without loosening
+what a bare token can reach.
+
 Prices: hidden on Concept-scope links; visible to admins and designers everywhere. Design-scope links
 also show price and substitutes (`rooms[].alternatives` in the public `shares/{token}` doc — see
 `publishShare()` in `platform-data.js`, gated to `phase === 'design'`), with a total that recalculates
