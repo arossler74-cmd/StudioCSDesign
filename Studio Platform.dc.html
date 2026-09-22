@@ -324,7 +324,12 @@
                     <sc-for list="{{ room.investmentRows }}" as="row" hint-placeholder-count="3">
                       <tr>
                         <td style="padding: 9px 10px; border-bottom: 1px solid var(--color-neutral-100); vertical-align: top;">
-                          <div style="font-weight: 500;">{{ row.name }}</div>
+                          <sc-if value="{{ row.url }}" hint-placeholder-val="{{ false }}">
+                            <a href="{{ row.url }}" target="_blank" rel="noopener" style="font-weight: 500; color: var(--color-accent-800); text-decoration: underline;">{{ row.name }}</a>
+                          </sc-if>
+                          <sc-if value="{{ !row.url }}" hint-placeholder-val="{{ true }}">
+                            <div style="font-weight: 500;">{{ row.name }}</div>
+                          </sc-if>
                           <div style="font-size: 12px; color: var(--color-neutral-500);">{{ row.meta }}</div>
                         </td>
                         <td style="padding: 9px 10px; border-bottom: 1px solid var(--color-neutral-100); vertical-align: top; text-align: right;">{{ row.qty }}</td>
@@ -1762,7 +1767,12 @@
                             <sc-for list="{{ room.investmentRows }}" as="row" hint-placeholder-count="3">
                               <tr>
                                 <td style="padding: 9px 10px; border-bottom: 1px solid var(--color-neutral-100); vertical-align: top;">
-                                  <div style="font-weight: 500;">{{ row.name }}</div>
+                                  <sc-if value="{{ row.url }}" hint-placeholder-val="{{ false }}">
+                                    <a href="{{ row.url }}" target="_blank" rel="noopener" style="font-weight: 500; color: var(--color-accent-800); text-decoration: underline;">{{ row.name }}</a>
+                                  </sc-if>
+                                  <sc-if value="{{ !row.url }}" hint-placeholder-val="{{ true }}">
+                                    <div style="font-weight: 500;">{{ row.name }}</div>
+                                  </sc-if>
                                   <div style="font-size: 12px; color: var(--color-neutral-500);">{{ row.meta }}</div>
                                 </td>
                                 <td style="padding: 9px 10px; border-bottom: 1px solid var(--color-neutral-100); vertical-align: top; color: var(--color-neutral-600);">{{ row.dimensions }}</td>
@@ -2236,8 +2246,11 @@ const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review
 // reaches this file — the version badge in the top bar and the Studio →
 // Changelog page both read straight from this, nothing else to update.
 // Versioning starts at 1.1; anything before that lives only in git log.
-const APP_VERSION = '2.6';
+const APP_VERSION = '2.7';
 const CHANGELOG = [
+  { version: '2.7', date: '2026-09-22', changes: [
+    'Furnishings schedule table (client review link and the Design & Sourcing tab): the piece name is now a link straight to the retailer\'s product page when one is on file, instead of plain text — no need to scroll back up to the photo card to find it.',
+  ] },
   { version: '2.6', date: '2026-09-22', changes: [
     'Client review link: the embedded presentation is back to one continuous page again, no box-inside-a-box — found and fixed the two actual bugs behind the earlier attempt at this. It was only turning the report\'s body-level styling on inside the embed, never its colour/spacing tokens, so every border, circle and card background quietly had nothing to draw with; and its carousel/lightbox script was being inserted in a way browsers never run, so it looked static no matter what. Both are fixed now: full styling and a working carousel/lightbox/piece-detail modal, in one scrolling page.',
   ] },
@@ -2599,7 +2612,7 @@ class Component extends DCLogic {
       const line = c.price == null ? null : Number(c.price) * qty;
       if (line != null && !isNaN(line)) subtotalRaw += line;
       return {
-        name: c.name || '', image: c.image || PLACEHOLDER,
+        name: c.name || '', image: c.image || PLACEHOLDER, url: c.url || '',
         meta: [c.retailer, c.finish, c.color].filter(Boolean).join(' · '),
         dimensions: c.dimensions || '—',
         qty, unit: this.money(c.price), line: line == null ? '—' : this.money(line),
@@ -4427,7 +4440,7 @@ class Component extends DCLogic {
         const qty = Number(c.qty) || 1, priceNum = Number(c.price), lineNum = priceNum * qty;
         if (showInvestment && !isNaN(priceNum)) {
           sub += lineNum;
-          investmentRows.push({ name: c.name || 'Piece', meta: [c.retailer, c.dimensions].filter(Boolean).join(' · '), qty, unit: money(c.price), line: money(lineNum) });
+          investmentRows.push({ name: c.name || 'Piece', url: c.url || '', meta: [c.retailer, c.dimensions].filter(Boolean).join(' · '), qty, unit: money(c.price), line: money(lineNum) });
         }
       });
 
@@ -4441,7 +4454,7 @@ class Component extends DCLogic {
         const qty = Number(c.qty) || 1, priceNum = Number(c.price), lineNum = priceNum * qty;
         if (!isNaN(priceNum)) {
           sub += lineNum;
-          investmentRows.push({ name: c.name || 'Piece', meta: [c.retailer, c.dimensions].filter(Boolean).join(' · '), qty, unit: money(c.price), line: money(lineNum) });
+          investmentRows.push({ name: c.name || 'Piece', url: c.url || '', meta: [c.retailer, c.dimensions].filter(Boolean).join(' · '), qty, unit: money(c.price), line: money(lineNum) });
         }
       });
 
