@@ -406,7 +406,15 @@ const INTERACTIONS = `
 </div>
 <script>
 (function(){
-  document.querySelectorAll('[data-carousel]').forEach(function(carousel){
+  // Standalone download: this document's own </body>. Embedded live
+  // presentation: re-executed inside a shadow root (see mountShareReport()
+  // in Studio Platform.dc.html), where the plain global "document" can't
+  // reach in — #cs-report-host is the shadow host in the outer page, and
+  // its .shadowRoot is this content's real root. querySelector/getElementById
+  // scoped to that root instead of "document" is what makes the carousel,
+  // lightbox and piece modal work in both places with the same code.
+  var root = (document.getElementById('cs-report-host') || {}).shadowRoot || document;
+  root.querySelectorAll('[data-carousel]').forEach(function(carousel){
     var slides = Array.from(carousel.querySelectorAll('.slide'));
     var thumbs = Array.from(carousel.querySelectorAll('.carousel-thumb'));
     var count = carousel.querySelector('.carousel-count span');
@@ -423,12 +431,12 @@ const INTERACTIONS = `
     if(next) next.addEventListener('click',function(){show(current + 1)});
     thumbs.forEach(function(el){el.addEventListener('click',function(){show(Number(el.dataset.go))})});
   });
-  var box = document.getElementById('image-lightbox'); var full = box.querySelector('img');
+  var box = root.getElementById('image-lightbox'); var full = box.querySelector('img');
   function close(){box.classList.remove('open');full.removeAttribute('src');document.body.style.overflow=''}
-  document.addEventListener('click',function(e){var target=e.target.closest('.zoomable');if(!target)return;full.src=target.currentSrc||target.src;full.alt=target.alt||'';box.classList.add('open');document.body.style.overflow='hidden'});
+  root.addEventListener('click',function(e){var target=e.target.closest('.zoomable');if(!target)return;full.src=target.currentSrc||target.src;full.alt=target.alt||'';box.classList.add('open');document.body.style.overflow='hidden'});
   box.addEventListener('click',function(e){if(e.target===box||e.target.closest('.lightbox-close'))close()});
 
-  var pbox = document.getElementById('piece-modal');
+  var pbox = root.getElementById('piece-modal');
   var pimg = pbox.querySelector('.piece-modal-img img');
   var pname = pbox.querySelector('.piece-modal-name');
   var pprice = pbox.querySelector('.piece-modal-price');
@@ -441,7 +449,7 @@ const INTERACTIONS = `
     if(key === 'url'){row.href = value}
     else {row.querySelector('span:last-child').textContent = value}
   }
-  document.addEventListener('click',function(e){
+  root.addEventListener('click',function(e){
     var card = e.target.closest('.sourcing-card');
     if(!card) return;
     var data;

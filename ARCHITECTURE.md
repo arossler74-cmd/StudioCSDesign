@@ -105,18 +105,27 @@ live client-side (`buildShareReport()` in `Studio Platform.dc.html`, calling `bu
 and just points at the live URLs — resolving report.js's own relative asset paths, e.g. the studio
 logo, to absolute URLs first, since this HTML never becomes a real document with a directory of its
 own to resolve them against — and with `reportHidden.sourcing` forced on since the interactive
-furniture section below replaces it). Loaded into a real `<iframe>` (via `URL.createObjectURL` on a
-`Blob`), not injected as markup — the report becomes its own separate document with its own script
-context, so its CSS and its renderings/walkthrough carousel work exactly as they do in the downloaded
-export, nothing re-scoped or stripped out. The iframe gets a fixed, viewport-relative height (`82vh`)
-and scrolls internally, rather than being resized to match its own content: the report's sections are
-full-screen "slides" (`min-height:100vh`), so sizing the iframe from its own `scrollHeight` feeds back
-into what `100vh` means inside it — growing the iframe grows the sections, which grows the measured
-height, without bound (this shipped once and produced a runaway/infinite-scroll page; fixed in 2.5 by
-decoupling the iframe's height from its content entirely). (An earlier attempt injected the report into
-a shadow root instead, trading away CSS fidelity and the carousel for same-document flow — reverted
-once that regression surfaced, since the iframe's original drawbacks — relative asset paths, a stale
-sizing approach — turned out to be independently fixable.)
+furniture section below replaces it). Injected into a shadow root (`mountShareReport()`), not an
+`<iframe>` — content that's part of the page's own normal flow, one scrollbar for the whole thing,
+with the report's own CSS still fully isolated from the app's (both use classes like `.card`/`.room`).
+
+Two things have to be right for this to actually look and behave like the downloaded export, both
+learned the hard way (an earlier attempt got neither right and had to be reverted to an `<iframe>`,
+which brought back a box-inside-a-box the studio didn't want — this is the fixed version of the
+original idea, not a return to it):
+- The stylesheet's `:root{...}` (every colour/spacing custom property, `var(--accent)` etc.) and
+  `body{...}` rules both target elements that don't exist inside a shadow root — neither a `:root`
+  nor a real `<body>` is in there. Both get rewritten to `:host{...}` on the way in. Missing the
+  `:root` half of this (only `body` was handled the first time) silently drops every `var(--x)` in
+  the sheet to nothing — borders, circles, card backgrounds all render blank even though the CSS
+  itself is present and correct.
+- The report's carousel/lightbox/piece-modal `<script>` is extracted from the generated HTML and
+  re-created as a real `<script>` element appended into the shadow root — setting it via `innerHTML`
+  (what shipped the first time) parses the tag but browsers never execute a script inserted that way,
+  in a shadow root or anywhere else. The script itself resolves its own root via
+  `(document.getElementById('cs-report-host') || {}).shadowRoot || document` at the top of
+  `report.js`'s `INTERACTIONS`, so the exact same script text runs correctly unmodified in the
+  downloaded file (falls through to `document`) and in this embedded copy (finds the shadow root).
 
 Prices: hidden on Concept-scope links; visible to admins and designers everywhere. Design-scope links
 also show price and substitutes (`rooms[].alternatives` in the public `shares/{token}` doc — see

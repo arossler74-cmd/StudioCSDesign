@@ -210,12 +210,10 @@
 
       <sc-if value="{{ showShareReport }}">
         <div style="margin: -56px -32px 44px;">
-          <sc-if value="{{ shareReportLoading }}" hint-placeholder-val="{{ true }}">
+          <sc-if value="{{ !shareReportReady }}" hint-placeholder-val="{{ true }}">
             <div style="padding: 96px 32px; text-align: center; color: var(--color-neutral-600);">Preparing the presentation…</div>
           </sc-if>
-          <sc-if value="{{ !shareReportLoading }}">
-            <iframe src="{{ shareReportSrc }}" title="Presentation" style="width: 100%; height: 82vh; min-height: 560px; border: 0; display: block;"></iframe>
-          </sc-if>
+          <div id="cs-report-host"></div>
         </div>
       </sc-if>
 
@@ -2238,8 +2236,11 @@ const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review
 // reaches this file — the version badge in the top bar and the Studio →
 // Changelog page both read straight from this, nothing else to update.
 // Versioning starts at 1.1; anything before that lives only in git log.
-const APP_VERSION = '2.5';
+const APP_VERSION = '2.6';
 const CHANGELOG = [
+  { version: '2.6', date: '2026-09-22', changes: [
+    'Client review link: the embedded presentation is back to one continuous page again, no box-inside-a-box — found and fixed the two actual bugs behind the earlier attempt at this. It was only turning the report\'s body-level styling on inside the embed, never its colour/spacing tokens, so every border, circle and card background quietly had nothing to draw with; and its carousel/lightbox script was being inserted in a way browsers never run, so it looked static no matter what. Both are fixed now: full styling and a working carousel/lightbox/piece-detail modal, in one scrolling page.',
+  ] },
   { version: '2.5', date: '2026-09-22', changes: [
     'Client review link: fixed the embedded presentation growing into an endless scroll. The report\'s own sections are designed as full-screen "slides" (each fills the browser window), and resizing the iframe to match that content kept redefining what "full screen" meant inside it, so it grew, and grew again, without stopping. The iframe now gets a fixed, sensible height and scrolls on its own, the way the downloaded file would if opened directly.',
   ] },
@@ -2385,7 +2386,7 @@ class Component extends DCLogic {
     rates: null, ratesSaving: false, ratesNote: '',
     tradePrograms: null, tradeDraft: null, tradeQuery: '', tradeSaving: false, tradeNotice: '',
     fees: null, feesSaving: false, feesNote: '', feesQuoting: false,
-    shareReportSrc: '',
+    shareReportReady: false,
     confirm: null };
 
   askConfirm(opts) { this.setState({ confirm: opts }); }
@@ -2414,25 +2415,57 @@ class Component extends DCLogic {
 
   // Renders the same live report the studio would export — cover, studio
   // intro, goals, direction, materials, floor plans, moodboard, carousels,
-  // click-to-zoom — as an actual document in its own <iframe>, so it is
-  // exactly the export, not a re-interpretation of it. (A shadow-root
-  // injection was tried instead — no iframe, one page scrollbar — but the
-  // report's own carousel/lightbox <script> can't run scoped to a shadow
-  // root the way it expects `document` to work, and enough of the CSS lost
-  // its effect along the way that it wasn't worth the trade. An <iframe> is
-  // the one thing that reliably reproduces the export as-is.) Sourcing is
-  // hidden in this embedded copy specifically: the interactive furniture/
-  // substitutes section below (built natively, not from report.js) replaces
-  // it.
+  // click-to-zoom — right into the page, so the client's review link reads
+  // as one continuous page (one scrollbar) instead of a document sitting
+  // inside a document. Injected into a shadow root (mountShareReport()),
+  // not an <iframe>: the report's own CSS stays fully isolated from the
+  // app's (both use classes like .card/.room), and report.js's carousel/
+  // lightbox/piece-modal <script> is re-executed (not just inserted inert
+  // via innerHTML, which browsers never run) scoped to that shadow root —
+  // see the `root` lookup at the top of report.js's INTERACTIONS script.
+  // Sourcing is hidden in this embedded copy specifically: the interactive
+  // furniture/substitutes section below (built natively, not from
+  // report.js) replaces it.
   async buildShareReport(found) {
     try {
       const R = await import('./report.js');
       const phase = found.share.phase || ((found.share.phases || []).includes('design') ? 'design' : 'concept');
       const forReport = { ...found.project, reportHidden: { ...(found.project.reportHidden || {}), sourcing: true } };
       const { html } = await R.buildReport(forReport, phase, [], null, { embed: false });
-      const url = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
-      this.setState({ shareReportSrc: url });
+      const styleMatch = html.match(/<style>([\s\S]*?)<\/style>/);
+      const scriptMatch = html.match(/<script>([\s\S]*?)<\/script>/);
+      const bodyMatch = html.match(/<body>([\s\S]*?)<\/body>/);
+      let bodyHtml = bodyMatch ? bodyMatch[1] : '';
+      if (scriptMatch) bodyHtml = bodyHtml.replace(scriptMatch[0], '');
+      this.setState({ shareReportReady: true });
+      this.mountShareReport(styleMatch ? styleMatch[1] : '', bodyHtml, scriptMatch ? scriptMatch[1] : '', 0);
     } catch (e) { console.warn('[shareReport]', e); }
+  }
+
+  // The host div only exists once shareReportReady flips the sc-if on, so
+  // this polls briefly for it rather than needing a render-complete hook the
+  // framework doesn't expose. Finds it within a render or two in practice.
+  mountShareReport(css, body, script, tries) {
+    const host = document.getElementById('cs-report-host');
+    if (!host) { if (tries < 40) setTimeout(() => this.mountShareReport(css, body, script, tries + 1), 50); return; }
+    if (host.shadowRoot) return;
+    const root = host.attachShadow({ mode: 'open' });
+    // :root{--bg:...} (colour/spacing custom properties) and body{...} both
+    // target elements that don't exist inside a shadow root — :host is the
+    // equivalent selector for the element hosting this shadow tree. Every
+    // var(--x) in the stylesheet depends on this: skip it and the whole
+    // report renders unstyled (borders, circles, card backgrounds all gone).
+    const styleEl = document.createElement('style');
+    styleEl.textContent = css.replace(/:root\{/g, ':host{').replace(/(^|[};,\s])body\{/g, '$1:host{');
+    root.appendChild(styleEl);
+    const wrap = document.createElement('div');
+    wrap.innerHTML = body;
+    root.appendChild(wrap);
+    if (script) {
+      const scriptEl = document.createElement('script');
+      scriptEl.textContent = script;
+      root.appendChild(scriptEl);
+    }
   }
 
   async hydrate(user) {
@@ -4426,15 +4459,12 @@ class Component extends DCLogic {
       showShareSelection: phase === 'concept' || phase === 'design', showShareQuestionnaire: phase === 'discovery',
       // The live, in-app-generated equivalent of the export — cover, studio,
       // goals, direction, materials, plan, moodboard, carousels and zoom,
-      // respecting the same hide/unhide the studio already set. The iframe
-      // gets a fixed, viewport-relative height and scrolls internally —
-      // the report's own sections are full-screen "slides" (min-height:
-      // 100vh), so sizing the iframe FROM its own content height would
-      // feed back into what 100vh means inside it and grow without bound
-      // (confirmed: this produced the runaway/infinite-scroll bug).
+      // respecting the same hide/unhide the studio already set. Injected
+      // into a shadow root by buildShareReport()/mountShareReport() once
+      // shareReportReady flips — this just gates the host div existing for
+      // them to find.
       showShareReport: phase === 'concept' || phase === 'design',
-      shareReportLoading: !s.shareReportSrc,
-      shareReportSrc: s.shareReportSrc || '',
+      shareReportReady: !!s.shareReportReady,
       sharePieceOpen: !!s.sharePiece,
       sharePiece: s.sharePiece || {},
       closeSharePiece: () => this.setState({ sharePiece: null }),
