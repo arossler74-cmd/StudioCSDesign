@@ -197,23 +197,23 @@
   <!-- ============ client share view ============ -->
   <sc-if value="{{ showShare }}">
     <div class="cs-share-page" style="max-width: 1100px; margin: 0 auto; padding: 56px 32px 96px; animation: csFade .4s var(--ease-spring) both;">
-      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 40px;">
-        <img src="assets/cybelle-logo-header.png" alt="Cybelle Sampaio Studio" style="height: 126px; width: auto; display: block;">
-      </div>
-      <div style="margin-bottom: 40px;">
-        <div style="font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--color-accent-700); margin-bottom: 10px;">{{ sharePhaseLabel }} · For {{ shareClient }}</div>
-        <h1 class="cs-h1-display" style="font-family: var(--font-heading); font-size: 52px; margin: 0 0 8px; color: var(--color-accent-900);">{{ shareProject }}</h1>
-        <p style="margin: 0; max-width: 62ch; color: var(--color-neutral-700); text-wrap: pretty;">{{ shareIntro }}</p>
-      </div>
+      <sc-if value="{{ !showShareReport }}">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 40px;">
+          <img src="assets/cybelle-logo-header.png" alt="Cybelle Sampaio Studio" style="height: 126px; width: auto; display: block;">
+        </div>
+        <div style="margin-bottom: 40px;">
+          <div style="font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--color-accent-700); margin-bottom: 10px;">{{ sharePhaseLabel }} · For {{ shareClient }}</div>
+          <h1 class="cs-h1-display" style="font-family: var(--font-heading); font-size: 52px; margin: 0 0 8px; color: var(--color-accent-900);">{{ shareProject }}</h1>
+          <p style="margin: 0; max-width: 62ch; color: var(--color-neutral-700); text-wrap: pretty;">{{ shareIntro }}</p>
+        </div>
+      </sc-if>
 
       <sc-if value="{{ showShareReport }}">
-        <div style="margin-bottom: 44px;">
-          <sc-if value="{{ shareReportLoading }}" hint-placeholder-val="{{ false }}">
-            <div class="card cs-client-section" style="padding: 48px; text-align: center; color: var(--color-neutral-600);">Preparing the presentation…</div>
+        <div style="margin: -56px -32px 44px;">
+          <sc-if value="{{ !shareReportReady }}" hint-placeholder-val="{{ true }}">
+            <div style="padding: 96px 32px; text-align: center; color: var(--color-neutral-600);">Preparing the presentation…</div>
           </sc-if>
-          <sc-if value="{{ !shareReportLoading }}">
-            <iframe src="{{ shareReportSrc }}" onLoad="{{ shareReportLoaded }}" title="Presentation" style="width: 100%; height: {{ shareReportHeight }}; border: 0; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); display: block;"></iframe>
-          </sc-if>
+          <div id="cs-report-host"></div>
         </div>
       </sc-if>
 
@@ -241,7 +241,10 @@
       </sc-if>
 
       <sc-if value="{{ showShareSelection }}"><div style="display: flex; flex-direction: column; gap: 36px;">
-        <p style="margin: -20px 0 0; font-size: 13px; color: var(--color-neutral-600);">Drag a photo left or right to vote, or use the buttons underneath.</p>
+        <div>
+          <h2 class="cs-h1-display" style="font-family: var(--font-heading); font-size: 34px; margin: 0 0 8px; color: var(--color-accent-900);">Your selections</h2>
+          <p style="margin: 0; font-size: 13px; color: var(--color-neutral-600);">Drag a photo left or right to vote, or use the buttons underneath. Try a substitute, or move a piece out, to see the total change.</p>
+        </div>
         <sc-for list="{{ shareRooms }}" as="room" hint-placeholder-count="2">
           <div>
             <h2 style="font-family: var(--font-heading); font-size: 30px; margin: 0 0 18px; color: var(--color-accent-900);">{{ room.name }}</h2>
@@ -2208,8 +2211,13 @@ const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review
 // reaches this file — the version badge in the top bar and the Studio →
 // Changelog page both read straight from this, nothing else to update.
 // Versioning starts at 1.1; anything before that lives only in git log.
-const APP_VERSION = '2.1';
+const APP_VERSION = '2.2';
 const CHANGELOG = [
+  { version: '2.2', date: '2026-09-22', changes: [
+    'Client review link: replaced the embedded presentation\'s <iframe> with a shadow-root injection — no more nested scrollbar or blank-looking box. The presentation now reads top to bottom as one continuous page, the same as scrolling through the exported file, instead of a document sitting inside a document.',
+    'Client review link: dropped the app\'s own duplicate headline/intro above the presentation (it repeated what the presentation\'s own cover section already says) — the "how to vote" instructions moved down to sit right above your selections instead.',
+    'Client review link: room renderings/video show as a plain grid instead of a carousel in this embedded view specifically (the carousel\'s own arrow/thumbnail script is not safe to run against injected markup) — the downloaded export still gets the full carousel.',
+  ] },
   { version: '2.1', date: '2026-09-21', changes: [
     'Client review link: fixed the embedded presentation showing blank — the studio\'s logo, portrait and process icons use paths relative to the app itself, which broke once that HTML was generated on the fly instead of downloaded (a blob document has no folder of its own to resolve them against). They now resolve to the real site regardless of where the HTML ends up.',
     'Client review link: dropped the separate "Open the full presentation" button (a manually-pasted, easily stale document link) now that the presentation above is the live, always-current one.',
@@ -2338,7 +2346,7 @@ class Component extends DCLogic {
     rates: null, ratesSaving: false, ratesNote: '',
     tradePrograms: null, tradeDraft: null, tradeQuery: '', tradeSaving: false, tradeNotice: '',
     fees: null, feesSaving: false, feesNote: '', feesQuoting: false,
-    shareReportSrc: '', shareReportHeight: 0,
+    shareReportReady: false,
     confirm: null };
 
   askConfirm(opts) { this.setState({ confirm: opts }); }
@@ -2366,20 +2374,45 @@ class Component extends DCLogic {
   }
 
   // Renders the same live report the studio would export — cover, studio
-  // intro, goals, direction, materials, floor plans, moodboard — as an
-  // embedded document, so the client's review link is a live version of the
-  // export rather than only the furniture list. Sourcing is hidden in this
-  // embedded copy specifically: the interactive furniture/substitutes
-  // section below (built natively, not from report.js) replaces it.
+  // intro, goals, direction, materials, floor plans, moodboard — right into
+  // the page, so the client's review link reads exactly like the exported
+  // document rather than a page holding a separate page. Sourcing is hidden
+  // in this embedded copy specifically: the interactive furniture/
+  // substitutes section below (built natively, not from report.js) replaces
+  // it. Injected into a shadow root (not an <iframe>) — same document flow
+  // as the rest of the page (one scrollbar, no box-inside-a-box), with the
+  // report's own CSS still fully isolated from the app's (both use classes
+  // like .card, .room — a plain innerHTML injection would collide).
   async buildShareReport(found) {
     try {
       const R = await import('./report.js');
       const phase = found.share.phase || ((found.share.phases || []).includes('design') ? 'design' : 'concept');
       const forReport = { ...found.project, reportHidden: { ...(found.project.reportHidden || {}), sourcing: true } };
       const { html } = await R.buildReport(forReport, phase, [], null, { embed: false });
-      const url = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
-      this.setState({ shareReportSrc: url });
+      const styleMatch = html.match(/<style>([\s\S]*?)<\/style>/);
+      const bodyMatch = html.match(/<body>([\s\S]*?)<\/body>/);
+      this.setState({ shareReportReady: true });
+      this.mountShareReport(styleMatch ? styleMatch[1] : '', bodyMatch ? bodyMatch[1] : '', 0);
     } catch (e) { console.warn('[shareReport]', e); }
+  }
+
+  // The host div only exists once shareReportReady flips the sc-if on, so
+  // this polls briefly for it rather than needing a render-complete hook the
+  // framework doesn't expose. Finds it within a render or two in practice.
+  mountShareReport(css, body, tries) {
+    const host = document.getElementById('cs-report-host');
+    if (!host) { if (tries < 40) setTimeout(() => this.mountShareReport(css, body, tries + 1), 50); return; }
+    if (host.shadowRoot) return;
+    const root = host.attachShadow({ mode: 'open' });
+    // body{...} in the report's own CSS targets an element that doesn't
+    // exist in here (no real <body> inside a shadow root) — :host is that
+    // same rule's equivalent for the element hosting this shadow tree.
+    const styleEl = document.createElement('style');
+    styleEl.textContent = css.replace(/(^|\})\s*body\{/g, '$1:host{');
+    root.appendChild(styleEl);
+    const wrap = document.createElement('div');
+    wrap.innerHTML = body;
+    root.appendChild(wrap);
   }
 
   async hydrate(user) {
@@ -4366,27 +4399,11 @@ class Component extends DCLogic {
       showShareSelection: phase === 'concept' || phase === 'design', showShareQuestionnaire: phase === 'discovery',
       // The live, in-app-generated equivalent of the export — cover, studio,
       // goals, direction, materials, plan, moodboard, respecting the same
-      // hide/unhide the studio already set. Built once in buildShareReport();
-      // this just reflects whatever state that landed in. Height is read
-      // straight off the iframe's own document once it loads (same-origin —
-      // a blob: URL this page created is readable, no postMessage needed),
-      // re-measured after fonts settle since those can reflow the layout.
+      // hide/unhide the studio already set. Injected into a shadow root by
+      // buildShareReport()/mountShareReport() once shareReportReady flips —
+      // this just gates the host div existing for them to find.
       showShareReport: phase === 'concept' || phase === 'design',
-      shareReportLoading: !s.shareReportSrc,
-      shareReportSrc: s.shareReportSrc || '',
-      shareReportHeight: Math.max(480, s.shareReportHeight || 0) + 'px',
-      shareReportLoaded: (e) => {
-        try {
-          const doc2 = e.target.contentDocument;
-          if (!doc2) return;
-          const measure = () => { try { this.setState({ shareReportHeight: doc2.documentElement.scrollHeight }); } catch (err) {} };
-          measure();
-          const win = doc2.defaultView;
-          if (win && win.ResizeObserver) new win.ResizeObserver(measure).observe(doc2.body);
-          else { setTimeout(measure, 300); setTimeout(measure, 1000); }
-          if (doc2.fonts && doc2.fonts.ready) doc2.fonts.ready.then(measure).catch(() => {});
-        } catch (err) { console.warn('[shareReportLoaded]', err); }
-      },
+      shareReportReady: !!s.shareReportReady,
       sharePieceOpen: !!s.sharePiece,
       sharePiece: s.sharePiece || {},
       closeSharePiece: () => this.setState({ sharePiece: null }),

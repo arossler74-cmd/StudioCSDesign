@@ -164,6 +164,7 @@ background:var(--accent);color:#fff;border-radius:999px;padding:3px 10px;vertica
 .palette-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:24px;margin-top:42px}.sw .chip{height:120px;border-radius:24px;border:1px solid var(--line)}.sw .n{font-size:.9em;margin-top:12px}.sw .h{font-size:.7em;color:var(--mute);letter-spacing:.08em;text-transform:uppercase;overflow-wrap:anywhere}
 .materials-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-top:40px}.material-card{padding:16px;overflow:hidden;border-radius:20px}.material-card img{width:100%;height:168px;object-fit:cover;border-radius:14px}.material-copy{padding:14px 2px 0}.material-title{font-family:'Cormorant Garamond',Georgia,serif;font-size:1.45em;line-height:1.2}
 .sourcing-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:22px}.sourcing-card{padding:14px;overflow:hidden;border-radius:18px;cursor:pointer}.sourcing-card-img{width:100%;aspect-ratio:1/1;background:var(--surface2);border-radius:12px;display:flex;align-items:center;justify-content:center;overflow:hidden}.sourcing-card-img img{width:100%;height:100%;object-fit:contain}.sourcing-card-copy{padding:12px 2px 0}.sourcing-card-name{font-family:'Cormorant Garamond',Georgia,serif;font-size:1.2em;line-height:1.2}.sourcing-card-meta{font-size:.78em;color:var(--mute);margin-top:3px}.sourcing-card-price{font-size:.9em;font-weight:600;color:var(--accent-dark);margin-top:8px}
+.mood-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:22px}.mood-grid-item{border:1px solid var(--line);border-radius:18px;overflow:hidden;background:var(--surface)}.mood-grid-item img,.mood-grid-item video{width:100%;aspect-ratio:16/10;object-fit:cover;display:block;background:#000}.mood-grid-caption{padding:12px 16px 16px;display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:.85em}
 .room{margin-top:44px}
 .room h3{font-size:clamp(34px,3vw,52px);color:var(--accent-dark)}
 .room .code{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
@@ -192,7 +193,7 @@ footer img{height:52px;margin:0 auto 14px;opacity:.85}
   .carousel-arrow,.carousel-tools,.lightbox{display:none!important}.slide{display:none!important}.slide.active{display:block!important}
 }
 @media(max-width:1200px){.materials-grid,.sourcing-grid{grid-template-columns:repeat(3,1fr)}.palette-grid{grid-template-columns:repeat(3,1fr)}.process-step{grid-template-columns:130px 1fr}}
-@media(max-width:760px){section{min-height:auto}.g2,.g3,.g4,.studio-grid,.goals-grid,.concept-head,.concept-grid,.materials-grid,.sourcing-grid,.meta{grid-template-columns:1fr}.wrap{padding:0 22px}.cover h1{font-size:58px}.studio-portrait{justify-self:start;height:auto;max-height:620px}.process-step{grid-template-columns:82px 1fr;gap:20px}.process-icon{width:54px;height:54px}.goal-card{min-height:auto}.concept-point,.concept-point:nth-child(3n),.concept-point:nth-last-child(-n+3){border-right:0;border-bottom:1px solid var(--line2)}.concept-point:last-child{border-bottom:0}.palette-grid{grid-template-columns:repeat(2,1fr);gap:14px}.stats{grid-template-columns:1fr}.carousel-arrow{width:44px;height:44px}.slide img{height:55vh}}
+@media(max-width:760px){section{min-height:auto}.g2,.g3,.g4,.studio-grid,.goals-grid,.concept-head,.concept-grid,.materials-grid,.sourcing-grid,.mood-grid,.meta{grid-template-columns:1fr}.wrap{padding:0 22px}.cover h1{font-size:58px}.studio-portrait{justify-self:start;height:auto;max-height:620px}.process-step{grid-template-columns:82px 1fr;gap:20px}.process-icon{width:54px;height:54px}.goal-card{min-height:auto}.concept-point,.concept-point:nth-child(3n),.concept-point:nth-last-child(-n+3){border-right:0;border-bottom:1px solid var(--line2)}.concept-point:last-child{border-bottom:0}.palette-grid{grid-template-columns:repeat(2,1fr);gap:14px}.stats{grid-template-columns:1fr}.carousel-arrow{width:44px;height:44px}.slide img{height:55vh}}
 `;
 
 function coverSection(p, phase, img) {
@@ -343,8 +344,14 @@ const MEDIA_TYPE_NAME = { moodboard: 'Moodboard', floorplan: '2D Floor Plan', sk
  *  projects from before conceptMedia existed) and Design (renderings/video
  *  walkthroughs, mediaKey 'designMedia', no legacy fallback — it's new). Video
  *  slides never come from the embedded `img` map (see imageList) — they stay
- *  a remote <video src>, everything else is a <img>. */
-function moodSection(rooms, mediaKey, img, heading) {
+ *  a remote <video src>, everything else is a <img>.
+ *
+ *  staticGrid skips the carousel entirely in favour of a plain grid showing
+ *  every image at once — for the live share preview, whose host page can't
+ *  safely run this file's own carousel/lightbox <script> against markup it
+ *  didn't load as a full document (see buildShareReport in the app). The
+ *  downloaded/printed file always gets the real carousel. */
+function moodSection(rooms, mediaKey, img, heading, staticGrid) {
   heading = heading || { kicker: 'The feeling', title: 'Moodboards' };
   rooms = (rooms || []).filter((r) => ((r[mediaKey] || []).length || (mediaKey === 'conceptMedia' && (r.moodboard || []).length)));
   if (!rooms.length) return '';
@@ -354,11 +361,20 @@ function moodSection(rooms, mediaKey, img, heading) {
   ${rooms.map((r, roomIndex) => {
     const media = (r[mediaKey] || []).length ? r[mediaKey]
       : (mediaKey === 'conceptMedia' ? (r.moodboard || []).map((url) => ({ url, title: '', type: 'moodboard' })) : []);
-    return `<div class="room">
-    <h3>${esc(r.name)}</h3>
+    const roomHead = `<h3>${esc(r.name)}</h3>
     ${r.goal ? `<p class="lead" style="font-size:15px;margin-top:8px"><strong>Goal:</strong> ${esc(r.goal)}</p>` : ''}
     ${r.brief ? `<p class="lead" style="font-size:13.5px;margin-top:8px">${esc(r.brief)}</p>` : ''}
-    ${r.moodNote ? `<p class="lead" style="font-size:13.5px;margin-top:8px">${esc(r.moodNote)}</p>` : ''}
+    ${r.moodNote ? `<p class="lead" style="font-size:13.5px;margin-top:8px">${esc(r.moodNote)}</p>` : ''}`;
+    if (staticGrid) {
+      return `<div class="room">${roomHead}
+    <div class="mood-grid">
+      ${media.map((m) => `<div class="mood-grid-item">${m.type === 'video'
+        ? `<video src="${esc(m.url)}" controls playsinline></video>`
+        : `<img src="${esc(img[m.url] || m.url)}" alt="${esc(m.title || r.name)}">`}<div class="mood-grid-caption"><div>${esc(m.title || r.name)}</div><div class="slide-type">${esc(MEDIA_TYPE_NAME[m.type] || m.type || '')}</div></div></div>`).join('')}
+    </div>
+  </div>`;
+    }
+    return `<div class="room">${roomHead}
     <div class="carousel" data-carousel="room-${roomIndex}"><div class="carousel-stage">
       ${media.map((m, i) => `<div class="slide${i === 0 ? ' active' : ''}" data-slide="${i}">${m.type === 'video'
         ? `<video src="${esc(m.url)}" controls playsinline></video>`
@@ -627,8 +643,8 @@ export async function buildReport(project, phaseKey, catalog, onProgress, opts) 
     phase.key === 'design' && !hidden.designMaterials ? materialsSection(p.designMaterials, img) : '',
     phase.key === 'concept' && !hidden.plan ? planSection(p.floorPlans, p.rooms, img) : '',
     phase.key === 'design' && !hidden.designPlan ? planSection(p.designFloorPlans, p.rooms, img) : '',
-    phase.key === 'concept' && !hidden.mood ? moodSection(p.rooms, 'conceptMedia', img) : '',
-    phase.key === 'design' && !hidden.designMood ? moodSection(p.rooms, 'designMedia', img, designHeading) : '',
+    phase.key === 'concept' && !hidden.mood ? moodSection(p.rooms, 'conceptMedia', img, null, !shouldEmbed) : '',
+    phase.key === 'design' && !hidden.designMood ? moodSection(p.rooms, 'designMedia', img, designHeading, !shouldEmbed) : '',
     (phase.key === 'design' || phase.key === 'styling') && !hidden.sourcing ? sourcingSection(p, byId, img) : '',
     // The design fee is negotiated separately from the sourcing proposal, so
     // it no longer rides along in this export — feesSection() stays defined

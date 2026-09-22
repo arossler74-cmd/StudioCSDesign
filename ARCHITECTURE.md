@@ -102,9 +102,15 @@ The share page itself opens with the same presentation the studio would export �
 intro, goals, direction, materials, floor plans, moodboard, respecting `reportHidden` — rendered
 live client-side (`buildShareReport()` in `Studio Platform.dc.html`, calling `buildReport()` from
 `report.js` with `{ embed: false }` so it skips the image-embedding pass an offline download needs
-and just points at the live URLs, and with `reportHidden.sourcing` forced on since the interactive
-furniture section below replaces it). Rendered into a blob-URL iframe that posts its content height
-back via `postMessage` so the page scrolls as one continuous page rather than a box inside a box.
+and just points at the live URLs — resolving report.js's own relative asset paths, e.g. the studio
+logo, to absolute URLs first, since this HTML never becomes a real document with a directory of its
+own to resolve them against — and with `reportHidden.sourcing` forced on since the interactive
+furniture section below replaces it). Injected into a shadow root (`mountShareReport()`), not an
+`<iframe>` — same document flow as the rest of the page (one scrollbar, no box inside a box), with
+the report's own CSS still fully isolated from the app's own (both use classes like `.card`/`.room`).
+`moodSection()` takes a `staticGrid` flag (on whenever `embed:false`) that swaps its carousel for a
+plain image grid — the downloaded file's own carousel/lightbox `<script>` can't safely run against
+markup that was injected as `innerHTML` rather than loaded as its own document.
 
 Prices: hidden on Concept-scope links; visible to admins and designers everywhere. Design-scope links
 also show price and substitutes (`rooms[].alternatives` in the public `shares/{token}` doc — see
