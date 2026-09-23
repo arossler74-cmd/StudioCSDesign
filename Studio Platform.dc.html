@@ -2246,8 +2246,11 @@ const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review
 // reaches this file — the version badge in the top bar and the Studio →
 // Changelog page both read straight from this, nothing else to update.
 // Versioning starts at 1.1; anything before that lives only in git log.
-const APP_VERSION = '2.7';
+const APP_VERSION = '2.8';
 const CHANGELOG = [
+  { version: '2.8', date: '2026-09-23', changes: [
+    'Client review link: sharing it in email, WhatsApp, iMessage or SMS now shows a real preview card — the project\'s hero photo plus "Studio CS | [client] | [project]" — instead of a blank "Add photo" box and the bare domain. Links now go out from share.studiocsdesign.com, a small new page that builds that preview from the project\'s own data before sending the browser on to the same review it always opened.',
+  ] },
   { version: '2.7', date: '2026-09-22', changes: [
     'Furnishings schedule table (client review link and the Design & Sourcing tab): the piece name is now a link straight to the retailer\'s product page when one is on file, instead of plain text — no need to scroll back up to the photo card to find it.',
   ] },

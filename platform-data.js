@@ -703,9 +703,14 @@ export async function fetchProductDetails(url) {
 
 /* ---------------- client share links ---------------- */
 
+// Routed through share.studiocsdesign.com (a Firebase Hosting + Cloud
+// Function domain, not GitHub Pages) so the link itself can carry a
+// per-project preview — hero photo, client and project name — in chat/email
+// apps. Those apps read this domain's own meta tags, then that page sends a
+// real browser on to this same #share= link on the live app. See the
+// shareLink function and the "/s/**" rewrite in firebase.json.
 export function shareUrl(token) {
-  const base = location.href.split('#')[0];
-  return base + '#share=' + token;
+  return 'https://share.studiocsdesign.com/s/' + token;
 }
 
 function phaseOf(share) {

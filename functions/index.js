@@ -285,6 +285,80 @@ async function crateAndBarrelFallback(inputUrl) {
   };
 }
 
+const SITE_URL = 'https://platform.studiocsdesign.com';
+
+function escapeHtml(value) {
+  return String(value || '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+}
+
+// Mail/WhatsApp/SMS/iMessage previews are built by a crawler that reads
+// whatever <meta> tags come back on the *first* request — it never runs the
+// app's JavaScript and never sees location.hash. The real app lives on
+// GitHub Pages as one static file with no server, so a share link's own
+// domain can never carry per-project meta tags. This function is that
+// server: share.studiocsdesign.com/s/{token} answers with a tiny page whose
+// title/description/image are read from that one share's Firestore doc,
+// then sends a real browser straight on to the live app (same #share=
+// link as before). Firestore is read with the admin SDK, not through
+// Storage/Firestore rules, since a crawler carries no Firebase Auth.
+function shareLinkPage({ title, description, image, redirectTo }) {
+  const safeTitle = escapeHtml(title);
+  const safeDescription = escapeHtml(description);
+  const safeRedirect = escapeHtml(redirectTo);
+  const imageTags = image
+    ? `<meta property="og:image" content="${escapeHtml(image)}">\n<meta name="twitter:image" content="${escapeHtml(image)}">\n<meta name="twitter:card" content="summary_large_image">`
+    : '<meta name="twitter:card" content="summary">';
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${safeTitle}</title>
+<meta name="description" content="${safeDescription}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Studio CS Design">
+<meta property="og:title" content="${safeTitle}">
+<meta property="og:description" content="${safeDescription}">
+<meta property="og:url" content="${safeRedirect}">
+${imageTags}
+<meta name="twitter:title" content="${safeTitle}">
+<meta name="twitter:description" content="${safeDescription}">
+<meta http-equiv="refresh" content="0; url=${safeRedirect}">
+<link rel="canonical" href="${safeRedirect}">
+<script>location.replace(${JSON.stringify(redirectTo)});</script>
+</head>
+<body>
+<p>Continue to <a href="${safeRedirect}">the review</a>.</p>
+</body>
+</html>`;
+}
+
+exports.shareLink = onRequest({ region: 'us-west1', timeoutSeconds: 10, memory: '128MiB' }, async (req, res) => {
+  res.set('Cache-Control', 'public, max-age=60');
+  res.set('Content-Type', 'text/html; charset=utf-8');
+  const token = decodeURIComponent((String(req.path || '').match(/\/s\/([^/]+)/i) || [])[1] || String(req.query.token || ''));
+  const fallback = () => res.status(200).send(shareLinkPage({
+    title: 'Studio CS Design',
+    description: 'A private design review from Studio CS Design.',
+    image: '',
+    redirectTo: SITE_URL + '/'
+  }));
+  if (!token) return fallback();
+  try {
+    const snap = await getFirestore().doc('shares/' + token).get();
+    if (!snap.exists) return fallback();
+    const d = snap.data() || {};
+    const title = ['Studio CS', d.clientName, d.projectName].filter(Boolean).join(' | ') || 'Studio CS Design';
+    const description = d.tagline || 'A private design review, prepared by Studio CS Design.';
+    return res.status(200).send(shareLinkPage({
+      title, description, image: d.hero || '', redirectTo: SITE_URL + '/#share=' + encodeURIComponent(token)
+    }));
+  } catch (error) {
+    logger.warn('shareLink failed', { message: error && error.message });
+    return fallback();
+  }
+});
+
 exports.fetchProductDetails = onRequest({ region: 'us-west1', timeoutSeconds: 60, memory: '256MiB', secrets: [openAiApiKey] }, async (req, res) => {
   setCors(res);
   if (req.method === 'OPTIONS') return res.status(204).send('');

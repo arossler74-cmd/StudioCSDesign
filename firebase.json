@@ -10,5 +10,11 @@
   },
   "storage": {
     "rules": "storage.rules"
+  },
+  "hosting": {
+    "public": "hosting-share",
+    "rewrites": [
+      { "source": "/s/**", "function": { "functionId": "shareLink", "region": "us-west1" } }
+    ]
   }
 }
