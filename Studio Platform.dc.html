@@ -99,6 +99,12 @@
   .cs-review-hint-up .cs-review-stamp-up { opacity: 1; transform: scale(1) rotate(-8deg); }
   .cs-review-hint-down .cs-review-stamp-down { opacity: 1; transform: scale(1) rotate(8deg); }
 
+  /* Love it / Reconsider / Move out — three even columns so they read as one
+     row of choices rather than a wrapping list of text buttons. */
+  .cs-verdict-row { display: flex; gap: 6px; }
+  .cs-verdict-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 8px 4px !important; font-size: 11px !important; line-height: 1.15; text-align: center; }
+  .cs-verdict-btn svg { flex: none; }
+
   /* catalog: type sections + small draggable cards */
   .cs-catalog-group { display: flex; flex-direction: column; gap: 14px; }
   .cs-catalog-group + .cs-catalog-group { margin-top: 34px; }
@@ -266,11 +272,20 @@
                       <button type="button" onClick="{{ it.viewDetails }}" class="btn btn-ghost" style="font-size: 11.5px; padding: 3px 0; color: var(--color-neutral-500); text-decoration: underline;">View details</button>
                     </div>
                     <div style="flex: 1;"></div>
-                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                      <button type="button" onClick="{{ it.up }}" class="btn btn-ghost" style="border: 1px solid {{ it.upRing }}; background: {{ it.upBg }}; padding: 6px 14px;">Love it</button>
-                      <button type="button" onClick="{{ it.down }}" class="btn btn-ghost" style="border: 1px solid {{ it.downRing }}; background: {{ it.downBg }}; padding: 6px 14px;">Reconsider</button>
+                    <div class="cs-verdict-row">
+                      <button type="button" onClick="{{ it.up }}" class="btn btn-ghost cs-verdict-btn" style="border: 1px solid {{ it.upRing }}; background: {{ it.upBg }};" aria-label="Love it">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                        <span>Love it</span>
+                      </button>
+                      <button type="button" onClick="{{ it.down }}" class="btn btn-ghost cs-verdict-btn" style="border: 1px solid {{ it.downRing }}; background: {{ it.downBg }};" aria-label="Reconsider">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 4v6h6"></path><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                        <span>Reconsider</span>
+                      </button>
                       <sc-if value="{{ showInvestment }}" hint-placeholder-val="{{ false }}">
-                        <button type="button" onClick="{{ it.toggleAction }}" class="btn btn-ghost" style="padding: 6px 14px; color: var(--color-neutral-600);">{{ it.actionLabel }}</button>
+                        <button type="button" onClick="{{ it.toggleAction }}" class="btn btn-ghost cs-verdict-btn" style="border: 1px solid var(--color-neutral-300); color: var(--color-neutral-600);" aria-label="{{ it.actionLabel }}">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                          <span>{{ it.actionLabel }}</span>
+                        </button>
                       </sc-if>
                     </div>
                     <input class="input" value="{{ it.comment }}" onChange="{{ it.setComment }}" placeholder="Add a note" style="padding: 7px 12px; font-size: 13px;">
@@ -298,10 +313,19 @@
                           <button type="button" onClick="{{ alt.viewDetails }}" class="btn btn-ghost" style="font-size: 11px; padding: 2px 0; color: var(--color-neutral-500); text-decoration: underline;">View details</button>
                         </div>
                         <div style="flex: 1;"></div>
-                        <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
-                          <button type="button" onClick="{{ alt.up }}" class="btn btn-ghost" style="border: 1px solid {{ alt.upRing }}; background: {{ alt.upBg }}; padding: 5px 10px; font-size: 12.5px;">Love it</button>
-                          <button type="button" onClick="{{ alt.down }}" class="btn btn-ghost" style="border: 1px solid {{ alt.downRing }}; background: {{ alt.downBg }}; padding: 5px 10px; font-size: 12.5px;">Reconsider</button>
-                          <button type="button" onClick="{{ alt.toggleAction }}" class="btn btn-ghost" style="padding: 5px 10px; font-size: 12.5px; color: var(--color-accent-800); font-weight: 600;">{{ alt.actionLabel }}</button>
+                        <div class="cs-verdict-row">
+                          <button type="button" onClick="{{ alt.up }}" class="btn btn-ghost cs-verdict-btn" style="border: 1px solid {{ alt.upRing }}; background: {{ alt.upBg }};" aria-label="Love it">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                            <span>Love it</span>
+                          </button>
+                          <button type="button" onClick="{{ alt.down }}" class="btn btn-ghost cs-verdict-btn" style="border: 1px solid {{ alt.downRing }}; background: {{ alt.downBg }};" aria-label="Reconsider">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 4v6h6"></path><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                            <span>Reconsider</span>
+                          </button>
+                          <button type="button" onClick="{{ alt.toggleAction }}" class="btn btn-ghost cs-verdict-btn" style="border: 1px solid var(--color-accent-300); color: var(--color-accent-800); font-weight: 600;" aria-label="{{ alt.actionLabel }}">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                            <span>{{ alt.actionLabel }}</span>
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -1921,26 +1945,39 @@
                 <button type="button" onClick="{{ refreshFeedback }}" class="btn btn-secondary">Refresh feedback</button>
               </div>
               <p style="margin: 0 0 24px; color: var(--color-neutral-600); font-size: 14px;">{{ reviewSub }}</p>
-              <div style="display: flex; flex-direction: column; gap: 12px;">
-                <sc-for list="{{ reviews }}" as="r" hint-placeholder-count="3">
-                  <div class="card cs-review-row" style="padding: 16px 20px; display: flex; align-items: center; gap: 16px; opacity: {{ r.dim }};">
-                    <div style="width: 54px; height: 54px; border-radius: var(--radius-md); overflow: hidden; background: var(--color-neutral-100); flex: none;">
-                      <img src="assets/piece-placeholder.png" data-img="{{ r.image }}" alt="" style="width: 100%; height: 100%; object-fit: cover;">
+              <div style="display: flex; flex-direction: column; gap: 26px;">
+                <sc-for list="{{ feedbackGroups }}" as="g" hint-placeholder-count="2">
+                  <div>
+                    <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--color-neutral-200);">
+                      <div>
+                        <div style="font-family: var(--font-heading); font-size: 17px; color: var(--color-accent-900);">{{ g.title }}</div>
+                        <div style="font-size: 12px; color: var(--color-neutral-600);">{{ g.sentLabel }} · {{ g.respondedLabel }}</div>
+                      </div>
+                      <div style="font-size: 12px; font-weight: 600; color: var(--color-neutral-600); white-space: nowrap;">{{ g.openLabel }}</div>
                     </div>
-                    <div style="flex: 1; min-width: 0;">
-                      <div style="font-weight: 600; font-size: 14.5px;">{{ r.name }}</div>
-                      <div style="font-size: 13px; color: var(--color-neutral-600);">{{ r.line }}</div>
-                      <sc-if value="{{ r.comment }}" hint-placeholder-val="{{ false }}">
-                        <div style="font-size: 13.5px; margin-top: 5px; color: var(--color-neutral-800); font-style: italic;">“{{ r.comment }}”</div>
-                      </sc-if>
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                      <sc-for list="{{ g.cards }}" as="r" hint-placeholder-count="2">
+                        <div class="card cs-review-row" style="padding: 9px 14px; display: flex; align-items: center; gap: 12px; opacity: {{ r.dim }};">
+                          <div style="width: 36px; height: 36px; border-radius: var(--radius-sm); overflow: hidden; background: var(--color-neutral-100); flex: none;">
+                            <img src="assets/piece-placeholder.png" data-img="{{ r.image }}" alt="" style="width: 100%; height: 100%; object-fit: cover;">
+                          </div>
+                          <div style="flex: 1; min-width: 0;">
+                            <div style="font-weight: 600; font-size: 12.5px;">{{ r.name }}</div>
+                            <div style="font-size: 11px; color: var(--color-neutral-600);">{{ r.line }}</div>
+                            <sc-if value="{{ r.comment }}" hint-placeholder-val="{{ false }}">
+                              <div style="font-size: 11.5px; margin-top: 2px; color: var(--color-neutral-800); font-style: italic;">“{{ r.comment }}”</div>
+                            </sc-if>
+                          </div>
+                          <div style="padding: 3px 10px; border-radius: 999px; font-size: 10px; font-weight: 600; color: #fff; background: {{ r.badgeBg }}; white-space: nowrap;">{{ r.badge }}</div>
+                          <sc-if value="{{ r.showApplyRooms }}" hint-placeholder-val="{{ false }}">
+                            <button type="button" onClick="{{ r.applyRooms }}" class="btn btn-secondary" style="font-size: 12px;">{{ r.applyRoomsLabel }}</button>
+                          </sc-if>
+                          <sc-if value="{{ r.open }}" hint-placeholder-val="{{ true }}">
+                            <button type="button" onClick="{{ r.resolve }}" class="btn btn-ghost" style="font-size: 12px;">Mark handled</button>
+                          </sc-if>
+                        </div>
+                      </sc-for>
                     </div>
-                    <div style="padding: 5px 13px; border-radius: 999px; font-size: 12px; font-weight: 600; color: #fff; background: {{ r.badgeBg }};">{{ r.badge }}</div>
-                    <sc-if value="{{ r.showApplyRooms }}" hint-placeholder-val="{{ false }}">
-                      <button type="button" onClick="{{ r.applyRooms }}" class="btn btn-secondary" style="font-size: 13px;">{{ r.applyRoomsLabel }}</button>
-                    </sc-if>
-                    <sc-if value="{{ r.open }}" hint-placeholder-val="{{ true }}">
-                      <button type="button" onClick="{{ r.resolve }}" class="btn btn-ghost" style="font-size: 13px;">Mark handled</button>
-                    </sc-if>
                   </div>
                 </sc-for>
               </div>
@@ -2246,8 +2283,14 @@ const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review
 // reaches this file — the version badge in the top bar and the Studio →
 // Changelog page both read straight from this, nothing else to update.
 // Versioning starts at 1.1; anything before that lives only in git log.
-const APP_VERSION = '2.9';
+const APP_VERSION = '3.0';
 const CHANGELOG = [
+  { version: '3.0', date: '2026-09-23', changes: [
+    'Client review link: pressing "Send my feedback" no longer wipes every Love it / Reconsider / Move out mark, swap and note back to blank — the same link, reopened later, now picks up exactly where the client left off, and a second submission adds to that instead of erasing it.',
+    'Client review link: Love it, Reconsider and Move out (or Bring it back / Bring it in) are now three even, icon-led buttons in one row on every piece card, instead of a wrapping list of plain text buttons.',
+    'Client review link: the furnishings schedule table now lists each room\'s pieces highest-value first, and keeps re-sorting as pieces are moved out or substitutes brought in.',
+    'Client feedback: cards are smaller, and now group under the client link and the exact moment they hit "Send my feedback" — showing when that link was sent and when the client responded — instead of one long flat list. A second submission on the same link, or an entirely different link, each get their own group, so a client\'s answer over time (or across different rooms) stays easy to track back.',
+  ] },
   { version: '2.9', date: '2026-09-23', changes: [
     'Client review link: the browser tab now reads "Studio CS | [client] | [project]" once the review itself has loaded, instead of staying on the plain "Studio CS Design" the whole time.',
   ] },
@@ -2423,7 +2466,14 @@ class Component extends DCLogic {
       if (found) {
         let catalog = [];
         try { catalog = await api.listCatalog(); } catch (e) { /* public visitors cannot read the catalog */ }
-        this.setState({ share: found, catalog, booting: false });
+        // Restores whatever this same link last had saved (see saveShareState
+        // in shareSubmit below) — the client's marks/swaps/answers pick up
+        // where they left off instead of starting blank on every visit.
+        const cs = found.clientState || {};
+        this.setState({
+          share: found, catalog, booting: false,
+          shareState: cs.items || {}, shareTrial: cs.trial || {}, shareAnswers: cs.answers || {},
+        });
         // Same "Studio CS | Client | Project" the link's own preview card uses
         // (see the shareLink Cloud Function) — carried into the tab title too,
         // once the client is actually inside their review.
@@ -4248,8 +4298,7 @@ class Component extends DCLogic {
     }
 
     if (v.tabFeedback) {
-      const rs = [...(p.reviews || []), ...(s.inbox || [])]
-        .sort((a, b) => (a.at || '').localeCompare(b.at || '')).reverse();
+      const rs = [...(p.reviews || []), ...(s.inbox || [])];
       v.noReviews = rs.length === 0;
       const open = rs.filter((r) => !r.resolved).length;
       v.refreshFeedback = async () => {
@@ -4262,7 +4311,11 @@ class Component extends DCLogic {
         for (const sec of this.questionnaire()) { const q = (sec.questions || []).find((x) => x.id === qid); if (q) return q.type; }
         return null;
       };
-      v.reviews = rs.map((r) => {
+      const dateTime = (iso) => iso ? new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '';
+      const phaseLabels = { discovery: 'Discovery', concept: 'Concept review', design: 'Design & sourcing', styling: 'Styling & reveal' };
+      const sharesByToken = {};
+      (p.shares || []).forEach((sh) => { sharesByToken[sh.token] = sh; });
+      const cards = rs.map((r) => {
         const c = this.cat(r.itemId) || {};
         const room = this.rooms().find((x) => x.id === r.roomId);
         const isQuestionnaire = r.kind === 'questionnaire';
@@ -4275,10 +4328,14 @@ class Component extends DCLogic {
         const isSpacesAnswer = isQuestionnaire && questionType(r.itemId) === 'spaces';
         const spaceNames = isSpacesAnswer ? String(r.answer || '').split(',').map((x) => x.trim()).filter(Boolean) : [];
         const newSpaces = spaceNames.filter((n) => !this.rooms().some((rm) => rm.name === n));
+        // Sort key, not shown — clusters cards by room/space within a version
+        // the way a flat list can't, without a fragile 3-deep nested loop.
+        const spaceName = room ? room.name : isQuestionnaire ? 'Discovery answers' : isMessage ? 'General note' : 'General';
         return {
+          token: r.viaShare || '', at: r.at || '', spaceName,
           name: isQuestionnaire ? (r.question || 'Questionnaire response') : isMessage ? 'Client note' : (c.name || 'Piece'),
           image: isQuestionnaire || isMessage ? PLACEHOLDER : (c.image || PLACEHOLDER),
-          line: [room && room.name, r.by, new Date(r.at).toLocaleDateString('en-US')].filter(Boolean).join(' · '),
+          line: [spaceName, r.by].filter(Boolean).join(' · '),
           comment: isQuestionnaire ? (r.answer || '') : (r.comment || ''),
           badge: isQuestionnaire ? 'Answered' : isMessage ? 'Note' : isSwap ? (r.action === 'add' ? 'Wants to add' : 'Wants to remove') : r.verdict === 'up' ? 'Loved' : 'Reconsider',
           badgeBg: isQuestionnaire ? 'var(--color-accent-2)' : isMessage ? 'var(--color-accent-700)' : isSwap ? (r.action === 'add' ? 'var(--color-accent-2)' : 'var(--color-accent-700)') : r.verdict === 'up' ? 'var(--color-accent-2)' : 'var(--color-accent-700)',
@@ -4292,6 +4349,29 @@ class Component extends DCLogic {
           },
         };
       });
+      // One version per (link, moment they hit "Send my feedback") — a
+      // second submission on the same link, or an entirely different link
+      // Cybelle sent, each land as their own group so the studio can track
+      // how a client's answer changed over time, not just the latest state.
+      const groups = {};
+      cards.forEach((card) => {
+        const key = (card.token || 'studio-test') + '|' + card.at;
+        if (!groups[key]) groups[key] = { token: card.token, at: card.at, cards: [] };
+        groups[key].cards.push(card);
+      });
+      v.feedbackGroups = Object.values(groups)
+        .sort((a, b) => (b.at || '').localeCompare(a.at || ''))
+        .map((g) => {
+          const sh = sharesByToken[g.token];
+          const openCount = g.cards.filter((c) => c.open).length;
+          return {
+            title: sh ? [sh.clientName, phaseLabels[sh.phase] || sh.phase].filter(Boolean).join(' · ') : 'Internal test (no client link)',
+            sentLabel: sh && sh.createdAt ? 'Link sent ' + dateTime(sh.createdAt) : '',
+            respondedLabel: g.at ? 'Responded ' + dateTime(g.at) : '',
+            openLabel: openCount ? openCount + ' open' : 'All handled',
+            cards: g.cards.slice().sort((a, b) => a.spaceName.localeCompare(b.spaceName)),
+          };
+        });
     }
 
     if (v.tabSharing) {
@@ -4450,7 +4530,7 @@ class Component extends DCLogic {
         const qty = Number(c.qty) || 1, priceNum = Number(c.price), lineNum = priceNum * qty;
         if (showInvestment && !isNaN(priceNum)) {
           sub += lineNum;
-          investmentRows.push({ name: c.name || 'Piece', url: c.url || '', meta: [c.retailer, c.dimensions].filter(Boolean).join(' · '), qty, unit: money(c.price), line: money(lineNum) });
+          investmentRows.push({ name: c.name || 'Piece', url: c.url || '', meta: [c.retailer, c.dimensions].filter(Boolean).join(' · '), qty, unit: money(c.price), line: money(lineNum), lineNum });
         }
       });
 
@@ -4464,9 +4544,13 @@ class Component extends DCLogic {
         const qty = Number(c.qty) || 1, priceNum = Number(c.price), lineNum = priceNum * qty;
         if (!isNaN(priceNum)) {
           sub += lineNum;
-          investmentRows.push({ name: c.name || 'Piece', url: c.url || '', meta: [c.retailer, c.dimensions].filter(Boolean).join(' · '), qty, unit: money(c.price), line: money(lineNum) });
+          investmentRows.push({ name: c.name || 'Piece', url: c.url || '', meta: [c.retailer, c.dimensions].filter(Boolean).join(' · '), qty, unit: money(c.price), line: money(lineNum), lineNum });
         }
       });
+      // Highest-value line first — the studio and client both care most about
+      // where the budget is actually going, and a moved-out/brought-in piece
+      // needs to re-sort into its new place, not just append at the bottom.
+      investmentRows.sort((a, b) => b.lineNum - a.lineNum);
 
       const items = selectedGrid, alternatives = substituteGrid;
       return {
@@ -4525,27 +4609,36 @@ class Component extends DCLogic {
       shareGrandTotal,
       shareSubmit: async () => {
         let proj = project;
+        // Every review this submission writes shares this exact stamp, so the
+        // Feedback tab can group them back into the one moment the client hit
+        // "Send my feedback" — a version it can tell apart from a second
+        // submission on the same link, or from an entirely different link.
+        const submittedAt = new Date().toISOString();
         for (const key of Object.keys(st)) {
           const e = st[key];
           if (!e || (!e.verdict && !(e.comment || '').trim())) continue;
-          proj = await api.addReview(proj, { kind: 'selection', phase, roomId: e.roomId, itemId: e.itemId, verdict: e.verdict || null, comment: e.comment || '', by: share.clientName, viaShare: isPublic ? share.token : null });
+          proj = await api.addReview(proj, { kind: 'selection', phase, roomId: e.roomId, itemId: e.itemId, verdict: e.verdict || null, comment: e.comment || '', by: share.clientName, viaShare: isPublic ? share.token : null, at: submittedAt });
         }
         for (const key of Object.keys(trial)) {
           const t = trial[key];
           if (!t || !t.on) continue;
-          proj = await api.addReview(proj, { kind: 'swap', phase, roomId: t.roomId, itemId: t.itemId, action: t.action, by: share.clientName, viaShare: isPublic ? share.token : null });
+          proj = await api.addReview(proj, { kind: 'swap', phase, roomId: t.roomId, itemId: t.itemId, action: t.action, by: share.clientName, viaShare: isPublic ? share.token : null, at: submittedAt });
         }
         for (const sec of questionnaire) for (const q of (sec.questions || [])) {
           const answer = answers[q.id];
           const value = Array.isArray(answer) ? answer.join(', ') : String(answer || '').trim();
           if (!value) continue;
-          proj = await api.addReview(proj, { kind: 'questionnaire', phase, itemId: 'question:' + q.id, question: q.label, answer: value, by: share.clientName, viaShare: isPublic ? share.token : null });
+          proj = await api.addReview(proj, { kind: 'questionnaire', phase, itemId: 'question:' + q.id, question: q.label, answer: value, by: share.clientName, viaShare: isPublic ? share.token : null, at: submittedAt });
         }
         if ((s.shareMessage || '').trim()) {
-          proj = await api.addReview(proj, { kind: 'message', phase, itemId: 'note:' + phase, comment: s.shareMessage.trim(), by: share.clientName, viaShare: isPublic ? share.token : null });
+          proj = await api.addReview(proj, { kind: 'message', phase, itemId: 'note:' + phase, comment: s.shareMessage.trim(), by: share.clientName, viaShare: isPublic ? share.token : null, at: submittedAt });
         }
+        // Saved so this same link, reopened later, restores these marks/swaps/
+        // answers instead of resetting — only the message box clears, the way
+        // a chat input clears after you send it.
+        if (isPublic) await api.saveShareState(share.token, { items: st, trial, answers, message: '' });
         this.setState({ share: { ...this.state.share, project: proj }, shareSaved: 'Thank you — sent' });
-        this.setState({ shareState: {}, shareTrial: {}, shareAnswers: {}, shareMessage: '' });
+        this.setState({ shareMessage: '' });
         setTimeout(() => this.setState({ shareSaved: '' }), 2600);
       },
     };

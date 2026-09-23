@@ -762,7 +762,7 @@ async function publishShare(project, share) {
   const ph = project.phases || {};
   const payload = {
     token: share.token, projectId: project.id, projectName: project.name,
-    clientName: share.clientName, phase, phases: [phase], questionnaire,
+    clientName: share.clientName, phase, phases: [phase], questionnaire, createdAt: share.createdAt || nowISO(),
     doc: showDocument ? (project.phases[phase] || {}).doc || null : null,
     currency: project.currency || 'USD',
     reportHidden: project.reportHidden || {},
@@ -821,9 +821,20 @@ export async function findByShare(token) {
     const snap = await getDoc(doc(fb.db, 'shares', token));
     if (!snap.exists()) return null;
     const d = snap.data();
+    // The client's own in-progress marks/swaps/answers from their last visit
+    // to this exact link — restored here so reopening it (or a second
+    // "Send my feedback") picks up where they left off instead of starting
+    // blank. Read is public, same trust boundary as the share doc itself
+    // (the token is the only thing gating either): see saveShareState().
+    let clientState = null;
+    try {
+      const stateSnap = await getDoc(doc(fb.db, 'shares', token, 'state', 'current'));
+      if (stateSnap.exists()) clientState = stateSnap.data();
+    } catch (e) {}
     return {
       public: true,
-      share: { token, clientName: d.clientName, phase: d.phase || phaseOf(d), phases: d.phases || ['concept'] },
+      share: { token, clientName: d.clientName, phase: d.phase || phaseOf(d), phases: d.phases || ['concept'], createdAt: d.createdAt || '' },
+      clientState,
       project: {
         id: d.projectId, name: d.projectName, rooms: d.rooms || [], questionnaire: d.questionnaire || [],
         // phases here is project.phases (concept/design direction text),
@@ -854,6 +865,20 @@ export async function findByShare(token) {
 }
 
 /* ---------------- client feedback ---------------- */
+
+// The client's own in-progress marks/swaps/answers for this one link,
+// overwritten in full on every "Send my feedback" — read back by
+// findByShare() so the same link reopened later (or a second submission)
+// continues from here instead of resetting. Local/demo mode has nothing to
+// persist to (no server), so this is a no-op there.
+export async function saveShareState(token, state) {
+  if (mode !== 'firebase') return;
+  const { doc, setDoc } = fb.D;
+  await setDoc(doc(fb.db, 'shares', token, 'state', 'current'), {
+    items: state.items || {}, trial: state.trial || {}, answers: state.answers || {},
+    message: state.message || '', updatedAt: nowISO(),
+  });
+}
 
 export async function addReview(project, entry) {
   const rec = { id: 'r-' + uid(), at: nowISO(), resolved: false, ...entry };

@@ -91,6 +91,16 @@ service cloud.firestore {
                       && (!('comment' in request.resource.data) || request.resource.data.comment.size() < 2000);
         allow read, update, delete: if isSignedIn();
       }
+
+      // The client's own in-progress marks/swaps/answers for this link, so
+      // reopening it (or submitting a second time) continues from where they
+      // left off instead of resetting. Same trust boundary as the parent
+      // share doc above (the token itself is what gates read access, not
+      // auth) — a visitor can only ever touch the single "current" doc.
+      match /state/{doc} {
+        allow read: if true;
+        allow write: if doc == 'current' && request.resource.data.keys().hasOnly(['items', 'trial', 'answers', 'message', 'updatedAt']);
+      }
     }
 
     match /projects/{projectId} {
