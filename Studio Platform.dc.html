@@ -2246,8 +2246,11 @@ const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review
 // reaches this file — the version badge in the top bar and the Studio →
 // Changelog page both read straight from this, nothing else to update.
 // Versioning starts at 1.1; anything before that lives only in git log.
-const APP_VERSION = '2.8';
+const APP_VERSION = '2.9';
 const CHANGELOG = [
+  { version: '2.9', date: '2026-09-23', changes: [
+    'Client review link: the browser tab now reads "Studio CS | [client] | [project]" once the review itself has loaded, instead of staying on the plain "Studio CS Design" the whole time.',
+  ] },
   { version: '2.8', date: '2026-09-23', changes: [
     'Client review link: sharing it in email, WhatsApp, iMessage or SMS now shows a real preview card — the project\'s hero photo plus "Studio CS | [client] | [project]" — instead of a blank "Add photo" box and the bare domain. Links now go out from share.studiocsdesign.com, a small new page that builds that preview from the project\'s own data before sending the browser on to the same review it always opened.',
   ] },
@@ -2421,6 +2424,10 @@ class Component extends DCLogic {
         let catalog = [];
         try { catalog = await api.listCatalog(); } catch (e) { /* public visitors cannot read the catalog */ }
         this.setState({ share: found, catalog, booting: false });
+        // Same "Studio CS | Client | Project" the link's own preview card uses
+        // (see the shareLink Cloud Function) — carried into the tab title too,
+        // once the client is actually inside their review.
+        document.title = ['Studio CS', found.share.clientName, found.project.name].filter(Boolean).join(' | ') || document.title;
         this.buildShareReport(found);
         return;
       }
