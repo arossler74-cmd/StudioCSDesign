@@ -1959,19 +1959,20 @@
                       <sc-for list="{{ g.spaces }}" as="sp" hint-placeholder-count="2">
                         <div>
                           <div style="font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--color-accent-700); font-weight: 600; margin-bottom: 6px;">{{ sp.name }}</div>
-                          <div style="display: flex; flex-direction: column; gap: 4px;">
+                          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px;">
                             <sc-for list="{{ sp.cards }}" as="r" hint-placeholder-count="2">
-                              <div class="card" style="padding: 6px 10px; display: flex; flex-direction: row; flex-wrap: nowrap; align-items: center; gap: 10px; opacity: {{ r.dim }};">
-                                <div style="width: 26px; height: 26px; border-radius: var(--radius-sm); overflow: hidden; background: var(--color-neutral-100); flex: none;">
+                              <div class="card" style="padding: 10px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; opacity: {{ r.dim }};">
+                                <div style="width: 100%; aspect-ratio: 1 / 1; border-radius: var(--radius-sm); overflow: hidden; background: var(--color-neutral-100);">
                                   <img src="assets/piece-placeholder.png" data-img="{{ r.image }}" alt="" style="width: 100%; height: 100%; object-fit: cover;">
                                 </div>
-                                <div style="flex: 1; min-width: 0;">
-                                  <div style="font-weight: 600; font-size: 11.5px; line-height: 1.3;">{{ r.name }}<sc-if value="{{ r.line }}" hint-placeholder-val="{{ false }}"><span style="font-weight: 400; color: var(--color-neutral-600);"> · {{ r.line }}</span></sc-if></div>
-                                  <sc-if value="{{ r.comment }}" hint-placeholder-val="{{ false }}">
-                                    <div style="font-size: 11px; color: var(--color-neutral-800); font-style: italic;">“{{ r.comment }}”</div>
-                                  </sc-if>
-                                </div>
-                                <div style="flex: none; display: inline-flex; align-items: center; gap: 4px; padding: 2px 9px; border-radius: 999px; font-size: 10px; font-weight: 600; color: #fff; background: {{ r.badgeBg }}; white-space: nowrap;">
+                                <div style="font-weight: 600; font-size: 12px; line-height: 1.25;">{{ r.name }}</div>
+                                <sc-if value="{{ r.line }}" hint-placeholder-val="{{ false }}">
+                                  <div style="font-size: 11px; color: var(--color-neutral-600); margin-top: -4px;">{{ r.line }}</div>
+                                </sc-if>
+                                <sc-if value="{{ r.comment }}" hint-placeholder-val="{{ false }}">
+                                  <div style="font-size: 11px; color: var(--color-neutral-800); font-style: italic;">“{{ r.comment }}”</div>
+                                </sc-if>
+                                <div style="display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 999px; font-size: 10px; font-weight: 600; color: #fff; background: {{ r.badgeBg }}; white-space: nowrap;">
                                   <sc-if value="{{ r.isLoved }}" hint-placeholder-val="{{ false }}">
                                     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 1 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
                                   </sc-if>
@@ -1984,10 +1985,10 @@
                                   <span>{{ r.badge }}</span>
                                 </div>
                                 <sc-if value="{{ r.showApplyRooms }}" hint-placeholder-val="{{ false }}">
-                                  <button type="button" onClick="{{ r.applyRooms }}" class="btn btn-secondary" style="flex: none; font-size: 11px; padding: 4px 10px;">{{ r.applyRoomsLabel }}</button>
+                                  <button type="button" onClick="{{ r.applyRooms }}" class="btn btn-secondary" style="font-size: 11px; padding: 4px 10px;">{{ r.applyRoomsLabel }}</button>
                                 </sc-if>
                                 <sc-if value="{{ r.open }}" hint-placeholder-val="{{ true }}">
-                                  <button type="button" onClick="{{ r.resolve }}" class="btn btn-ghost" style="flex: none; font-size: 11px; padding: 4px 6px;">Mark handled</button>
+                                  <button type="button" onClick="{{ r.resolve }}" class="btn btn-ghost" style="font-size: 11px; padding: 2px 6px;">Mark handled</button>
                                 </sc-if>
                               </div>
                             </sc-for>
@@ -2300,8 +2301,11 @@ const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review
 // reaches this file — the version badge in the top bar and the Studio →
 // Changelog page both read straight from this, nothing else to update.
 // Versioning starts at 1.1; anything before that lives only in git log.
-const APP_VERSION = '3.1';
+const APP_VERSION = '3.2';
 const CHANGELOG = [
+  { version: '3.2', date: '2026-09-23', changes: [
+    'Client feedback: cards within a room/space now tile — square photo on top, a few per row — instead of a stacked list of full-width rows.',
+  ] },
   { version: '3.1', date: '2026-09-23', changes: [
     'Client feedback: fixed cards rendering as tall, centered, stacked blocks instead of a compact row (a leftover style was forcing a column layout) — cards are properly small now.',
     'Client feedback: each version now splits into its own room/space section (e.g. "Family Room") instead of one flat list per link, and the badge (Loved / Reconsider / Wants to add / Wants to remove) carries the same icon as the matching client-side button.',
