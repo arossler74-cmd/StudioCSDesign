@@ -78,6 +78,11 @@
   .cs-tappable { cursor: pointer; transition: transform .18s var(--ease-spring), box-shadow .18s var(--ease-spring), border-color .2s ease; }
   .cs-tappable:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
   .cs-tappable:active { transform: scale(.98) translateY(0); box-shadow: var(--shadow-sm); }
+  /* phase status tag on the project's phase cards — a <select> dressed as a tag */
+  select.cs-phase-status { -webkit-appearance: none; appearance: none; font-family: inherit; cursor: pointer; border: 0; padding-right: 26px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23806a58' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center; }
+  select.cs-phase-status:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
   button.tag { cursor: pointer; transition: transform .14s var(--ease-spring), background-color .15s ease, color .15s ease; }
   button.tag:active { transform: scale(.93); }
   .cs-chip-remove { border: 0; background: none; cursor: pointer; font: inherit; line-height: 1; padding: 3px; margin: -3px; color: inherit; opacity: .65; border-radius: 999px; transition: transform .14s var(--ease-spring), opacity .15s ease, background-color .15s ease; }
@@ -816,7 +821,13 @@
               <div class="card cs-tappable" style="padding: 22px; display: flex; flex-direction: column; gap: 14px; border: 2px solid {{ f.ring }};" onClick="{{ f.select }}">
                 <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
                   <div style="width: 32px; height: 32px; border-radius: 999px; background: {{ f.dot }}; color: #fff; display: grid; place-items: center; font-family: var(--font-heading); font-size: 14px;">{{ f.n }}</div>
-                  <span class="tag tag-neutral">{{ f.statusLabel }}</span>
+                  <select class="tag tag-neutral cs-phase-status" value="{{ f.status }}" onClick="{{ f.stop }}" onChange="{{ f.setStatus }}" aria-label="{{ f.title }} status" title="Set where this phase is">
+                    <option value="not-started">Not started</option>
+                    <option value="in-progress">In progress</option>
+                    <option value="review">In review</option>
+                    <option value="answered">Feedback received</option>
+                    <option value="done">Done</option>
+                  </select>
                 </div>
                 <div>
                   <div style="font-family: var(--font-heading); font-size: 22px; color: var(--color-accent-900);">{{ f.title }}</div>
@@ -2357,8 +2368,14 @@ const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review
 // reaches this file — the version badge in the top bar and the Studio →
 // Changelog page both read straight from this, nothing else to update.
 // Versioning starts at 1.1; anything before that lives only in git log.
-const APP_VERSION = '3.3';
+const APP_VERSION = '3.4';
 const CHANGELOG = [
+  { version: '3.4', date: '2026-09-24', changes: [
+    'Project phases: the status on each phase card (Discovery, Concept, Design & sourcing, Styling & reveal) is now a tag you can set — Not started, In progress, In review, Feedback received or Done. Setting a phase past "Not started" marks every earlier phase Done, and the progress bars and the dashboard pipeline follow.',
+    'Sharing: creating a client link for Concept, Design & sourcing or Styling now puts that phase "In review" and closes out the earlier phases as Done automatically (a phase already further along is never pulled back).',
+    'Discovery no longer resets itself to "Not started" when the questionnaire has no answers — once a phase is tagged by hand, or a later phase has started, the automatic questionnaire status leaves it alone.',
+    'Dashboard pipeline: a project whose furthest phase is "In review" or "Feedback received" now counts under that phase.',
+  ] },
   { version: '3.3', date: '2026-09-24', changes: [
     'Client feedback: within each room, cards are now organized by what the client said — Loved, Reconsider, Moved out, Moved in — each under its own small heading with a count, instead of one mixed grid. A piece with only a comment (no verdict) now reads "Comment" rather than being mislabeled "Reconsider".',
     'Client review link: the "Anything else you’d like us to know?" box is now a Final notes section where the client can also attach photos (up to 12, 10 MB each) — their space, inspiration, anything that helps.',
@@ -2693,8 +2710,30 @@ class Component extends DCLogic {
   currentPhase(p) {
     const ph = p.phases || {};
     let cur = PHASES[0];
-    PHASES.forEach((f) => { const d = ph[f.key] || {}; if ((d.progress || 0) > 0 || d.status === 'done' || d.status === 'in-progress') cur = f; });
+    PHASES.forEach((f) => { const d = ph[f.key] || {}; if ((d.progress || 0) > 0 || (d.status && d.status !== 'not-started')) cur = f; });
     return cur;
+  }
+
+  // The studio's own tag for where a phase stands. Anything past "Not
+  // started" means every earlier phase is behind the project, so those are
+  // closed out as Done too — and the tag is marked manual so the automatic
+  // Discovery sync (syncDiscoveryStatus) never overwrites it again.
+  phasesWithStatus(phases, key, status) {
+    const next = { ...(phases || {}) };
+    const idx = PHASES.findIndex((f) => f.key === key);
+    const cur = next[key] || {};
+    const progress = status === 'not-started' ? 0 : status === 'in-progress' ? Math.min(Math.max(cur.progress || 0, 10), 90) : 100;
+    next[key] = { ...cur, status, progress, statusManual: true };
+    if (status !== 'not-started') PHASES.slice(0, idx).forEach((f) => {
+      const d = next[f.key] || {};
+      if (d.status !== 'done') next[f.key] = { ...d, status: 'done', progress: 100, statusManual: true };
+    });
+    return next;
+  }
+  async setPhaseStatus(key, status) {
+    const p = this.state.proj;
+    if (!p || !ST[status]) return;
+    await this.persist({ phases: this.phasesWithStatus(p.phases, key, status) });
   }
   money(v) { return (v === null || v === undefined || v === '') ? '—' : '$' + Number(v).toLocaleString('en-US'); }
   cat(id) { return (this.state.catalog || []).find((c) => c.id === id) || null; }
@@ -2871,6 +2910,9 @@ class Component extends DCLogic {
   async syncDiscoveryStatus() {
     const p = this.state.proj;
     if (!p) return;
+    const ph = p.phases || {};
+    if ((ph.discovery || {}).statusManual) return;
+    if (PHASES.slice(1).some((f) => ph[f.key] && ph[f.key].status && ph[f.key].status !== 'not-started')) return;
     const secs = this.questionnaire();
     const clientAns = this.clientAnswers();
     const isFilled = (v) => Array.isArray(v) ? v.length : (v || '').toString().trim();
@@ -3633,6 +3675,9 @@ class Component extends DCLogic {
         const d = ph[f.key] || {};
         return { n: f.n, title: f.title, tagline: f.tagline,
           statusLabel: ST[d.status] || 'Not started', pct: (d.progress || 0) + '%', dot: this.color(f.key),
+          status: ST[d.status] ? d.status : 'not-started',
+          stop: (e) => e.stopPropagation(),
+          setStatus: (e) => this.setPhaseStatus(f.key, e.target.value),
           ring: s.tab === f.key ? this.color(f.key) : 'transparent',
           select: () => this.setState({ tab: f.key }) };
       }),
@@ -4500,7 +4545,14 @@ class Component extends DCLogic {
         if (!s.shareName.trim()) return;
         const { project } = await api.createShare(p, s.shareName.trim(), s.sharePhase);
         this.setState({ proj: project, shareName: '' });
-        this.refresh();
+        // Sending a phase to the client means that phase is now in review and
+        // everything before it is behind the project. Discovery is left to its
+        // own questionnaire-driven status; a phase already further along
+        // (feedback received / done) is never pulled back.
+        const key = s.sharePhase === 'styling' || s.sharePhase === 'design' || s.sharePhase === 'concept' ? s.sharePhase : null;
+        const st = key && ((project.phases || {})[key] || {}).status;
+        if (key && (!st || st === 'not-started' || st === 'in-progress')) await this.persist({ phases: this.phasesWithStatus(project.phases, key, 'review') });
+        else this.refresh();
       };
       v.shares = (p.shares || []).map((sh) => ({
         clientName: sh.clientName, url: api.shareUrl(sh.token),
