@@ -1041,3 +1041,19 @@ export async function uploadFile(projectId, file) {
   }
   return new Promise((res) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.readAsDataURL(file); });
 }
+
+// A photo the client attaches to their final notes on a share link. They are
+// not signed in, so this goes to its own share-uploads/{token}/ scope, which
+// storage.rules opens only while that share doc exists (the token is the
+// same secret that gates the rest of the link). Local/demo mode falls back
+// to a data URL, same as uploadFile().
+export async function uploadShareFile(token, file) {
+  if (mode === 'firebase' && token) {
+    const { ref, uploadBytes, getDownloadURL } = fb.S;
+    const safe = String(file.name || 'photo').replace(/[^\w.\-]+/g, '-').slice(-80);
+    const r = ref(fb.storage, `share-uploads/${token}/${Date.now()}-${safe}`);
+    await uploadBytes(r, file, { contentType: file.type || 'application/octet-stream' });
+    return getDownloadURL(r);
+  }
+  return new Promise((res) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.readAsDataURL(file); });
+}

@@ -381,8 +381,26 @@
       </div></sc-if>
 
       <div class="card cs-client-section" style="padding: 24px 26px; margin-top: 36px; max-width: 720px;">
+        <div style="font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-accent-700); font-weight: 600; margin-bottom: 4px;">Final notes</div>
         <div style="font-family: var(--font-heading); font-size: 24px; color: var(--color-accent-900);">Anything else you’d like us to know?</div>
         <textarea class="input" rows="3" value="{{ shareMessage }}" onChange="{{ setShareMessage }}" placeholder="Add a note for Cybelle" style="margin-top: 12px; border-radius: var(--radius-md);"></textarea>
+        <div style="margin-top: 14px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+          <sc-for list="{{ shareUploads }}" as="up" hint-placeholder-count="0">
+            <div style="position: relative; width: 76px; height: 76px; border-radius: var(--radius-sm); overflow: hidden; background: var(--color-neutral-100);">
+              <img src="assets/piece-placeholder.png" data-img="{{ up.url }}" alt="" style="width: 100%; height: 100%; object-fit: cover;">
+              <button type="button" onClick="{{ up.remove }}" aria-label="Remove photo" style="position: absolute; top: 4px; right: 4px; width: 22px; height: 22px; border-radius: 50%; border: 0; background: rgba(30,25,20,.65); color: #fff; font-size: 14px; line-height: 22px; padding: 0; cursor: pointer;">×</button>
+            </div>
+          </sc-for>
+          <label class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px;">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+            <span>{{ shareUploadLabel }}</span>
+            <input type="file" accept="image/*" multiple onChange="{{ pickShareUploads }}" style="display: none;">
+          </label>
+        </div>
+        <sc-if value="{{ shareUploadError }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top: 8px; font-size: 12.5px; color: var(--color-accent-800);">{{ shareUploadError }}</div>
+        </sc-if>
+        <div style="margin-top: 8px; font-size: 12.5px; color: var(--color-neutral-600);">Photos of your space, inspiration, anything that helps — they go to Cybelle with your note.</div>
       </div>
 
       <div style="margin-top: 40px; display: flex; align-items: center; gap: 16px;">
@@ -1959,8 +1977,15 @@
                       <sc-for list="{{ g.spaces }}" as="sp" hint-placeholder-count="2">
                         <div>
                           <div style="font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--color-accent-700); font-weight: 600; margin-bottom: 6px;">{{ sp.name }}</div>
+                          <sc-for list="{{ sp.sections }}" as="sec" hint-placeholder-count="2">
+                          <div>
+                          <div style="display: flex; align-items: baseline; gap: 8px; margin: 12px 0 8px;">
+                            <div style="font-size: 13px; font-weight: 600; color: var(--color-accent-900);">{{ sec.label }}</div>
+                            <div style="font-size: 11px; color: var(--color-neutral-600);">{{ sec.count }}</div>
+                            <div style="flex: 1; height: 1px; background: var(--color-neutral-200);"></div>
+                          </div>
                           <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px;">
-                            <sc-for list="{{ sp.cards }}" as="r" hint-placeholder-count="2">
+                            <sc-for list="{{ sec.cards }}" as="r" hint-placeholder-count="2">
                               <div class="card" style="padding: 10px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; opacity: {{ r.dim }};">
                                 <div style="width: 100%; aspect-ratio: 1 / 1; border-radius: var(--radius-sm); overflow: hidden; background: var(--color-neutral-100);">
                                   <img src="assets/piece-placeholder.png" data-img="{{ r.image }}" alt="" style="width: 100%; height: 100%; object-fit: cover;">
@@ -1993,8 +2018,39 @@
                               </div>
                             </sc-for>
                           </div>
+                          </div>
+                          </sc-for>
                         </div>
                       </sc-for>
+                      <sc-if value="{{ g.hasFinalNotes }}" hint-placeholder-val="{{ false }}">
+                        <div>
+                          <div style="font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--color-accent-700); font-weight: 600; margin-bottom: 6px;">Final notes</div>
+                          <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <sc-for list="{{ g.finalNotes }}" as="n" hint-placeholder-count="1">
+                              <div class="card" style="padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; opacity: {{ n.dim }};">
+                                <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px;">
+                                  <div style="font-size: 12px; color: var(--color-neutral-600);">{{ n.line }}</div>
+                                  <sc-if value="{{ n.open }}" hint-placeholder-val="{{ true }}">
+                                    <button type="button" onClick="{{ n.resolve }}" class="btn btn-ghost" style="font-size: 11px; padding: 2px 6px;">Mark handled</button>
+                                  </sc-if>
+                                </div>
+                                <sc-if value="{{ n.hasComment }}" hint-placeholder-val="{{ true }}">
+                                  <div style="font-size: 14px; color: var(--color-neutral-800); white-space: pre-wrap;">“{{ n.comment }}”</div>
+                                </sc-if>
+                                <sc-if value="{{ n.hasPhotos }}" hint-placeholder-val="{{ false }}">
+                                  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px;">
+                                    <sc-for list="{{ n.photos }}" as="ph" hint-placeholder-count="3">
+                                      <a href="{{ ph.url }}" target="_blank" rel="noopener" style="display: block; aspect-ratio: 1 / 1; border-radius: var(--radius-sm); overflow: hidden; background: var(--color-neutral-100);">
+                                        <img src="assets/piece-placeholder.png" data-img="{{ ph.url }}" alt="Client photo" style="width: 100%; height: 100%; object-fit: cover;">
+                                      </a>
+                                    </sc-for>
+                                  </div>
+                                </sc-if>
+                              </div>
+                            </sc-for>
+                          </div>
+                        </div>
+                      </sc-if>
                     </div>
                   </div>
                 </sc-for>
@@ -2301,8 +2357,13 @@ const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review
 // reaches this file — the version badge in the top bar and the Studio →
 // Changelog page both read straight from this, nothing else to update.
 // Versioning starts at 1.1; anything before that lives only in git log.
-const APP_VERSION = '3.2';
+const APP_VERSION = '3.3';
 const CHANGELOG = [
+  { version: '3.3', date: '2026-09-24', changes: [
+    'Client feedback: within each room, cards are now organized by what the client said — Loved, Reconsider, Moved out, Moved in — each under its own small heading with a count, instead of one mixed grid. A piece with only a comment (no verdict) now reads "Comment" rather than being mislabeled "Reconsider".',
+    'Client review link: the "Anything else you’d like us to know?" box is now a Final notes section where the client can also attach photos (up to 12, 10 MB each) — their space, inspiration, anything that helps.',
+    'Client feedback: the client’s final notes and any photos they attached now appear at the end of each feedback version (under its sent/responded date and time), with photos opening full size on click.',
+  ] },
   { version: '3.2', date: '2026-09-23', changes: [
     'Client feedback: cards within a room/space now tile — square photo on top, a few per row — instead of a stacked list of full-width rows.',
   ] },
@@ -4357,15 +4418,22 @@ class Component extends DCLogic {
         // the way a flat list can't, without a fragile 3-deep nested loop.
         const spaceName = room ? room.name : isQuestionnaire ? 'Discovery answers' : isMessage ? 'General note' : 'General';
         const isLoved = !isQuestionnaire && !isMessage && !isSwap && r.verdict === 'up';
-        const isReconsider = !isQuestionnaire && !isMessage && !isSwap && r.verdict !== 'up';
+        const isReconsider = !isQuestionnaire && !isMessage && !isSwap && !!r.verdict && r.verdict !== 'up';
+        // Which feedback section the card sits under within its room — in the
+        // order the client's own buttons read: Love it, Reconsider, Move out,
+        // then substitutes brought in.
+        const kindKey = isQuestionnaire ? 'answered' : isMessage ? 'note' : isSwap ? (r.action === 'add' ? 'in' : 'out') : r.verdict === 'up' ? 'loved' : r.verdict ? 'reconsider' : 'comment';
         return {
-          token: r.viaShare || '', at: r.at || '', spaceName,
+          token: r.viaShare || '', at: r.at || '', spaceName, kindKey, isMessage,
+          photos: (r.photos || []).map((url) => ({ url })),
+          hasPhotos: (r.photos || []).length > 0,
+          hasComment: !!(r.comment || '').trim(),
           name: isQuestionnaire ? (r.question || 'Questionnaire response') : isMessage ? 'Client note' : (c.name || 'Piece'),
           image: isQuestionnaire || isMessage ? PLACEHOLDER : (c.image || PLACEHOLDER),
           line: r.by || '',
           comment: isQuestionnaire ? (r.answer || '') : (r.comment || ''),
-          badge: isQuestionnaire ? 'Answered' : isMessage ? 'Note' : isSwap ? (r.action === 'add' ? 'Wants to add' : 'Wants to remove') : r.verdict === 'up' ? 'Loved' : 'Reconsider',
-          badgeBg: isQuestionnaire ? 'var(--color-accent-2)' : isMessage ? 'var(--color-accent-700)' : isSwap ? (r.action === 'add' ? 'var(--color-accent-2)' : 'var(--color-accent-700)') : r.verdict === 'up' ? 'var(--color-accent-2)' : 'var(--color-accent-700)',
+          badge: isQuestionnaire ? 'Answered' : isMessage ? 'Note' : isSwap ? (r.action === 'add' ? 'Wants to add' : 'Wants to remove') : r.verdict === 'up' ? 'Loved' : r.verdict ? 'Reconsider' : 'Comment',
+          badgeBg: isQuestionnaire ? 'var(--color-accent-2)' : isMessage ? 'var(--color-accent-700)' : isSwap ? (r.action === 'add' ? 'var(--color-accent-2)' : 'var(--color-accent-700)') : r.verdict === 'up' ? 'var(--color-accent-2)' : r.verdict ? 'var(--color-accent-700)' : 'var(--color-neutral-600)',
           // Same icon families as the client's own Love it / Reconsider /
           // Move out buttons (see the "Your selections" cards), so a badge
           // here reads as the same action, not a different vocabulary.
@@ -4398,9 +4466,23 @@ class Component extends DCLogic {
           const sh = sharesByToken[g.token];
           const openCount = g.cards.filter((c) => c.open).length;
           const bySpace = {};
-          g.cards.forEach((card) => { (bySpace[card.spaceName] || (bySpace[card.spaceName] = [])).push(card); });
-          const spaces = Object.keys(bySpace).sort().map((name) => ({ name, cards: bySpace[name] }));
+          g.cards.filter((c) => !c.isMessage).forEach((card) => { (bySpace[card.spaceName] || (bySpace[card.spaceName] = [])).push(card); });
+          const sectionOrder = [
+            ['loved', 'Loved'], ['reconsider', 'Reconsider'], ['out', 'Moved out'], ['in', 'Moved in'],
+            ['comment', 'Comments'], ['answered', 'Answers'],
+          ];
+          const spaces = Object.keys(bySpace).sort().map((name) => ({
+            name,
+            sections: sectionOrder
+              .map(([key, label]) => ({ label, cards: bySpace[name].filter((c) => c.kindKey === key) }))
+              .filter((sec) => sec.cards.length)
+              .map((sec) => ({ ...sec, count: String(sec.cards.length) })),
+          }));
+          // The client's final notes (+ any photos) close out the version,
+          // after every room, rather than sorting in as a "General note" room.
+          const finalNotes = g.cards.filter((c) => c.isMessage);
           return {
+            finalNotes, hasFinalNotes: finalNotes.length > 0,
             title: sh ? [sh.clientName, phaseLabels[sh.phase] || sh.phase].filter(Boolean).join(' · ') : 'Internal test (no client link)',
             sentLabel: sh && sh.createdAt ? 'Link sent ' + dateTime(sh.createdAt) : '',
             respondedLabel: g.at ? 'Responded ' + dateTime(g.at) : '',
@@ -4615,6 +4697,26 @@ class Component extends DCLogic {
       shareSaveLabel: s.shareSaved || 'Send my feedback',
       shareMessage: s.shareMessage || '',
       setShareMessage: (e) => this.setState({ shareMessage: e.target.value }),
+      shareUploads: (s.shareUploads || []).map((url, i) => ({
+        url, remove: () => this.setState({ shareUploads: (this.state.shareUploads || []).filter((_, j) => j !== i) }),
+      })),
+      shareUploadLabel: s.shareUploading ? 'Uploading…' : (s.shareUploads || []).length ? 'Add more photos' : 'Add photos',
+      shareUploadError: s.shareUploadError || '',
+      pickShareUploads: async (e) => {
+        const files = Array.from((e.target.files) || []).filter((f) => /^image\//.test(f.type));
+        e.target.value = '';
+        if (!files.length || this.state.shareUploading) return;
+        const room = 12 - (this.state.shareUploads || []).length;
+        this.setState({ shareUploading: true, shareUploadError: room < files.length ? 'Up to 12 photos per note — the rest were skipped.' : '' });
+        for (const file of files.slice(0, Math.max(0, room))) {
+          if (file.size >= 10 * 1024 * 1024) { this.setState({ shareUploadError: file.name + ' is over 10 MB — skipped.' }); continue; }
+          try {
+            const url = await api.uploadShareFile(isPublic ? share.token : null, file);
+            this.setState({ shareUploads: (this.state.shareUploads || []).concat(url) });
+          } catch (err) { this.setState({ shareUploadError: 'Could not upload ' + file.name + '. Please try again.' }); }
+        }
+        this.setState({ shareUploading: false });
+      },
       shareQuestionnaire: questionnaire.map((sec) => ({
         title: sec.title,
         questions: (sec.questions || []).map((q) => {
@@ -4666,15 +4768,18 @@ class Component extends DCLogic {
           if (!value) continue;
           proj = await api.addReview(proj, { kind: 'questionnaire', phase, itemId: 'question:' + q.id, question: q.label, answer: value, by: share.clientName, viaShare: isPublic ? share.token : null, at: submittedAt });
         }
-        if ((s.shareMessage || '').trim()) {
-          proj = await api.addReview(proj, { kind: 'message', phase, itemId: 'note:' + phase, comment: s.shareMessage.trim(), by: share.clientName, viaShare: isPublic ? share.token : null, at: submittedAt });
+        // Final notes: the note and any attached photos travel as one review,
+        // so the Feedback tab can show them together at the end of this version.
+        const photos = s.shareUploads || [];
+        if ((s.shareMessage || '').trim() || photos.length) {
+          proj = await api.addReview(proj, { kind: 'message', phase, itemId: 'note:' + phase, comment: (s.shareMessage || '').trim(), photos, by: share.clientName, viaShare: isPublic ? share.token : null, at: submittedAt });
         }
         // Saved so this same link, reopened later, restores these marks/swaps/
         // answers instead of resetting — only the message box clears, the way
         // a chat input clears after you send it.
         if (isPublic) await api.saveShareState(share.token, { items: st, trial, answers, message: '' });
         this.setState({ share: { ...this.state.share, project: proj }, shareSaved: 'Thank you — sent' });
-        this.setState({ shareMessage: '' });
+        this.setState({ shareMessage: '', shareUploads: [], shareUploadError: '' });
         setTimeout(() => this.setState({ shareSaved: '' }), 2600);
       },
     };

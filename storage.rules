@@ -62,6 +62,17 @@ service firebase.storage {
       allow delete: if isAdmin();
     }
 
+    // Photos a client attaches to their final notes on a share link. They are
+    // not signed in, so the share token (the same secret that opens the link)
+    // is the gate: writes only while shares/{token} still exists, images only,
+    // under 10 MB. `get` is needed for the client's own getDownloadURL call.
+    match /share-uploads/{token}/{file} {
+      allow get: if signedIn() || firestore.exists(/databases/(default)/documents/shares/$(token));
+      allow list, delete: if signedIn();
+      allow create: if isImageUpload()
+        && firestore.exists(/databases/(default)/documents/shares/$(token));
+    }
+
     // Project imagery stays scoped to the people assigned to that project.
     // Client links receive explicit download URLs from the share payload.
     match /{projectId}/{allPaths=**} {

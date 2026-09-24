@@ -88,7 +88,8 @@ service cloud.firestore {
         allow create: if request.resource.data.keys().hasAll(['itemId', 'by'])
                       && request.resource.data.by is string
                       && request.resource.data.by.size() < 120
-                      && (!('comment' in request.resource.data) || request.resource.data.comment.size() < 2000);
+                      && (!('comment' in request.resource.data) || request.resource.data.comment.size() < 2000)
+                      && (!('photos' in request.resource.data) || (request.resource.data.photos is list && request.resource.data.photos.size() <= 12));
         allow read, update, delete: if isSignedIn();
       }
 
