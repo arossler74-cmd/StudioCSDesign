@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
@@ -1368,12 +1368,12 @@
                       Hidden — Unhide
                     </button>
                   </sc-if>
-                  <button type="button" onClick="{{ addConceptFloor }}" class="btn btn-secondary">+ Add level</button></div>
+                  <button type="button" onClick="{{ addConceptFloor }}" class="btn btn-secondary">+ Add floor plan</button></div>
                 <div style="font-size: 13.5px; color: var(--color-neutral-600); margin-bottom: 18px;">One card per level, with its own drawing and presentation comment.</div>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px;">
                   <sc-for list="{{ conceptFloors }}" as="floor" hint-placeholder-count="2">
                     <div style="border: 1px solid var(--color-neutral-200); border-radius: var(--radius-md); padding: 14px;">
-                      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;"><input class="input" value="{{ floor.title }}" onChange="{{ floor.setTitle }}" placeholder="Floor name" style="flex: 1;"><button type="button" onClick="{{ floor.remove }}" class="btn btn-ghost" disabled="{{ floor.cannotRemove }}">Remove level</button></div>
+                      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;"><input class="input" value="{{ floor.title }}" onChange="{{ floor.setTitle }}" placeholder="Plan title (e.g. Layout option A)" style="flex: 1;"><button type="button" onClick="{{ floor.remove }}" class="btn btn-ghost" disabled="{{ floor.cannotRemove }}">Remove plan</button></div>
                       <div style="aspect-ratio: 4 / 3; border-radius: 10px; overflow: hidden; background: var(--color-neutral-100);"><img src="assets/piece-placeholder.png" data-img="{{ floor.image }}" alt="" style="width: 100%; height: 100%; object-fit: contain;"></div>
                       <div style="display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px;"><label class="btn btn-secondary" style="cursor: pointer; font-size: 12px;">Choose floor plan<input type="file" accept="image/*" onChange="{{ floor.pickImage }}" style="display: none;"></label><button type="button" onClick="{{ floor.pasteImage }}" class="btn btn-secondary" style="font-size: 12px;">Paste from clipboard</button></div>
                       <textarea class="input" rows="3" value="{{ floor.comment }}" onChange="{{ floor.setComment }}" placeholder="Comments about circulation, layout or revisions" style="margin-top: 10px; resize: vertical; font-family: var(--font-body);"></textarea>
@@ -1615,13 +1615,13 @@
                       Hidden — Unhide
                     </button>
                   </sc-if>
-                  <button type="button" onClick="{{ addDesignFloor }}" class="btn btn-secondary">+ Add level</button>
+                  <button type="button" onClick="{{ addDesignFloor }}" class="btn btn-secondary">+ Add floor plan</button>
                 </div>
                 <div style="font-size: 13.5px; color: var(--color-neutral-600); margin-bottom: 18px;">Final drawings, once they differ from what Concept showed.</div>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px;">
                   <sc-for list="{{ designFloors }}" as="floor" hint-placeholder-count="2">
                     <div style="border: 1px solid var(--color-neutral-200); border-radius: var(--radius-md); padding: 14px;">
-                      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;"><input class="input" value="{{ floor.title }}" onChange="{{ floor.setTitle }}" placeholder="Floor name" style="flex: 1;"><button type="button" onClick="{{ floor.remove }}" class="btn btn-ghost">Remove level</button></div>
+                      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;"><input class="input" value="{{ floor.title }}" onChange="{{ floor.setTitle }}" placeholder="Plan title (e.g. Layout option A)" style="flex: 1;"><button type="button" onClick="{{ floor.remove }}" class="btn btn-ghost">Remove plan</button></div>
                       <div style="aspect-ratio: 4 / 3; border-radius: 10px; overflow: hidden; background: var(--color-neutral-100);"><img src="assets/piece-placeholder.png" data-img="{{ floor.image }}" alt="" style="width: 100%; height: 100%; object-fit: contain;"></div>
                       <div style="display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px;"><label class="btn btn-secondary" style="cursor: pointer; font-size: 12px;">Choose floor plan<input type="file" accept="image/*" onChange="{{ floor.pickImage }}" style="display: none;"></label><button type="button" onClick="{{ floor.pasteImage }}" class="btn btn-secondary" style="font-size: 12px;">Paste from clipboard</button></div>
                       <textarea class="input" rows="3" value="{{ floor.comment }}" onChange="{{ floor.setComment }}" placeholder="Comments about circulation, layout or revisions" style="margin-top: 10px; resize: vertical; font-family: var(--font-body);"></textarea>
@@ -2368,8 +2368,11 @@ const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review
 // reaches this file — the version badge in the top bar and the Studio →
 // Changelog page both read straight from this, nothing else to update.
 // Versioning starts at 1.1; anything before that lives only in git log.
-const APP_VERSION = '3.4';
+const APP_VERSION = '3.5';
 const CHANGELOG = [
+  { version: '3.5', date: '2026-09-28', changes: [
+    'Export & client link: the 2D floor plans are now one carousel (arrows, thumbnails, counter, click to zoom) instead of stacked full-width images, with each plan\'s comment shown under the plan that is on screen. Printing still shows every plan. Floor plans are no longer called "levels" — the buttons read "+ Add floor plan" / "Remove plan", new plans are titled "Floor plan 02", "Floor plan 03"…, and the export heading no longer says "First & second floor", since several plans can be layouts of the same floor. Each space keeps its own section with its images as a carousel, as before.',
+  ] },
   { version: '3.4', date: '2026-09-24', changes: [
     'Project phases: the status on each phase card (Discovery, Concept, Design & sourcing, Styling & reveal) is now a tag you can set — Not started, In progress, In review, Feedback received or Done. Setting a phase past "Not started" marks every earlier phase Done, and the progress bars and the dashboard pipeline follow.',
     'Sharing: creating a client link for Concept, Design & sourcing or Styling now puts that phase "In review" and closes out the earlier phases as Done automatically (a phase already further along is never pulled back).',
@@ -3770,7 +3773,7 @@ class Component extends DCLogic {
         points: (p.conceptPoints || []).map((x) => ({ ...x })),
         palette: (p.palette || []).map((x) => ({ ...x })),
         materials: (p.materials || []).map((x) => ({ ...x })),
-        floorPlans: ((p.floorPlans && p.floorPlans.length) ? p.floorPlans : [{ title: 'First floor', image: p.plan || '', comment: '' }, { title: 'Second floor', image: '', comment: '' }]).map((x) => ({ ...x })),
+        floorPlans: ((p.floorPlans && p.floorPlans.length) ? p.floorPlans : [{ title: 'Floor plan 01', image: p.plan || '', comment: '' }]).map((x) => ({ ...x })),
         rooms: this.rooms().map((r) => ({ ...r, goal: r.goal || '', conceptMedia: (r.conceptMedia || (r.moodboard || []).map((url, i) => ({ id: 'legacy-' + i, type: 'moodboard', title: r.name + ' moodboard', url }))).map((x) => ({ ...x })) })),
       };
       const setDraft = (patch) => this.setState({ concept: { ...draft, ...patch } });
@@ -3862,7 +3865,7 @@ class Component extends DCLogic {
         clearImage: () => { const next = draft.materials.slice(); next[i] = { ...next[i], image: '' }; setDraft({ materials: next }); },
       }));
 
-      v.addConceptFloor = () => setDraft({ floorPlans: draft.floorPlans.concat([{ title: 'Level ' + String(draft.floorPlans.length + 1).padStart(2, '0'), image: '', comment: '' }]) });
+      v.addConceptFloor = () => setDraft({ floorPlans: draft.floorPlans.concat([{ title: 'Floor plan ' + String(draft.floorPlans.length + 1).padStart(2, '0'), image: '', comment: '' }]) });
       v.conceptFloors = draft.floorPlans.map((floor, fi) => {
         const setFloor = (patch) => { const next = draft.floorPlans.slice(); next[fi] = { ...next[fi], ...patch }; setDraft({ floorPlans: next }); };
         return { title: floor.title || '', image: floor.image || '', comment: floor.comment || '', cannotRemove: draft.floorPlans.length <= 1,
@@ -4052,7 +4055,7 @@ class Component extends DCLogic {
       }));
 
       v.copyDesignFloorPlans = () => setDraft({ floorPlans: (p.floorPlans || []).map((x) => ({ ...x })) });
-      v.addDesignFloor = () => setDraft({ floorPlans: draft.floorPlans.concat([{ title: 'Level ' + String(draft.floorPlans.length + 1).padStart(2, '0'), image: '', comment: '' }]) });
+      v.addDesignFloor = () => setDraft({ floorPlans: draft.floorPlans.concat([{ title: 'Floor plan ' + String(draft.floorPlans.length + 1).padStart(2, '0'), image: '', comment: '' }]) });
       v.designFloors = draft.floorPlans.map((floor, fi) => {
         const setFloor = (patch) => { const next = draft.floorPlans.slice(); next[fi] = { ...next[fi], ...patch }; setDraft({ floorPlans: next }); };
         return { title: floor.title || '', image: floor.image || '', comment: floor.comment || '',

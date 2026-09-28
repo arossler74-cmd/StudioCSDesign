@@ -107,7 +107,7 @@ function seed() {
         ], discountPct: 0, discountNote: '', note: '50% retainer to reserve the start date; balance due on delivery of the final concept. Furniture, trade labor, delivery and white-glove installation are billed separately.' },
         answers: {},
         plan: 'assets/floor-plan.png',
-        floorPlans: [{ title: 'First floor', image: 'assets/floor-plan.png', comment: '' }, { title: 'Second floor', image: '', comment: '' }],
+        floorPlans: [{ title: 'Floor plan 01', image: 'assets/floor-plan.png', comment: '' }],
         goals: [
           { title: 'One ground floor, not four rooms', body: 'Family room, dining, breakfast and terrace share a palette and a material language without repeating the same furniture; the eye should travel, not stop, and it should carry straight out to the pool.' },
           { title: 'Comfort that survives real life', body: 'Performance textiles where the sun and the family land, motion seating where it earns its place, and nothing so precious it changes how you use a room.' },
@@ -364,7 +364,7 @@ export async function reconcile86Residence(p) {
       { name: 'Textile — upholstery', note: 'Quiet tones — ivory, fendi and sand — for the upholstery.', image: '' },
       { name: 'Warm oak', note: 'Introduces a natural glow that brings continuity throughout the spaces.', image: '' },
     ],
-    floorPlans: (p.floorPlans && p.floorPlans.length) ? p.floorPlans : [{ title: 'First floor', image: p.plan || 'assets/floor-plan.png', comment: '' }, { title: 'Second floor', image: '', comment: '' }],
+    floorPlans: (p.floorPlans && p.floorPlans.length) ? p.floorPlans : [{ title: 'Floor plan 01', image: p.plan || 'assets/floor-plan.png', comment: '' }],
     rooms: (p.rooms || []).map((r) => ({ ...r, goal: r.goal || '', conceptMedia: r.conceptMedia || (r.moodboard || []).map((url, i) => ({ id: 'legacy-' + i, type: 'moodboard', title: r.name + ' moodboard', url })) })),
     goals: [
       { title: 'One ground floor, not four rooms', body: 'Family room, dining, breakfast and terrace share a palette and a material language without repeating the same furniture; the eye should travel, not stop, and it should carry straight out to the pool.' },

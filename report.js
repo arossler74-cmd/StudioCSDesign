@@ -191,7 +191,10 @@ footer img{height:52px;margin:0 auto 14px;opacity:.85}
   .room,.card,table{break-inside:avoid}
   h2{font-size:30px}
   .carousel-arrow,.carousel-tools,.lightbox{display:none!important}.slide{display:none!important}.slide.active{display:block!important}
+  .print-all .carousel-stage{aspect-ratio:auto;max-height:none}.print-all .slide{display:block!important;break-inside:avoid;margin-bottom:24px}.print-all .slide img{max-height:none}
+  .print-all .carousel-notes{display:none!important}.print-all .slide-print-note{display:block!important}
 }
+.carousel-note{display:none;font-size:13.5px;margin-top:14px}.carousel-note.active{display:block}.slide-print-note{display:none;font-size:13.5px;margin-top:8px}
 @media(max-width:1200px){.materials-grid,.sourcing-grid{grid-template-columns:repeat(3,1fr)}.palette-grid{grid-template-columns:repeat(3,1fr)}.process-step{grid-template-columns:130px 1fr}}
 @media(max-width:760px){section{min-height:auto}.g2,.g3,.g4,.studio-grid,.goals-grid,.concept-head,.concept-grid,.materials-grid,.sourcing-grid,.mood-grid,.meta{grid-template-columns:1fr}.wrap{padding:0 22px}.cover h1{font-size:58px}.studio-portrait{justify-self:start;height:auto;max-height:620px}.process-step{grid-template-columns:82px 1fr;gap:20px}.process-icon{width:54px;height:54px}.goal-card{min-height:auto}.concept-point,.concept-point:nth-child(3n),.concept-point:nth-last-child(-n+3){border-right:0;border-bottom:1px solid var(--line2)}.concept-point:last-child{border-bottom:0}.palette-grid{grid-template-columns:repeat(2,1fr);gap:14px}.stats{grid-template-columns:1fr}.carousel-arrow{width:44px;height:44px}.slide img{height:55vh}}
 `;
@@ -317,23 +320,25 @@ function materialsSection(materialList, img) {
 </div></section>`;
 }
 
+/** Floor plans as one carousel — same markup and script as the per-room
+ *  moodboard carousel (see moodSection), plus a note under the stage that
+ *  follows the active slide. Printed, every plan shows (print-all), since a
+ *  paper copy can't click through to the next plan. */
 function planSection(floorPlans, rooms, img) {
   const floors = (floorPlans || []).filter((f) => f.image);
-  if (floors.length) return `
-<section><div class="wrap">
-  <div class="kicker">First &amp; second floor</div><h2>Space plan · 2D</h2>
-  ${floors.map((f) => `<div class="room"><h3>${esc(f.title || 'Floor plan')}</h3>${f.comment ? `<p class="lead" style="font-size:13.5px;margin-top:8px">${esc(f.comment)}</p>` : ''}<img class="plan zoomable" src="${esc(img[f.image] || f.image)}" alt="${esc(f.title || 'Floor plan')}"></div>`).join('')}
-</div></section>`;
-  rooms = (rooms || []).filter((r) => r.cad);
-  if (!rooms.length) return '';
+  const slides = floors.length
+    ? floors.map((f) => ({ url: f.image, title: f.title || 'Floor plan', note: f.comment || '' }))
+    : (rooms || []).filter((r) => r.cad).map((r) => ({ url: r.cad, title: [r.name, r.code].filter(Boolean).join(' · '), note: r.brief || '' }));
+  if (!slides.length) return '';
   return `
 <section><div class="wrap">
   <div class="kicker">To scale</div><h2>Space plan · 2D</h2>
-  ${rooms.map((r) => `<div class="room">
-    <h3>${esc(r.name)}</h3>${r.code ? `<div class="code">${esc(r.code)}</div>` : ''}
-    ${r.brief ? `<p class="lead" style="font-size:13.5px;margin-top:8px">${esc(r.brief)}</p>` : ''}
-    <img class="plan zoomable" src="${esc(img[r.cad] || r.cad)}" alt="${esc(r.name)} plan">
-  </div>`).join('')}
+  <div class="carousel print-all" data-carousel="plan"><div class="carousel-stage">
+    ${slides.map((s, i) => `<div class="slide${i === 0 ? ' active' : ''}" data-slide="${i}"><img class="zoomable" src="${esc(img[s.url] || s.url)}" alt="${esc(s.title)}"><div class="slide-meta"><div>${esc(s.title)}</div><div class="slide-type">2D Floor Plan</div></div>${s.note ? `<p class="lead slide-print-note">${esc(s.note)}</p>` : ''}</div>`).join('')}
+    ${slides.length > 1 ? '<button class="carousel-arrow prev" type="button" aria-label="Previous plan">‹</button><button class="carousel-arrow next" type="button" aria-label="Next plan">›</button>' : ''}
+  </div>
+  ${slides.some((s) => s.note) ? `<div class="carousel-notes">${slides.map((s, i) => `<p class="lead carousel-note${i === 0 ? ' active' : ''}" data-note="${i}">${esc(s.note)}</p>`).join('')}</div>` : ''}
+  <div class="carousel-tools"><div class="carousel-thumbs">${slides.map((s, i) => `<button class="carousel-thumb${i === 0 ? ' active' : ''}" type="button" data-go="${i}" aria-label="${esc(s.title)}"><img src="${esc(img[s.url] || s.url)}" alt=""></button>`).join('')}</div><div class="carousel-count"><span>1</span> / ${slides.length}</div></div></div>
 </div></section>`;
 }
 
@@ -417,12 +422,14 @@ const INTERACTIONS = `
   root.querySelectorAll('[data-carousel]').forEach(function(carousel){
     var slides = Array.from(carousel.querySelectorAll('.slide'));
     var thumbs = Array.from(carousel.querySelectorAll('.carousel-thumb'));
+    var notes = Array.from(carousel.querySelectorAll('.carousel-note'));
     var count = carousel.querySelector('.carousel-count span');
     var current = 0;
     function show(index){
       current = (index + slides.length) % slides.length;
       slides.forEach(function(el,i){el.classList.toggle('active',i === current)});
       thumbs.forEach(function(el,i){el.classList.toggle('active',i === current)});
+      notes.forEach(function(el,i){el.classList.toggle('active',i === current)});
       if(count) count.textContent = current + 1;
       if(thumbs[current]) thumbs[current].scrollIntoView({block:'nearest',inline:'nearest'});
     }
