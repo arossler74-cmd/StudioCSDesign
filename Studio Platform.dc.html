@@ -1369,12 +1369,12 @@
                     </button>
                   </sc-if>
                   <button type="button" onClick="{{ addConceptFloor }}" class="btn btn-secondary">+ Add floor plan</button></div>
-                <div style="font-size: 13.5px; color: var(--color-neutral-600); margin-bottom: 18px;">One card per level, with its own drawing and presentation comment.</div>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px;">
+                <div style="font-size: 13.5px; color: var(--color-neutral-600); margin-bottom: 18px;">One card per plan, with its own drawing and presentation comment. Drag a drawing onto another to swap their order in the carousel.</div>
+                <div data-group-list="concept-floors" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px;">
                   <sc-for list="{{ conceptFloors }}" as="floor" hint-placeholder-count="2">
-                    <div style="border: 1px solid var(--color-neutral-200); border-radius: var(--radius-md); padding: 14px;">
+                    <div data-row-id="{{ floor.rowId }}" style="border: 1px solid var(--color-neutral-200); border-radius: var(--radius-md); padding: 14px; background: var(--color-surface);">
                       <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;"><input class="input" value="{{ floor.title }}" onChange="{{ floor.setTitle }}" placeholder="Plan title (e.g. Layout option A)" style="flex: 1;"><button type="button" onClick="{{ floor.remove }}" class="btn btn-ghost" disabled="{{ floor.cannotRemove }}">Remove plan</button></div>
-                      <div style="aspect-ratio: 4 / 3; border-radius: 10px; overflow: hidden; background: var(--color-neutral-100);"><img src="assets/piece-placeholder.png" data-img="{{ floor.image }}" alt="" style="width: 100%; height: 100%; object-fit: contain;"></div>
+                      <div onPointerDown="{{ floor.dragStart }}" title="Drag to reorder" style="aspect-ratio: 4 / 3; border-radius: 10px; overflow: hidden; background: var(--color-neutral-100); cursor: grab; touch-action: none;"><img src="assets/piece-placeholder.png" data-img="{{ floor.image }}" alt="" style="width: 100%; height: 100%; object-fit: contain; pointer-events: none;"></div>
                       <div style="display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px;"><label class="btn btn-secondary" style="cursor: pointer; font-size: 12px;">Choose floor plan<input type="file" accept="image/*" onChange="{{ floor.pickImage }}" style="display: none;"></label><button type="button" onClick="{{ floor.pasteImage }}" class="btn btn-secondary" style="font-size: 12px;">Paste from clipboard</button></div>
                       <textarea class="input" rows="3" value="{{ floor.comment }}" onChange="{{ floor.setComment }}" placeholder="Comments about circulation, layout or revisions" style="margin-top: 10px; resize: vertical; font-family: var(--font-body);"></textarea>
                     </div>
@@ -1405,7 +1405,7 @@
                     <textarea class="input" rows="2" value="{{ room.brief }}" onChange="{{ room.setBrief }}" placeholder="Functional brief, priorities and what we are looking for" style="resize: vertical; font-family: var(--font-body); margin-bottom: 18px;"></textarea>
                     <div style="border-top: 1px solid var(--color-neutral-200); padding-top: 16px;"><div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px;"><div style="font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-600);">Visual carousel</div><div style="flex: 1;"></div><label class="btn btn-secondary" style="cursor: pointer; font-size: 12px;">Add images<input type="file" accept="image/*" multiple onChange="{{ room.addMedia }}" style="display: none;"></label><button type="button" onClick="{{ room.pasteMedia }}" class="btn btn-secondary" style="font-size: 12px;">Paste from clipboard</button></div>
                       <sc-if value="{{ room.hasMedia }}" hint-placeholder-val="{{ false }}"><div style="border: 1px solid var(--color-neutral-200); border-radius: var(--radius-md); overflow: hidden; background: var(--color-neutral-100); margin-bottom: 14px;"><div style="aspect-ratio: 16 / 9;"><img src="assets/piece-placeholder.png" data-img="{{ room.currentUrl }}" alt="" style="width: 100%; height: 100%; object-fit: contain;"></div><div style="display: flex; align-items: center; gap: 10px; padding: 12px; border-top: 1px solid var(--color-neutral-200); background: var(--color-surface);"><button type="button" onClick="{{ room.prevMedia }}" class="btn btn-secondary" aria-label="Previous image">←</button><div style="border: 1px solid var(--color-neutral-200); background: var(--color-bg); border-radius: 999px; padding: 8px 14px; font-size: 12px; flex: 1; min-width: 0;">{{ room.currentType }} · {{ room.currentTitle }}</div><button type="button" onClick="{{ room.nextMedia }}" class="btn btn-secondary" aria-label="Next image">→</button></div></div></sc-if>
-                      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px;"><sc-for list="{{ room.media }}" as="media" hint-placeholder-count="3"><div style="border: 1px solid var(--color-neutral-200); border-radius: var(--radius-md); padding: 10px;"><div style="aspect-ratio: 4 / 3; border-radius: 9px; overflow: hidden; background: var(--color-neutral-100);"><img src="assets/piece-placeholder.png" data-img="{{ media.url }}" alt="" style="width: 100%; height: 100%; object-fit: cover;"></div><select class="input" value="{{ media.type }}" onChange="{{ media.setType }}" style="margin-top: 8px;"><option value="moodboard">Moodboard</option><option value="floorplan">2D Floor Plan</option><option value="sketchup">SketchUp rendering</option><option value="rendering">Ultra-realistic rendering</option></select><input class="input" value="{{ media.title }}" onChange="{{ media.setTitle }}" placeholder="Image title" style="margin-top: 7px;"><button type="button" onClick="{{ media.remove }}" class="btn btn-ghost" style="font-size: 12px; margin-top: 5px;">Remove image</button></div></sc-for></div>
+                      <div data-group-list="{{ room.mediaGroupList }}" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px;"><sc-for list="{{ room.media }}" as="media" hint-placeholder-count="3"><div data-row-id="{{ media.rowId }}" style="border: 1px solid var(--color-neutral-200); border-radius: var(--radius-md); padding: 10px; background: var(--color-surface);"><div onPointerDown="{{ media.dragStart }}" style="aspect-ratio: 4 / 3; border-radius: 9px; overflow: hidden; background: var(--color-neutral-100); cursor: grab; touch-action: none;"><img src="assets/piece-placeholder.png" data-img="{{ media.url }}" alt="" style="width: 100%; height: 100%; object-fit: cover; pointer-events: none;"></div><div style="font-size: 10px; color: var(--color-neutral-500); text-align: center; margin-top: 4px;">Drag the image to reorder</div><select class="input" value="{{ media.type }}" onChange="{{ media.setType }}" style="margin-top: 8px;"><option value="moodboard">Moodboard</option><option value="floorplan">2D Floor Plan</option><option value="sketchup">SketchUp rendering</option><option value="rendering">Ultra-realistic rendering</option></select><input class="input" value="{{ media.title }}" onChange="{{ media.setTitle }}" placeholder="Image title" style="margin-top: 7px;"><button type="button" onClick="{{ media.remove }}" class="btn btn-ghost" style="font-size: 12px; margin-top: 5px;">Remove image</button></div></sc-for></div>
                     </div>
                   </div>
                 </sc-for>
@@ -1618,11 +1618,11 @@
                   <button type="button" onClick="{{ addDesignFloor }}" class="btn btn-secondary">+ Add floor plan</button>
                 </div>
                 <div style="font-size: 13.5px; color: var(--color-neutral-600); margin-bottom: 18px;">Final drawings, once they differ from what Concept showed.</div>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px;">
+                <div data-group-list="design-floors" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px;">
                   <sc-for list="{{ designFloors }}" as="floor" hint-placeholder-count="2">
-                    <div style="border: 1px solid var(--color-neutral-200); border-radius: var(--radius-md); padding: 14px;">
+                    <div data-row-id="{{ floor.rowId }}" style="border: 1px solid var(--color-neutral-200); border-radius: var(--radius-md); padding: 14px; background: var(--color-surface);">
                       <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;"><input class="input" value="{{ floor.title }}" onChange="{{ floor.setTitle }}" placeholder="Plan title (e.g. Layout option A)" style="flex: 1;"><button type="button" onClick="{{ floor.remove }}" class="btn btn-ghost">Remove plan</button></div>
-                      <div style="aspect-ratio: 4 / 3; border-radius: 10px; overflow: hidden; background: var(--color-neutral-100);"><img src="assets/piece-placeholder.png" data-img="{{ floor.image }}" alt="" style="width: 100%; height: 100%; object-fit: contain;"></div>
+                      <div onPointerDown="{{ floor.dragStart }}" title="Drag to reorder" style="aspect-ratio: 4 / 3; border-radius: 10px; overflow: hidden; background: var(--color-neutral-100); cursor: grab; touch-action: none;"><img src="assets/piece-placeholder.png" data-img="{{ floor.image }}" alt="" style="width: 100%; height: 100%; object-fit: contain; pointer-events: none;"></div>
                       <div style="display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px;"><label class="btn btn-secondary" style="cursor: pointer; font-size: 12px;">Choose floor plan<input type="file" accept="image/*" onChange="{{ floor.pickImage }}" style="display: none;"></label><button type="button" onClick="{{ floor.pasteImage }}" class="btn btn-secondary" style="font-size: 12px;">Paste from clipboard</button></div>
                       <textarea class="input" rows="3" value="{{ floor.comment }}" onChange="{{ floor.setComment }}" placeholder="Comments about circulation, layout or revisions" style="margin-top: 10px; resize: vertical; font-family: var(--font-body);"></textarea>
                     </div>
@@ -2368,8 +2368,13 @@ const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review
 // reaches this file — the version badge in the top bar and the Studio →
 // Changelog page both read straight from this, nothing else to update.
 // Versioning starts at 1.1; anything before that lives only in git log.
-const APP_VERSION = '3.5';
+const APP_VERSION = '3.6';
 const CHANGELOG = [
+  { version: '3.6', date: '2026-09-30', changes: [
+    'Floor plans (Concept and Design & sourcing): drag a drawing onto another card to swap their order — that order is the order of the export carousel.',
+    'Concept spaces: drag an image onto another to reorder that space\'s carousel, same as the Design & sourcing carousel already did.',
+    'Export & client link: clicking through a carousel no longer scrolls the page — only the thumbnail strip moves. The carousel is sized to fit one screen together with its title, the floor-plan comment and the thumbnails, and a long comment scrolls inside its own box instead of pushing things around.',
+  ] },
   { version: '3.5', date: '2026-09-28', changes: [
     'Export & client link: the 2D floor plans are now one carousel (arrows, thumbnails, counter, click to zoom) instead of stacked full-width images, with each plan\'s comment shown under the plan that is on screen. Printing still shows every plan. Floor plans are no longer called "levels" — the buttons read "+ Add floor plan" / "Remove plan", new plans are titled "Floor plan 02", "Floor plan 03"…, and the export heading no longer says "First & second floor", since several plans can be layouts of the same floor. Each space keeps its own section with its images as a carousel, as before.',
   ] },
@@ -3866,9 +3871,14 @@ class Component extends DCLogic {
       }));
 
       v.addConceptFloor = () => setDraft({ floorPlans: draft.floorPlans.concat([{ title: 'Floor plan ' + String(draft.floorPlans.length + 1).padStart(2, '0'), image: '', comment: '' }]) });
+      // Floor plans carry no id of their own, so a drag works on positions —
+      // the ids only need to hold still for the length of one drag.
+      const floorIds = draft.floorPlans.map((_, i) => 'fp-' + i);
+      const persistFloorOrder = (nextIds) => setDraft({ floorPlans: nextIds.map((id) => draft.floorPlans[floorIds.indexOf(id)]) });
       v.conceptFloors = draft.floorPlans.map((floor, fi) => {
         const setFloor = (patch) => { const next = draft.floorPlans.slice(); next[fi] = { ...next[fi], ...patch }; setDraft({ floorPlans: next }); };
-        return { title: floor.title || '', image: floor.image || '', comment: floor.comment || '', cannotRemove: draft.floorPlans.length <= 1,
+        return { rowId: floorIds[fi], title: floor.title || '', image: floor.image || '', comment: floor.comment || '', cannotRemove: draft.floorPlans.length <= 1,
+          dragStart: (e) => this.startReorderDrag(e, floorIds[fi], floorIds, persistFloorOrder),
           setTitle: (e) => setFloor({ title: e.target.value }), setComment: (e) => setFloor({ comment: e.target.value }),
           pickImage: async (e) => { const file = e.target.files && e.target.files[0]; if (file) setFloor({ image: await api.uploadFile(p.id, file) }); },
           pasteImage: async () => { const file = await this.conceptClipboardImage(); if (file) setFloor({ image: await api.uploadFile(p.id, file) }); },
@@ -3889,8 +3899,11 @@ class Component extends DCLogic {
         const slideIndex = mediaList.length ? Math.min(slideMap[room.id] || 0, mediaList.length - 1) : 0;
         const currentMedia = mediaList[slideIndex] || {};
         const moveMedia = (delta) => () => { if (!mediaList.length) return; this.setState({ conceptSlides: { ...(this.state.conceptSlides || {}), [room.id]: (slideIndex + delta + mediaList.length) % mediaList.length } }); };
+        // Older concept images may have no id — fall back to position.
+        const mediaIds = mediaList.map((m, i) => m.id || 'm-' + i);
+        const persistMediaOrder = (nextIds) => setRoom({ conceptMedia: nextIds.map((id) => mediaList[mediaIds.indexOf(id)]) });
         return {
-          name: room.name,
+          name: room.name, mediaGroupList: room.id + '-concept-media',
           goal: room.goal || '',
           brief: room.brief,
           setName: (e) => setRoom({ name: e.target.value }),
@@ -3901,7 +3914,8 @@ class Component extends DCLogic {
           currentType: ({ moodboard: 'Moodboard', floorplan: '2D Floor Plan', sketchup: 'SketchUp rendering', rendering: 'Ultra-realistic rendering' })[currentMedia.type] || 'Moodboard',
           prevMedia: moveMedia(-1), nextMedia: moveMedia(1),
           media: (room.conceptMedia || []).map((media, mi) => ({
-            ...media,
+            ...media, rowId: mediaIds[mi],
+            dragStart: (e) => this.startReorderDrag(e, mediaIds[mi], mediaIds, persistMediaOrder),
             setType: (e) => { const next = room.conceptMedia.slice(); next[mi] = { ...next[mi], type: e.target.value }; setRoom({ conceptMedia: next }); },
             setTitle: (e) => { const next = room.conceptMedia.slice(); next[mi] = { ...next[mi], title: e.target.value }; setRoom({ conceptMedia: next }); },
             remove: () => setRoom({ conceptMedia: room.conceptMedia.filter((_, j) => j !== mi) }),
@@ -4056,9 +4070,12 @@ class Component extends DCLogic {
 
       v.copyDesignFloorPlans = () => setDraft({ floorPlans: (p.floorPlans || []).map((x) => ({ ...x })) });
       v.addDesignFloor = () => setDraft({ floorPlans: draft.floorPlans.concat([{ title: 'Floor plan ' + String(draft.floorPlans.length + 1).padStart(2, '0'), image: '', comment: '' }]) });
+      const designFloorIds = draft.floorPlans.map((_, i) => 'fp-' + i);
+      const persistDesignFloorOrder = (nextIds) => setDraft({ floorPlans: nextIds.map((id) => draft.floorPlans[designFloorIds.indexOf(id)]) });
       v.designFloors = draft.floorPlans.map((floor, fi) => {
         const setFloor = (patch) => { const next = draft.floorPlans.slice(); next[fi] = { ...next[fi], ...patch }; setDraft({ floorPlans: next }); };
-        return { title: floor.title || '', image: floor.image || '', comment: floor.comment || '',
+        return { rowId: designFloorIds[fi], title: floor.title || '', image: floor.image || '', comment: floor.comment || '',
+          dragStart: (e) => this.startReorderDrag(e, designFloorIds[fi], designFloorIds, persistDesignFloorOrder),
           setTitle: (e) => setFloor({ title: e.target.value }), setComment: (e) => setFloor({ comment: e.target.value }),
           pickImage: async (e) => { const file = e.target.files && e.target.files[0]; if (file) setFloor({ image: await api.uploadFile(p.id, file) }); },
           pasteImage: async () => { const file = await this.conceptClipboardImage(); if (file) setFloor({ image: await api.uploadFile(p.id, file) }); },
