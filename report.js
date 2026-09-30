@@ -36,6 +36,9 @@ export const STUDIO = {
   strap: 'Design & Decoration · Orange County, CA',
   portrait: 'assets/cybelle-portrait.png',
   logo: 'assets/cybelle-logo.png',
+  // The CS monogram the app already uses for its own tab — the full logo is
+  // unreadable at 16px.
+  favicon: 'assets/favicon.png',
   bio: [
     'I am an interior designer and decorator based in Orange County, California. My passion is creating warm, sophisticated homes built around the way you actually live — layered and tactile, quietly luxurious, combining creativity with a strong aesthetic sense.',
     'Having lived in Brazil, Missouri, New York and Florida, I bring a well-travelled eye to residential interiors, creating elegant and personalised spaces. My practice is dedicated to designing and decorating living spaces — not replacing your general contractor, and not renovating kitchens or bathrooms.',
@@ -97,7 +100,7 @@ async function embed(url, cache, timeoutMs) {
 function imageList(project, phaseKey, hidden, byId) {
   hidden = hidden || {};
   const profile = project.studioProfile || STUDIO;
-  const out = [STUDIO.logo];
+  const out = [STUDIO.logo, STUDIO.favicon];
   if (!hidden.studio) out.push(profile.portrait || STUDIO.portrait);
   if (!hidden.process) out.push(...PHASES.map((f) => f.icon));
   if (project.hero) out.push(project.hero);
@@ -684,6 +687,7 @@ export async function buildReport(project, phaseKey, catalog, onProgress, opts) 
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(title)}</title>
+<link rel="icon" type="image/png" href="${esc(img[STUDIO.favicon] || STUDIO.favicon)}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">

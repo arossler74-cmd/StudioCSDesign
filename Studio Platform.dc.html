@@ -2368,8 +2368,11 @@ const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review
 // reaches this file — the version badge in the top bar and the Studio →
 // Changelog page both read straight from this, nothing else to update.
 // Versioning starts at 1.1; anything before that lives only in git log.
-const APP_VERSION = '3.7';
+const APP_VERSION = '3.8';
 const CHANGELOG = [
+  { version: '3.8', date: '2026-09-30', changes: [
+    'Exported HTML: the browser tab now shows the studio\'s CS monogram (the same icon as the platform), embedded in the file so it shows offline too.',
+  ] },
   { version: '3.7', date: '2026-09-30', changes: [
     'Export & client link: in Space plan · 2D the drawing sits on the left and its comment in a column on the right, the same height as the drawing (a long comment scrolls inside that column), with the thumbnails underneath — the whole thing fits one screen. On a phone it stacks again, and printing is unchanged.',
   ] },
