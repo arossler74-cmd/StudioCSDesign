@@ -12,8 +12,15 @@ initializeApp();
 const MAX_RESPONSE_BYTES = 2 * 1024 * 1024;
 const STUDIO_ADMINS = new Set(['arossler74@gmail.com', 'cybellesampaio77@gmail.com']);
 const anthropicApiKey = defineSecret('ANTHROPIC_API_KEY');
-// One place to move every AI call to a newer model.
-const MODEL = 'claude-opus-5';
+// The model per job — one place to recalibrate cost against quality.
+// Text clean-up is simple and frequent, so it runs on the cheapest model;
+// drawing a measured plan is the hardest job here and gets the strongest.
+const MODELS = {
+  text: 'claude-haiku-4-5',      // AI button on text boxes
+  products: 'claude-opus-5',     // reading retailer pages, web search, moodboards
+  plan: 'claude-opus-5',         // Draw with AI (floor plans)
+};
+const isHaiku = (model) => /haiku/.test(model);
 // Server-side refusal fallback: if a safety classifier declines a request,
 // the API re-runs it on a suitable model inside the same call.
 const FALLBACK = { betas: ['server-side-fallback-2026-07-01'], fallbacks: 'default' };
@@ -54,11 +61,14 @@ function checkStop(message) {
 
 // One Claude call constrained to a JSON schema; returns the parsed object.
 // stream: for long outputs (an SVG plan), so the HTTP request can't time out.
-async function claudeJson({ system, content, schema, effort, maxTokens, stream }) {
+async function claudeJson({ model, system, content, schema, effort, maxTokens, stream }) {
+  model = model || MODELS.products;
+  // Haiku 4.5 takes no effort setting (it's a 400 there) and has no
+  // server-side refusal fallback — both only apply to the Opus models.
   const params = {
-    model: MODEL, max_tokens: maxTokens || 16000, ...FALLBACK, system,
+    model, max_tokens: maxTokens || 16000, ...(isHaiku(model) ? {} : FALLBACK), system,
     messages: [{ role: 'user', content }],
-    output_config: { effort: effort || 'medium', format: { type: 'json_schema', schema } }
+    output_config: { ...(isHaiku(model) ? {} : { effort: effort || 'medium' }), format: { type: 'json_schema', schema } }
   };
   const client = claude();
   const message = stream ? await client.beta.messages.stream(params).finalMessage() : await client.beta.messages.create(params);
@@ -77,7 +87,7 @@ async function claudeSearchJson({ system, prompt, maxUses }) {
   let message;
   for (let round = 0; round < 4; round++) {
     message = await client.beta.messages.create({
-      model: MODEL, max_tokens: 16000, ...FALLBACK, system, messages,
+      model: MODELS.products, max_tokens: 16000, ...FALLBACK, system, messages,
       tools: [{ type: 'web_search_20260209', name: 'web_search', max_uses: maxUses || 6 }],
       output_config: { effort: 'medium' }
     });
@@ -514,6 +524,7 @@ exports.aiAssist = onRequest({ region: 'us-west1', timeoutSeconds: 120, memory: 
     if (!text.trim()) throw new HttpError(400, 'There is no text to work on.');
     const context = String(body.context || '').slice(0, 600);
     const result = await claudeJson({
+      model: MODELS.text,
       system: 'You edit text written by Cybelle Sampaio Studio, an interior design studio, for its client documents. '
         + ASSIST_MODES[mode] + ' Answer in the same language as the text. Plain text only — no markdown, no surrounding quotes.',
       content: (context ? 'Where this text is used: ' + context + '\n\n' : '') + '<text>\n' + text + '\n</text>',
@@ -629,6 +640,7 @@ exports.aiFloorPlan = onRequest({ region: 'us-west1', timeoutSeconds: 540, memor
       ].filter(Boolean).join('\n') }
     ];
     const result = await claudeJson({
+      model: MODELS.plan,
       system: [
         'You are an interior architect at Cybelle Sampaio Studio drafting furnished 2D floor plans.',
         'Read the measured plan carefully: its dimension strings set the scale. Reproduce its walls, doors with swings, windows, openings and room names at that scale, then lay out furniture inside it.',
