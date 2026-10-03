@@ -17,10 +17,14 @@ const anthropicApiKey = defineSecret('ANTHROPIC_API_KEY');
 // drawing a measured plan is the hardest job here and gets the strongest.
 const MODELS = {
   text: 'claude-haiku-4-5',      // AI button on text boxes
-  products: 'claude-haiku-4-5',  // reading retailer pages, web search, moodboards
+  products: 'claude-haiku-4-5',  // Fetch details: reading one retailer page (+ search fallback)
+  board: 'claude-sonnet-5',      // moodboard → library: recognise each piece, find it in its store
   plan: 'claude-opus-5',         // Draw with AI (floor plans)
 };
 const isHaiku = (model) => /haiku/.test(model);
+// Server-side refusal fallbacks are an Opus/Fable feature; effort and the
+// newer web search tool need Sonnet/Opus 4.6+ (not Haiku 4.5).
+const fallbackFor = (model) => (/opus|fable/.test(model) ? FALLBACK : {});
 // Server-side refusal fallback: if a safety classifier declines a request,
 // the API re-runs it on a suitable model inside the same call.
 const FALLBACK = { betas: ['server-side-fallback-2026-07-01'], fallbacks: 'default' };
@@ -66,7 +70,7 @@ async function claudeJson({ model, system, content, schema, effort, maxTokens, s
   // Haiku 4.5 takes no effort setting (it's a 400 there) and has no
   // server-side refusal fallback — both only apply to the Opus models.
   const params = {
-    model, max_tokens: maxTokens || 16000, ...(isHaiku(model) ? {} : FALLBACK), system,
+    model, max_tokens: maxTokens || 16000, ...fallbackFor(model), system,
     messages: [{ role: 'user', content }],
     output_config: { ...(isHaiku(model) ? {} : { effort: effort || 'medium' }), format: { type: 'json_schema', schema } }
   };
@@ -81,19 +85,19 @@ async function claudeJson({ model, system, content, schema, effort, maxTokens, s
 // is asked for in the prompt and parsed from the final text.) Server tools
 // can pause a long turn — pause_turn — which is resumed by sending the
 // paused assistant turn straight back.
-async function claudeSearchJson({ system, prompt, maxUses }) {
+async function claudeSearchJson({ model, system, prompt, maxUses, effort }) {
   const client = claude();
   const messages = [{ role: 'user', content: prompt }];
   let message;
-  const model = MODELS.products;
+  model = model || MODELS.products;
   // Haiku only has the basic web search tool (the _20260209 variant with
   // dynamic filtering needs Opus/Sonnet 4.6+), and no effort or fallbacks.
   const haiku = isHaiku(model);
   for (let round = 0; round < 4; round++) {
     message = await client.beta.messages.create({
-      model, max_tokens: 16000, ...(haiku ? {} : FALLBACK), system, messages,
+      model, max_tokens: 16000, ...fallbackFor(model), system, messages,
       tools: [{ type: haiku ? 'web_search_20250305' : 'web_search_20260209', name: 'web_search', max_uses: maxUses || 6 }],
-      ...(haiku ? {} : { output_config: { effort: 'medium' } })
+      ...(haiku ? {} : { output_config: { effort: effort || 'medium' } })
     });
     if (message.stop_reason !== 'pause_turn') break;
     messages.push({ role: 'assistant', content: message.content });
@@ -555,6 +559,7 @@ exports.aiReadBoard = onRequest({ region: 'us-west1', timeoutSeconds: 180, memor
     const imageUrl = String((req.body || {}).imageUrl || '');
     if (!/^https:\/\//.test(imageUrl)) throw new HttpError(400, 'Choose the moodboard image first.');
     const result = await claudeJson({
+      model: MODELS.board,
       system: 'You read interior design moodboards for Cybelle Sampaio Studio. List every distinct product shown, using the caption next to it '
         + '(usually "product name – retailer"). For a piece with no caption, give a short descriptive name and leave retailer empty. '
         + 'Keep names as captioned, fixing only obvious typos (e.g. "Create-Barrel" is Crate & Barrel). '
@@ -570,7 +575,7 @@ exports.aiReadBoard = onRequest({ region: 'us-west1', timeoutSeconds: 180, memor
           properties: { name: { type: 'string' }, retailer: { type: 'string' }, type: { type: 'string' } }
         } } }
       },
-      effort: 'medium', maxTokens: 8000
+      effort: 'high', maxTokens: 16000
     });
     return res.json({ items: (result && result.items) || [] });
   } catch (error) {
@@ -592,6 +597,7 @@ exports.aiFindProduct = onRequest({ region: 'us-west1', timeoutSeconds: 300, mem
     const retailer = String(body.retailer || '').slice(0, 120);
     if (!name) throw new HttpError(400, 'Missing the product name.');
     const result = await claudeSearchJson({
+      model: MODELS.board, effort: 'high',
       system: PRODUCT_SYSTEM,
       prompt: 'Find this product on the retailer\'s own US website (not a marketplace or reseller, unless the retailer is one): "'
         + name + '"' + (retailer ? ' sold by ' + retailer : '') + '.\n'

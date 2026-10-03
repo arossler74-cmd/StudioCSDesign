@@ -2603,8 +2603,11 @@ const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review
 // reaches this file — the version badge in the top bar and the Studio →
 // Changelog page both read straight from this, nothing else to update.
 // Versioning starts at 1.1; anything before that lives only in git log.
-const APP_VERSION = '3.10';
+const APP_VERSION = '3.11';
 const CHANGELOG = [
+  { version: '3.11', date: '2026-10-03', changes: [
+    'Import from moodboard now runs on Claude Sonnet, at high effort: recognising every piece on the board and finding it in its store is a harder job than the text button, so it gets a stronger model. Fetch details on a single link stays on the inexpensive Haiku.',
+  ] },
   { version: '3.10', date: '2026-10-03', changes: [
     'AI costs: finding furniture (Fetch details and Import from moodboard) now runs on Claude Haiku, the inexpensive model, like the text AI button. Drawing floor plans stays on Claude Opus.',
     'Behind the scenes: the server functions moved to Node.js 22 (Node 20 stops being supported on 30 Oct 2026).',
