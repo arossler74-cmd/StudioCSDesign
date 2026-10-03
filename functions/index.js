@@ -17,7 +17,7 @@ const anthropicApiKey = defineSecret('ANTHROPIC_API_KEY');
 // drawing a measured plan is the hardest job here and gets the strongest.
 const MODELS = {
   text: 'claude-haiku-4-5',      // AI button on text boxes
-  products: 'claude-opus-5',     // reading retailer pages, web search, moodboards
+  products: 'claude-haiku-4-5',  // reading retailer pages, web search, moodboards
   plan: 'claude-opus-5',         // Draw with AI (floor plans)
 };
 const isHaiku = (model) => /haiku/.test(model);
@@ -85,11 +85,15 @@ async function claudeSearchJson({ system, prompt, maxUses }) {
   const client = claude();
   const messages = [{ role: 'user', content: prompt }];
   let message;
+  const model = MODELS.products;
+  // Haiku only has the basic web search tool (the _20260209 variant with
+  // dynamic filtering needs Opus/Sonnet 4.6+), and no effort or fallbacks.
+  const haiku = isHaiku(model);
   for (let round = 0; round < 4; round++) {
     message = await client.beta.messages.create({
-      model: MODELS.products, max_tokens: 16000, ...FALLBACK, system, messages,
-      tools: [{ type: 'web_search_20260209', name: 'web_search', max_uses: maxUses || 6 }],
-      output_config: { effort: 'medium' }
+      model, max_tokens: 16000, ...(haiku ? {} : FALLBACK), system, messages,
+      tools: [{ type: haiku ? 'web_search_20250305' : 'web_search_20260209', name: 'web_search', max_uses: maxUses || 6 }],
+      ...(haiku ? {} : { output_config: { effort: 'medium' } })
     });
     if (message.stop_reason !== 'pause_turn') break;
     messages.push({ role: 'assistant', content: message.content });

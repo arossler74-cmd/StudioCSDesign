@@ -2603,8 +2603,12 @@ const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review
 // reaches this file — the version badge in the top bar and the Studio →
 // Changelog page both read straight from this, nothing else to update.
 // Versioning starts at 1.1; anything before that lives only in git log.
-const APP_VERSION = '3.9';
+const APP_VERSION = '3.10';
 const CHANGELOG = [
+  { version: '3.10', date: '2026-10-03', changes: [
+    'AI costs: finding furniture (Fetch details and Import from moodboard) now runs on Claude Haiku, the inexpensive model, like the text AI button. Drawing floor plans stays on Claude Opus.',
+    'Behind the scenes: the server functions moved to Node.js 22 (Node 20 stops being supported on 30 Oct 2026).',
+  ] },
   { version: '3.9', date: '2026-10-03', changes: [
     'Project files: every project has a Files tab with its own folders — Floorplans, Materials, 2D Layouts, Moodboards, Renderings, Videos, Others. Drop, browse or paste files in (any type, up to 50 MB); rename, move between folders or delete. These belong to that project only — the catalog is still the shared library.',
     'Every image box in a project (cover, portrait, materials, floor plans, space carousels — Concept and Design & sourcing) now has "From project files" next to Choose and Paste.',

@@ -87,9 +87,10 @@ Storage: `catalog/{ts}-{file}`, `{projectId}/{ts}-{file}` (images, 10 MB) and
 
 All AI runs server-side in `functions/index.js` with the official `@anthropic-ai/sdk`, key in the
 Firebase secret `ANTHROPIC_API_KEY`. The model is chosen per job in the `MODELS` constant:
-`claude-haiku-4-5` for text clean-up (cheap, frequent), `claude-opus-5` for product lookups and
-moodboards, and `claude-opus-5` for drawing floor plans (the hardest job). Haiku calls send no
-`effort` and no refusal `fallbacks` — both are Opus-only. Every
+`claude-haiku-4-5` for text clean-up and for product lookups/moodboards (cheap, frequent), and
+`claude-opus-5` for drawing floor plans (the hardest job). Haiku calls send no `effort` and no
+refusal `fallbacks` (both Opus-only) and use the basic `web_search_20250305` tool. Functions run on
+Node.js 22. Every
 endpoint is POST, signed-in admin/designer only (`requireStudioUser`), called from the app through
 `callFunction()` in `platform-data.js`.
 
