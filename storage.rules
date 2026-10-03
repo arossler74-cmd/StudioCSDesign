@@ -73,6 +73,15 @@ service firebase.storage {
         && firestore.exists(/databases/(default)/documents/shares/$(token));
     }
 
+    // Project files (Files tab: floorplans, materials, layouts, moodboards,
+    // renderings, videos, others). Same people as project imagery below, but
+    // any file type — videos, PDFs, CAD — up to 50 MB. Storage rules are
+    // OR'd across matches, so this widens only this one subfolder.
+    match /{projectId}/repository/{allPaths=**} {
+      allow read, delete: if canWorkOn(projectId);
+      allow create, update: if canWorkOn(projectId) && request.resource.size < 50 * 1024 * 1024;
+    }
+
     // Project imagery stays scoped to the people assigned to that project.
     // Client links receive explicit download URLs from the share payload.
     match /{projectId}/{allPaths=**} {

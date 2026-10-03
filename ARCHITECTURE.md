@@ -29,7 +29,7 @@ users/{uid}            email, name, role: 'admin'|'designer'|'client', status, c
 invites/{id}           email, role, name, status, createdAt        — role is inherited on first sign-in
 
 catalog/{id}           name, type, room, retailer, url, image,
-                       dimensions, finish, color, price (USD), notes, tags[], createdAt, updatedAt
+                       dimensions, finish, color, price (USD), notes, tags[], isNew?, createdAt, updatedAt
 
 projects/{id}
   name, client, location, cover, status, currency: 'USD'
@@ -67,6 +67,11 @@ projects/{id}
             write to rooms.selected/alternatives — the designer applies it manually, same principle
             as a thumbs-down changing nothing on its own
   shares:  [{ token, clientName, phases: ['concept'|'design'], createdAt }]
+  repository: [{ id, folder: 'floorplans'|'materials'|'layouts'|'moodboards'|'renderings'|'videos'|'others',
+                 name, type (MIME), size, path (Storage), url, createdAt, note? }]
+            — the project's own files (Files tab). Project-only, unlike the catalog. Any image box in
+            the project can pick from it ("From project files"). Never copied into shares/{token};
+            a picked file's download URL is what travels, same as any other project image.
 
 settings/questionnaire  sections: [{ id, title, questions: [{ id, label, type, options? }] }]
 settings/trade-programs admin-maintained vendor directory: accounts, contacts, access URLs,
@@ -75,7 +80,26 @@ settings/trade-programs admin-maintained vendor directory: accounts, contacts, a
 
 Question types: `long` (textarea), `short`, `choice` (pick one), `multi` (pick many). The default set is the studio's own questionnaire — project scope, spaces, style, feel, colors, budget, timeline, involvement.
 
-Storage: `catalog/{ts}-{file}` and `{projectId}/{ts}-{file}`.
+Storage: `catalog/{ts}-{file}`, `{projectId}/{ts}-{file}` (images, 10 MB) and
+`{projectId}/repository/{folder}/{ts}-{file}` (project files: any type, 50 MB — see `storage.rules`).
+
+## AI (Claude, via Cloud Functions)
+
+All AI runs server-side in `functions/index.js` with the official `@anthropic-ai/sdk`, model
+`claude-opus-5` (one `MODEL` constant), key in the Firebase secret `ANTHROPIC_API_KEY`. Every
+endpoint is POST, signed-in admin/designer only (`requireStudioUser`), called from the app through
+`callFunction()` in `platform-data.js`.
+
+| Function | Used by | Does |
+| --- | --- | --- |
+| `aiAssist` | the floating ✦ AI button on every textarea (`installAiTextAssist`) | fix grammar / improve / shorten, same language |
+| `fetchProductDetails` | catalog "Fetch details" | reads the retailer page (JSON-LD + Claude reading the page text), web-search fallback |
+| `aiReadBoard` | catalog "Import from moodboard" | lists the products captioned on a moodboard image |
+| `aiFindProduct` | same, once per row | web-searches one product and returns its fields + URL |
+| `aiFloorPlan` | "Draw with AI" on Floor plans | measured plan + style example → furnished plan as SVG, rasterised to PNG client-side and saved to Files → 2D Layouts |
+
+Moodboard imports never write to the catalog on their own: the designer ticks rows and confirms,
+and imported pieces carry `isNew: true` ("New" badge) until opened and saved, or "Mark … as seen".
 
 ## Roles
 

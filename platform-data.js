@@ -10,6 +10,7 @@ const R = 'refs/';
 let mode = 'local';
 let fb = null;
 let productFetchEndpoint = '';
+let functionsBase = '';
 
 export const isFirebase = () => mode === 'firebase';
 export const bootstrapAdmins = ADMIN_BOOTSTRAP;
@@ -209,7 +210,8 @@ export async function init() {
     ]);
     const a = app.initializeApp(cfg);
     fb = { app: a, auth: auth.getAuth(a), db: db.getFirestore(a), storage: st.getStorage(a), A: auth, D: db, S: st };
-    productFetchEndpoint = 'https://us-west1-' + cfg.projectId + '.cloudfunctions.net/fetchProductDetails';
+    functionsBase = 'https://us-west1-' + cfg.projectId + '.cloudfunctions.net/';
+    productFetchEndpoint = functionsBase + 'fetchProductDetails';
     mode = 'firebase';
   } catch (e) { console.warn('Firebase unavailable, running local:', e); mode = 'local'; }
   return mode;
@@ -1031,6 +1033,76 @@ export async function seedFirestore(user, onProgress) {
 }
 
 /* ---------------- upload ---------------- */
+
+/* ---------------- AI (Cloud Functions, see functions/index.js) ---------------- */
+
+async function callFunction(name, body) {
+  if (mode !== 'firebase' || !fb || !fb.auth.currentUser || !functionsBase) throw new Error('AI tools are available after signing in.');
+  const token = await fb.auth.currentUser.getIdToken();
+  const response = await fetch(functionsBase + name, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+    body: JSON.stringify(body || {})
+  });
+  const out = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(out.error || ('The AI service returned ' + response.status));
+  return out;
+}
+
+/** mode: 'fix' | 'improve' | 'shorten'; context: where the text is used. */
+export async function aiAssist(text, mode, context) {
+  return (await callFunction('aiAssist', { text, mode, context })).text || '';
+}
+/** Products listed on a moodboard image (https URL): [{ name, retailer, type }]. */
+export async function aiReadBoard(imageUrl) {
+  return (await callFunction('aiReadBoard', { imageUrl })).items || [];
+}
+/** One named product looked up on the web — same fields as fetchProductDetails, plus url. */
+export async function aiFindProduct(name, retailer) {
+  return (await callFunction('aiFindProduct', { name, retailer })).product || null;
+}
+/** A new furnished plan drawn by Claude: { svg, summary }, from a measured plan
+ *  (+ optional style example), both https image URLs. */
+export async function aiFloorPlan(payload) {
+  const out = await callFunction('aiFloorPlan', payload);
+  return { svg: out.svg || '', summary: out.summary || '' };
+}
+
+/* ---------------- project files (repository) ---------------- */
+
+export const REPO_FOLDERS = [
+  { key: 'floorplans', label: 'Floorplans' },
+  { key: 'materials', label: 'Materials' },
+  { key: 'layouts', label: '2D Layouts' },
+  { key: 'moodboards', label: 'Moodboards' },
+  { key: 'renderings', label: 'Renderings' },
+  { key: 'videos', label: 'Videos' },
+  { key: 'others', label: 'Others' },
+];
+
+/** Uploads into {projectId}/repository/{folder}/ — the one Storage scope
+ *  that accepts any file type up to 50 MB (see storage.rules). Returns the
+ *  record stored in project.repository. */
+export async function uploadRepoFile(projectId, folder, file) {
+  const base = { id: 'f-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), folder,
+    name: file.name || 'file', type: file.type || '', size: file.size || 0, createdAt: new Date().toISOString() };
+  if (mode === 'firebase') {
+    const { ref, uploadBytes, getDownloadURL } = fb.S;
+    const safe = String(file.name || 'file').replace(/[^\w.\-]+/g, '-').slice(-80);
+    const path = `${projectId}/repository/${folder}/${Date.now()}-${safe}`;
+    const r = ref(fb.storage, path);
+    await uploadBytes(r, file, { contentType: file.type || 'application/octet-stream' });
+    return { ...base, path, url: await getDownloadURL(r) };
+  }
+  const url = await new Promise((res) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.readAsDataURL(file); });
+  return { ...base, path: '', url };
+}
+
+/** Best-effort: the file record is removed either way. */
+export async function deleteRepoFile(item) {
+  if (mode !== 'firebase' || !item || !item.path) return;
+  try { const { ref, deleteObject } = fb.S; await deleteObject(ref(fb.storage, item.path)); } catch (e) { console.warn('Could not delete file', e); }
+}
 
 export async function uploadFile(projectId, file) {
   if (mode === 'firebase') {

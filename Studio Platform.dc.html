@@ -135,6 +135,36 @@
   .cs-drag-handle { touch-action: none; cursor: grab; border: 0; background: none; padding: 4px; flex: none; color: var(--color-neutral-400); display: flex; align-items: center; border-radius: 6px; transition: color .15s ease, background-color .15s ease; pointer-events: none; }
   .cs-drag-handle-float { position: absolute; top: 7px; right: 7px; background: color-mix(in srgb, var(--color-surface) 88%, transparent); backdrop-filter: blur(4px); box-shadow: var(--shadow-sm); }
 
+  /* "New" badge on catalog pieces added by a moodboard import */
+  .cs-new-badge { position: absolute; top: 8px; left: 8px; z-index: 1; background: var(--color-accent-800); color: #fff; font-size: 10px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; padding: 4px 8px; border-radius: 999px; box-shadow: var(--shadow-sm); pointer-events: none; }
+
+  /* floating AI writing button — follows the focused textarea (installAiTextAssist) */
+  .cs-ai-fab { position: fixed; z-index: 400; display: none; }
+  .cs-ai-fab.show { display: block; }
+  .cs-ai-fab-btn { display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--color-accent-200, var(--color-neutral-200)); background: var(--color-surface); color: var(--color-accent-800); border-radius: 999px; padding: 3px 9px 3px 7px; font: 600 11px/1.4 var(--font-body); letter-spacing: .06em; cursor: pointer; box-shadow: var(--shadow-sm); transition: transform .15s var(--ease-spring), background-color .15s ease; }
+  .cs-ai-fab-btn:hover { background: var(--color-accent-100); transform: translateY(-1px); }
+  .cs-ai-fab.busy .cs-ai-fab-btn svg { animation: csAiSpin 1s linear infinite; }
+  @keyframes csAiSpin { to { transform: rotate(360deg); } }
+  .cs-ai-fab-menu { display: none; position: absolute; right: 0; top: calc(100% + 6px); min-width: 190px; background: var(--color-surface); border: 1px solid var(--color-neutral-200); border-radius: 12px; box-shadow: var(--shadow-lg); padding: 6px; flex-direction: column; }
+  .cs-ai-fab.open .cs-ai-fab-menu { display: flex; }
+  .cs-ai-fab.up .cs-ai-fab-menu { top: auto; bottom: calc(100% + 6px); }
+  .cs-ai-fab-menu button { text-align: left; border: 0; background: none; padding: 8px 10px; border-radius: 8px; font: 13px/1.3 var(--font-body); color: var(--color-neutral-800, inherit); cursor: pointer; }
+  .cs-ai-fab-menu button:hover { background: var(--color-neutral-100); }
+  .cs-ai-fab .cs-ai-undo { display: none; color: var(--color-accent-800); }
+  .cs-ai-fab.can-undo .cs-ai-undo { display: block; }
+  .cs-ai-fab.busy .cs-ai-fab-menu button { opacity: .5; pointer-events: none; }
+  .cs-ai-status { font-size: 11.5px; color: var(--color-neutral-600); padding: 4px 10px 2px; }
+  .cs-ai-status:empty { display: none; }
+
+  /* project files */
+  .cs-repo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 14px; }
+  .cs-repo-thumb { aspect-ratio: 4 / 3; border-radius: 9px; overflow: hidden; background: var(--color-neutral-100); display: flex; align-items: center; justify-content: center; color: var(--color-neutral-500); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; }
+  .cs-repo-thumb img { width: 100%; height: 100%; object-fit: contain; }
+  .cs-repo-drop { border: 2px dashed var(--color-neutral-300); border-radius: var(--radius-md); padding: 18px; text-align: center; color: var(--color-neutral-600); font-size: 13px; transition: border-color .15s ease, background-color .15s ease; }
+  .cs-repo-drop.over { border-color: var(--color-accent); background: var(--color-accent-100); }
+  .cs-pick-tile { border: 2px solid transparent; border-radius: 12px; padding: 6px; cursor: pointer; background: var(--color-surface); text-align: left; font: inherit; }
+  .cs-pick-tile.on { border-color: var(--color-accent); background: var(--color-accent-100); }
+
   /* smart suggestion dropdowns (retailer / tags) */
   .cs-suggest-wrap { position: relative; }
   .cs-suggest-list { position: absolute; z-index: 20; top: calc(100% + 6px); left: 0; right: 0; background: var(--color-surface); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); padding: 6px; display: flex; flex-direction: column; gap: 2px; max-height: 220px; overflow-y: auto; animation: csFade .14s var(--ease-spring) both; }
@@ -399,7 +429,7 @@
           <label class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px;">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
             <span>{{ shareUploadLabel }}</span>
-            <input type="file" accept="image/*" multiple onChange="{{ pickShareUploads }}" style="display: none;">
+            <input type="file" accept="image/*" multiple="{{ true }}" onChange="{{ pickShareUploads }}" style="display: none;">
           </label>
         </div>
         <sc-if value="{{ shareUploadError }}" hint-placeholder-val="{{ false }}">
@@ -621,9 +651,72 @@
               <p style="margin: 0; color: var(--color-neutral-700);">{{ catCount }}</p>
             </div>
             <sc-if value="{{ canEditCatalog }}">
-              <button type="button" onClick="{{ newPiece }}" class="btn btn-primary">Add piece</button>
+              <div class="cs-inline-actions" style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end;">
+                <sc-if value="{{ hasNew }}" hint-placeholder-val="{{ false }}">
+                  <button type="button" onClick="{{ markAllSeen }}" class="btn btn-ghost">{{ newSeenLabel }}</button>
+                </sc-if>
+                <button type="button" onClick="{{ openBoardImport }}" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 7px;">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l1.8 5.6L19.5 9.5l-5.7 1.9L12 17l-1.8-5.6L4.5 9.5l5.7-1.9z"/><path d="M19 14l.9 2.6 2.6.9-2.6.9L19 21l-.9-2.6-2.6-.9 2.6-.9z"/></svg>
+                  Import from moodboard
+                </button>
+                <button type="button" onClick="{{ newPiece }}" class="btn btn-primary">Add piece</button>
+              </div>
             </sc-if>
           </div>
+          <sc-if value="{{ boardNotice }}" hint-placeholder-val="{{ false }}">
+            <div class="card" style="padding: 12px 16px; margin: -12px 0 22px; background: var(--color-accent-100); color: var(--color-accent-900); font-size: 14px;">{{ boardNotice }}</div>
+          </sc-if>
+
+          <sc-if value="{{ boardOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; background: rgba(30,25,20,.55); padding: 24px;">
+              <div class="card elev-md" style="width: min(100%, 980px); max-height: 90vh; overflow: auto; padding: 26px 28px; position: relative;">
+                <button type="button" onClick="{{ boardClose }}" class="btn btn-ghost" style="position: absolute; right: 14px; top: 14px; width: 38px; height: 38px; border-radius: 50%; padding: 0; font-size: 20px;" aria-label="Close">×</button>
+                <div style="font-family: var(--font-heading); font-size: 26px; color: var(--color-accent-900);">Import from moodboard</div>
+                <div style="font-size: 13.5px; color: var(--color-neutral-600); margin: 4px 0 18px;">Claude reads the board, finds each piece on the retailer's site, and you choose what goes into the library. Nothing is added until you confirm.</div>
+
+                <sc-if value="{{ boardStagePick }}" hint-placeholder-val="{{ true }}">
+                  <div tabindex="0" onPaste="{{ boardPaste }}" class="cs-repo-drop" style="padding: 34px; cursor: copy;">
+                    <div style="margin-bottom: 12px;">Choose the moodboard image, or click here and paste it (Ctrl+V / ⌘V).</div>
+                    <div style="display: inline-flex; gap: 8px;">
+                      <label class="btn btn-primary" style="cursor: pointer;">Choose image<input type="file" accept="image/*" onChange="{{ boardPick }}" style="display: none;"></label>
+                      <button type="button" onClick="{{ boardPasteButton }}" class="btn btn-secondary">Paste from clipboard</button>
+                    </div>
+                  </div>
+                  <sc-if value="{{ boardError }}" hint-placeholder-val="{{ false }}"><div style="margin-top: 12px; font-size: 13px; color: var(--color-accent-800);">{{ boardError }}</div></sc-if>
+                </sc-if>
+
+                <sc-if value="{{ boardStageReading }}" hint-placeholder-val="{{ false }}">
+                  <div style="padding: 40px; text-align: center; color: var(--color-neutral-700);">Reading the moodboard… this takes a few seconds.</div>
+                </sc-if>
+
+                <sc-if value="{{ boardStageReview }}" hint-placeholder-val="{{ false }}">
+                  <div style="font-size: 13px; color: var(--color-neutral-700); margin-bottom: 12px;">{{ boardProgress }}</div>
+                  <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <sc-for list="{{ boardRows }}" as="row" hint-placeholder-count="4">
+                      <div style="display: grid; grid-template-columns: 26px 84px 1fr auto; gap: 14px; align-items: center; border: 1px solid var(--color-neutral-200); border-radius: var(--radius-md); padding: 10px 12px; opacity: {{ row.opacity }};">
+                        <input type="checkbox" checked="{{ row.checked }}" onChange="{{ row.toggle }}" disabled="{{ row.searching }}" aria-label="Add this piece" style="width: 18px; height: 18px;">
+                        <div style="width: 84px; height: 84px; border-radius: 8px; overflow: hidden; background: var(--color-neutral-100);"><img src="assets/piece-placeholder.png" data-img="{{ row.image }}" alt="" style="width: 100%; height: 100%; object-fit: contain;"></div>
+                        <div style="min-width: 0;">
+                          <div style="font-weight: 600;">{{ row.name }}</div>
+                          <div style="font-size: 12.5px; color: var(--color-neutral-600);">{{ row.meta }}</div>
+                          <div style="font-size: 12px; color: var(--color-neutral-500);">{{ row.spec }}</div>
+                          <sc-if value="{{ row.url }}" hint-placeholder-val="{{ false }}"><a href="{{ row.url }}" target="_blank" rel="noopener" style="font-size: 12px; color: var(--color-accent-800); word-break: break-all;">{{ row.url }}</a></sc-if>
+                          <sc-if value="{{ row.warn }}" hint-placeholder-val="{{ false }}"><div style="font-size: 12px; color: var(--color-accent-800); margin-top: 2px;">{{ row.warn }}</div></sc-if>
+                        </div>
+                        <span class="tag {{ row.tagCls }}" style="font-size: 11px; white-space: nowrap;">{{ row.statusLabel }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 12px; margin-top: 20px; position: sticky; bottom: -26px; background: var(--color-surface); padding: 12px 0;">
+                    <button type="button" onClick="{{ boardAdd }}" class="btn btn-primary" disabled="{{ boardAddDisabled }}">{{ boardAddLabel }}</button>
+                    <button type="button" onClick="{{ boardClose }}" class="btn btn-ghost">Cancel</button>
+                    <div style="flex: 1;"></div>
+                    <span style="font-size: 12px; color: var(--color-neutral-600);">Added pieces show a "New" badge until you open and save them.</span>
+                  </div>
+                </sc-if>
+              </div>
+            </div>
+          </sc-if>
 
           <div class="cs-catalog-filters" style="display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr 1fr; gap: 12px; margin-bottom: 28px;">
             <input class="input" value="{{ q }}" onChange="{{ setQ }}" placeholder="Search name, retailer, tag…">
@@ -766,6 +859,7 @@
                   <sc-for list="{{ g.items }}" as="c" hint-placeholder-count="4">
                     <div class="card cs-catalog-card" data-row-id="{{ c.id }}">
                       <div class="cs-catalog-card-photo" onPointerDown="{{ c.dragStart }}">
+                        <sc-if value="{{ c.isNew }}" hint-placeholder-val="{{ false }}"><span class="cs-new-badge">New</span></sc-if>
                         <img src="assets/piece-placeholder.png" data-img="{{ c.image }}" alt="">
                         <sc-if value="{{ c.canDrag }}">
                           <span class="cs-drag-handle cs-drag-handle-float" title="Drag the photo to reorder">
@@ -1140,7 +1234,7 @@
                 </div>
                 <div style="margin-top: 18px; display: grid; grid-template-columns: 220px 1fr; gap: 18px; align-items: center;">
                   <div style="aspect-ratio: 16 / 10; border-radius: var(--radius-md); overflow: hidden; background: var(--color-neutral-100);"><img src="assets/piece-placeholder.png" data-img="{{ introHero }}" alt="" style="width: 100%; height: 100%; object-fit: cover;"></div>
-                  <div><div style="font-size: 13.5px; color: var(--color-neutral-600); margin-bottom: 10px;">Hero image — the room that sets the tone</div><div style="display: flex; flex-wrap: wrap; gap: 8px;"><label class="btn btn-secondary" style="cursor: pointer;">Choose hero image<input type="file" accept="image/*" onChange="{{ pickIntroHero }}" style="display: none;"></label><button type="button" onClick="{{ pasteIntroHero }}" class="btn btn-secondary">Paste from clipboard</button></div></div>
+                  <div><div style="font-size: 13.5px; color: var(--color-neutral-600); margin-bottom: 10px;">Hero image — the room that sets the tone</div><div style="display: flex; flex-wrap: wrap; gap: 8px;"><label class="btn btn-secondary" style="cursor: pointer;">Choose hero image<input type="file" accept="image/*" onChange="{{ pickIntroHero }}" style="display: none;"></label><button type="button" onClick="{{ pasteIntroHero }}" class="btn btn-secondary">Paste from clipboard</button><button type="button" onClick="{{ repoIntroHero }}" class="btn btn-secondary">From project files</button></div></div>
                 </div>
               </div>
 
@@ -1165,7 +1259,7 @@
                 <div class="cs-concept-intro" style="display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 22px;">
                   <div>
                     <div style="aspect-ratio: 4 / 5; border-radius: var(--radius-md); overflow: hidden; background: var(--color-neutral-100); margin-bottom: 10px;"><img src="assets/piece-placeholder.png" data-img="{{ studioPortrait }}" alt="Cybelle Sampaio" style="width: 100%; height: 100%; object-fit: cover;"></div>
-                    <div style="display: flex; flex-wrap: wrap; gap: 7px;"><label class="btn btn-secondary" style="cursor: pointer; font-size: 13px;">Choose portrait<input type="file" accept="image/*" onChange="{{ pickStudioPortrait }}" style="display: none;"></label><button type="button" onClick="{{ pasteStudioPortrait }}" class="btn btn-secondary" style="font-size: 13px;">Paste from clipboard</button></div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 7px;"><label class="btn btn-secondary" style="cursor: pointer; font-size: 13px;">Choose portrait<input type="file" accept="image/*" onChange="{{ pickStudioPortrait }}" style="display: none;"></label><button type="button" onClick="{{ pasteStudioPortrait }}" class="btn btn-secondary" style="font-size: 13px;">Paste from clipboard</button><button type="button" onClick="{{ repoStudioPortrait }}" class="btn btn-secondary" style="font-size: 13px;">From project files</button></div>
                   </div>
                   <div class="cs-details-grid" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;">
                     <div class="field"><label>Name</label><input class="input" value="{{ studioName }}" onChange="{{ setStudioName }}"></div>
@@ -1343,7 +1437,7 @@
                   <sc-for list="{{ conceptMaterials }}" as="m" hint-placeholder-count="4">
                     <div style="border: 1px solid var(--color-neutral-200); border-radius: var(--radius-md); padding: 14px 16px; display: flex; flex-direction: column; gap: 8px;">
                       <div style="aspect-ratio: 16 / 10; border-radius: 10px; overflow: hidden; background: var(--color-neutral-100);"><img src="assets/piece-placeholder.png" data-img="{{ m.image }}" alt="" style="width: 100%; height: 100%; object-fit: cover;"></div>
-                      <div style="display: flex; flex-wrap: wrap; gap: 7px;"><label class="btn btn-secondary" style="cursor: pointer; font-size: 12px; flex: 1;">Choose image<input type="file" accept="image/*" onChange="{{ m.pickImage }}" style="display: none;"></label><button type="button" onClick="{{ m.pasteImage }}" class="btn btn-secondary" style="font-size: 12px;">Paste</button><button type="button" onClick="{{ m.clearImage }}" class="btn btn-ghost" style="font-size: 12px;">Clear</button></div>
+                      <div style="display: flex; flex-wrap: wrap; gap: 7px;"><label class="btn btn-secondary" style="cursor: pointer; font-size: 12px; flex: 1;">Choose image<input type="file" accept="image/*" onChange="{{ m.pickImage }}" style="display: none;"></label><button type="button" onClick="{{ m.pasteImage }}" class="btn btn-secondary" style="font-size: 12px;">Paste</button><button type="button" onClick="{{ m.repoImage }}" class="btn btn-secondary" style="font-size: 12px;">From project files</button><button type="button" onClick="{{ m.clearImage }}" class="btn btn-ghost" style="font-size: 12px;">Clear</button></div>
                       <div style="display: flex; gap: 8px;">
                         <input class="input" value="{{ m.name }}" onChange="{{ m.setName }}" placeholder="Material" style="flex: 1;">
                         <button type="button" onClick="{{ m.remove }}" class="btn btn-ghost" style="font-size: 13px;">×</button>
@@ -1368,14 +1462,14 @@
                       Hidden — Unhide
                     </button>
                   </sc-if>
-                  <button type="button" onClick="{{ addConceptFloor }}" class="btn btn-secondary">+ Add floor plan</button></div>
+                  <button type="button" onClick="{{ openAiPlan }}" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 6px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l1.8 5.6L19.5 9.5l-5.7 1.9L12 17l-1.8-5.6L4.5 9.5l5.7-1.9z"/><path d="M19 14l.9 2.6 2.6.9-2.6.9L19 21l-.9-2.6-2.6-.9 2.6-.9z"/></svg>Draw with AI</button><button type="button" onClick="{{ addConceptFloor }}" class="btn btn-secondary">+ Add floor plan</button></div>
                 <div style="font-size: 13.5px; color: var(--color-neutral-600); margin-bottom: 18px;">One card per plan, with its own drawing and presentation comment. Drag a drawing onto another to swap their order in the carousel.</div>
                 <div data-group-list="concept-floors" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px;">
                   <sc-for list="{{ conceptFloors }}" as="floor" hint-placeholder-count="2">
                     <div data-row-id="{{ floor.rowId }}" style="border: 1px solid var(--color-neutral-200); border-radius: var(--radius-md); padding: 14px; background: var(--color-surface);">
                       <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;"><input class="input" value="{{ floor.title }}" onChange="{{ floor.setTitle }}" placeholder="Plan title (e.g. Layout option A)" style="flex: 1;"><button type="button" onClick="{{ floor.remove }}" class="btn btn-ghost" disabled="{{ floor.cannotRemove }}">Remove plan</button></div>
                       <div onPointerDown="{{ floor.dragStart }}" title="Drag to reorder" style="aspect-ratio: 4 / 3; border-radius: 10px; overflow: hidden; background: var(--color-neutral-100); cursor: grab; touch-action: none;"><img src="assets/piece-placeholder.png" data-img="{{ floor.image }}" alt="" style="width: 100%; height: 100%; object-fit: contain; pointer-events: none;"></div>
-                      <div style="display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px;"><label class="btn btn-secondary" style="cursor: pointer; font-size: 12px;">Choose floor plan<input type="file" accept="image/*" onChange="{{ floor.pickImage }}" style="display: none;"></label><button type="button" onClick="{{ floor.pasteImage }}" class="btn btn-secondary" style="font-size: 12px;">Paste from clipboard</button></div>
+                      <div style="display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px;"><label class="btn btn-secondary" style="cursor: pointer; font-size: 12px;">Choose floor plan<input type="file" accept="image/*" onChange="{{ floor.pickImage }}" style="display: none;"></label><button type="button" onClick="{{ floor.pasteImage }}" class="btn btn-secondary" style="font-size: 12px;">Paste from clipboard</button><button type="button" onClick="{{ floor.repoImage }}" class="btn btn-secondary" style="font-size: 12px;">From project files</button></div>
                       <textarea class="input" rows="3" value="{{ floor.comment }}" onChange="{{ floor.setComment }}" placeholder="Comments about circulation, layout or revisions" style="margin-top: 10px; resize: vertical; font-family: var(--font-body);"></textarea>
                     </div>
                   </sc-for>
@@ -1403,7 +1497,7 @@
                     <label style="font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--color-neutral-600);">Goal for this space</label>
                     <textarea class="input" rows="2" value="{{ room.goal }}" onChange="{{ room.setGoal }}" placeholder="What we want to achieve in this space" style="resize: vertical; font-family: var(--font-body); margin: 7px 0 10px;"></textarea>
                     <textarea class="input" rows="2" value="{{ room.brief }}" onChange="{{ room.setBrief }}" placeholder="Functional brief, priorities and what we are looking for" style="resize: vertical; font-family: var(--font-body); margin-bottom: 18px;"></textarea>
-                    <div style="border-top: 1px solid var(--color-neutral-200); padding-top: 16px;"><div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px;"><div style="font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-600);">Visual carousel</div><div style="flex: 1;"></div><label class="btn btn-secondary" style="cursor: pointer; font-size: 12px;">Add images<input type="file" accept="image/*" multiple onChange="{{ room.addMedia }}" style="display: none;"></label><button type="button" onClick="{{ room.pasteMedia }}" class="btn btn-secondary" style="font-size: 12px;">Paste from clipboard</button></div>
+                    <div style="border-top: 1px solid var(--color-neutral-200); padding-top: 16px;"><div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px;"><div style="font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-600);">Visual carousel</div><div style="flex: 1;"></div><label class="btn btn-secondary" style="cursor: pointer; font-size: 12px;">Add images<input type="file" accept="image/*" multiple="{{ true }}" onChange="{{ room.addMedia }}" style="display: none;"></label><button type="button" onClick="{{ room.pasteMedia }}" class="btn btn-secondary" style="font-size: 12px;">Paste from clipboard</button><button type="button" onClick="{{ room.repoMedia }}" class="btn btn-secondary" style="font-size: 12px;">From project files</button></div>
                       <sc-if value="{{ room.hasMedia }}" hint-placeholder-val="{{ false }}"><div style="border: 1px solid var(--color-neutral-200); border-radius: var(--radius-md); overflow: hidden; background: var(--color-neutral-100); margin-bottom: 14px;"><div style="aspect-ratio: 16 / 9;"><img src="assets/piece-placeholder.png" data-img="{{ room.currentUrl }}" alt="" style="width: 100%; height: 100%; object-fit: contain;"></div><div style="display: flex; align-items: center; gap: 10px; padding: 12px; border-top: 1px solid var(--color-neutral-200); background: var(--color-surface);"><button type="button" onClick="{{ room.prevMedia }}" class="btn btn-secondary" aria-label="Previous image">←</button><div style="border: 1px solid var(--color-neutral-200); background: var(--color-bg); border-radius: 999px; padding: 8px 14px; font-size: 12px; flex: 1; min-width: 0;">{{ room.currentType }} · {{ room.currentTitle }}</div><button type="button" onClick="{{ room.nextMedia }}" class="btn btn-secondary" aria-label="Next image">→</button></div></div></sc-if>
                       <div data-group-list="{{ room.mediaGroupList }}" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px;"><sc-for list="{{ room.media }}" as="media" hint-placeholder-count="3"><div data-row-id="{{ media.rowId }}" style="border: 1px solid var(--color-neutral-200); border-radius: var(--radius-md); padding: 10px; background: var(--color-surface);"><div onPointerDown="{{ media.dragStart }}" style="aspect-ratio: 4 / 3; border-radius: 9px; overflow: hidden; background: var(--color-neutral-100); cursor: grab; touch-action: none;"><img src="assets/piece-placeholder.png" data-img="{{ media.url }}" alt="" style="width: 100%; height: 100%; object-fit: cover; pointer-events: none;"></div><div style="font-size: 10px; color: var(--color-neutral-500); text-align: center; margin-top: 4px;">Drag the image to reorder</div><select class="input" value="{{ media.type }}" onChange="{{ media.setType }}" style="margin-top: 8px;"><option value="moodboard">Moodboard</option><option value="floorplan">2D Floor Plan</option><option value="sketchup">SketchUp rendering</option><option value="rendering">Ultra-realistic rendering</option></select><input class="input" value="{{ media.title }}" onChange="{{ media.setTitle }}" placeholder="Image title" style="margin-top: 7px;"><button type="button" onClick="{{ media.remove }}" class="btn btn-ghost" style="font-size: 12px; margin-top: 5px;">Remove image</button></div></sc-for></div>
                     </div>
@@ -1458,7 +1552,7 @@
                 </div>
                 <div style="margin-top: 18px; display: grid; grid-template-columns: 220px 1fr; gap: 18px; align-items: center;">
                   <div style="aspect-ratio: 16 / 10; border-radius: var(--radius-md); overflow: hidden; background: var(--color-neutral-100);"><img src="assets/piece-placeholder.png" data-img="{{ designIntroHero }}" alt="" style="width: 100%; height: 100%; object-fit: cover;"></div>
-                  <div><div style="font-size: 13.5px; color: var(--color-neutral-600); margin-bottom: 10px;">Hero image — the room that sets the tone</div><div style="display: flex; flex-wrap: wrap; gap: 8px;"><label class="btn btn-secondary" style="cursor: pointer;">Choose hero image<input type="file" accept="image/*" onChange="{{ pickDesignIntroHero }}" style="display: none;"></label><button type="button" onClick="{{ pasteDesignIntroHero }}" class="btn btn-secondary">Paste from clipboard</button></div></div>
+                  <div><div style="font-size: 13.5px; color: var(--color-neutral-600); margin-bottom: 10px;">Hero image — the room that sets the tone</div><div style="display: flex; flex-wrap: wrap; gap: 8px;"><label class="btn btn-secondary" style="cursor: pointer;">Choose hero image<input type="file" accept="image/*" onChange="{{ pickDesignIntroHero }}" style="display: none;"></label><button type="button" onClick="{{ pasteDesignIntroHero }}" class="btn btn-secondary">Paste from clipboard</button><button type="button" onClick="{{ repoDesignIntroHero }}" class="btn btn-secondary">From project files</button></div></div>
                 </div>
               </div>
 
@@ -1483,7 +1577,7 @@
                 <div class="cs-concept-intro" style="display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 22px;">
                   <div>
                     <div style="aspect-ratio: 4 / 5; border-radius: var(--radius-md); overflow: hidden; background: var(--color-neutral-100); margin-bottom: 10px;"><img src="assets/piece-placeholder.png" data-img="{{ designStudioPortrait }}" alt="Cybelle Sampaio" style="width: 100%; height: 100%; object-fit: cover;"></div>
-                    <div style="display: flex; flex-wrap: wrap; gap: 7px;"><label class="btn btn-secondary" style="cursor: pointer; font-size: 13px;">Choose portrait<input type="file" accept="image/*" onChange="{{ pickDesignStudioPortrait }}" style="display: none;"></label><button type="button" onClick="{{ pasteDesignStudioPortrait }}" class="btn btn-secondary" style="font-size: 13px;">Paste from clipboard</button></div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 7px;"><label class="btn btn-secondary" style="cursor: pointer; font-size: 13px;">Choose portrait<input type="file" accept="image/*" onChange="{{ pickDesignStudioPortrait }}" style="display: none;"></label><button type="button" onClick="{{ pasteDesignStudioPortrait }}" class="btn btn-secondary" style="font-size: 13px;">Paste from clipboard</button><button type="button" onClick="{{ repoDesignStudioPortrait }}" class="btn btn-secondary" style="font-size: 13px;">From project files</button></div>
                   </div>
                   <div class="cs-details-grid" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;">
                     <div class="field"><label>Name</label><input class="input" value="{{ designStudioName }}" onChange="{{ setDesignStudioName }}"></div>
@@ -1584,7 +1678,7 @@
                   <sc-for list="{{ designMaterials }}" as="m" hint-placeholder-count="4">
                     <div style="border: 1px solid var(--color-neutral-200); border-radius: var(--radius-md); padding: 14px 16px; display: flex; flex-direction: column; gap: 8px;">
                       <div style="aspect-ratio: 16 / 10; border-radius: 10px; overflow: hidden; background: var(--color-neutral-100);"><img src="assets/piece-placeholder.png" data-img="{{ m.image }}" alt="" style="width: 100%; height: 100%; object-fit: cover;"></div>
-                      <div style="display: flex; flex-wrap: wrap; gap: 7px;"><label class="btn btn-secondary" style="cursor: pointer; font-size: 12px; flex: 1;">Choose image<input type="file" accept="image/*" onChange="{{ m.pickImage }}" style="display: none;"></label><button type="button" onClick="{{ m.pasteImage }}" class="btn btn-secondary" style="font-size: 12px;">Paste</button><button type="button" onClick="{{ m.clearImage }}" class="btn btn-ghost" style="font-size: 12px;">Clear</button></div>
+                      <div style="display: flex; flex-wrap: wrap; gap: 7px;"><label class="btn btn-secondary" style="cursor: pointer; font-size: 12px; flex: 1;">Choose image<input type="file" accept="image/*" onChange="{{ m.pickImage }}" style="display: none;"></label><button type="button" onClick="{{ m.pasteImage }}" class="btn btn-secondary" style="font-size: 12px;">Paste</button><button type="button" onClick="{{ m.repoImage }}" class="btn btn-secondary" style="font-size: 12px;">From project files</button><button type="button" onClick="{{ m.clearImage }}" class="btn btn-ghost" style="font-size: 12px;">Clear</button></div>
                       <div style="display: flex; gap: 8px;">
                         <input class="input" value="{{ m.name }}" onChange="{{ m.setName }}" placeholder="Material" style="flex: 1;">
                         <button type="button" onClick="{{ m.remove }}" class="btn btn-ghost" style="font-size: 13px;">×</button>
@@ -1615,7 +1709,7 @@
                       Hidden — Unhide
                     </button>
                   </sc-if>
-                  <button type="button" onClick="{{ addDesignFloor }}" class="btn btn-secondary">+ Add floor plan</button>
+                  <button type="button" onClick="{{ openAiPlan }}" class="btn btn-secondary" style="display: inline-flex; align-items: center; gap: 6px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l1.8 5.6L19.5 9.5l-5.7 1.9L12 17l-1.8-5.6L4.5 9.5l5.7-1.9z"/><path d="M19 14l.9 2.6 2.6.9-2.6.9L19 21l-.9-2.6-2.6-.9 2.6-.9z"/></svg>Draw with AI</button><button type="button" onClick="{{ addDesignFloor }}" class="btn btn-secondary">+ Add floor plan</button>
                 </div>
                 <div style="font-size: 13.5px; color: var(--color-neutral-600); margin-bottom: 18px;">Final drawings, once they differ from what Concept showed.</div>
                 <div data-group-list="design-floors" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px;">
@@ -1623,7 +1717,7 @@
                     <div data-row-id="{{ floor.rowId }}" style="border: 1px solid var(--color-neutral-200); border-radius: var(--radius-md); padding: 14px; background: var(--color-surface);">
                       <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;"><input class="input" value="{{ floor.title }}" onChange="{{ floor.setTitle }}" placeholder="Plan title (e.g. Layout option A)" style="flex: 1;"><button type="button" onClick="{{ floor.remove }}" class="btn btn-ghost">Remove plan</button></div>
                       <div onPointerDown="{{ floor.dragStart }}" title="Drag to reorder" style="aspect-ratio: 4 / 3; border-radius: 10px; overflow: hidden; background: var(--color-neutral-100); cursor: grab; touch-action: none;"><img src="assets/piece-placeholder.png" data-img="{{ floor.image }}" alt="" style="width: 100%; height: 100%; object-fit: contain; pointer-events: none;"></div>
-                      <div style="display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px;"><label class="btn btn-secondary" style="cursor: pointer; font-size: 12px;">Choose floor plan<input type="file" accept="image/*" onChange="{{ floor.pickImage }}" style="display: none;"></label><button type="button" onClick="{{ floor.pasteImage }}" class="btn btn-secondary" style="font-size: 12px;">Paste from clipboard</button></div>
+                      <div style="display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px;"><label class="btn btn-secondary" style="cursor: pointer; font-size: 12px;">Choose floor plan<input type="file" accept="image/*" onChange="{{ floor.pickImage }}" style="display: none;"></label><button type="button" onClick="{{ floor.pasteImage }}" class="btn btn-secondary" style="font-size: 12px;">Paste from clipboard</button><button type="button" onClick="{{ floor.repoImage }}" class="btn btn-secondary" style="font-size: 12px;">From project files</button></div>
                       <textarea class="input" rows="3" value="{{ floor.comment }}" onChange="{{ floor.setComment }}" placeholder="Comments about circulation, layout or revisions" style="margin-top: 10px; resize: vertical; font-family: var(--font-body);"></textarea>
                     </div>
                   </sc-for>
@@ -1662,8 +1756,8 @@
                       <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px;">
                         <div style="font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-600);">Renderings &amp; video</div>
                         <div style="flex: 1;"></div>
-                        <label class="btn btn-secondary" style="cursor: pointer; font-size: 12px;">Add renderings<input type="file" accept="image/*" multiple onChange="{{ room.addMedia }}" style="display: none;"></label>
-                        <button type="button" onClick="{{ room.pasteMedia }}" class="btn btn-secondary" style="font-size: 12px;">Paste from clipboard</button>
+                        <label class="btn btn-secondary" style="cursor: pointer; font-size: 12px;">Add renderings<input type="file" accept="image/*" multiple="{{ true }}" onChange="{{ room.addMedia }}" style="display: none;"></label>
+                        <button type="button" onClick="{{ room.pasteMedia }}" class="btn btn-secondary" style="font-size: 12px;">Paste from clipboard</button><button type="button" onClick="{{ room.repoMedia }}" class="btn btn-secondary" style="font-size: 12px;">From project files</button>
                         <label class="btn btn-secondary" style="cursor: pointer; font-size: 12px;">Add video<input type="file" accept="video/*" onChange="{{ room.addVideo }}" style="display: none;"></label>
                       </div>
                       <sc-if value="{{ room.hasMedia }}" hint-placeholder-val="{{ false }}">
@@ -2109,6 +2203,147 @@
               </div>
             </div>
           </sc-if>
+
+          <!-- files — this project's own repository (the catalog is shared; these are not) -->
+          <sc-if value="{{ tabFiles }}">
+            <div style="animation: csFade .35s var(--ease-spring) both;">
+              <h2 style="font-family: var(--font-heading); font-size: 32px; margin: 0 0 6px; color: var(--color-accent-900);">Project files</h2>
+              <p style="margin: 0 0 24px; color: var(--color-neutral-600); font-size: 14px;">Plans, materials, layouts, moodboards, renderings and videos for this project only. Anything here can be picked from any image box in the project with "From project files". Up to 50 MB per file.</p>
+              <div style="display: grid; grid-template-columns: 200px 1fr; gap: 26px; align-items: start;" class="cs-files-layout">
+                <div style="display: flex; flex-direction: column; gap: 4px; position: sticky; top: 90px;">
+                  <sc-for list="{{ repoFolderList }}" as="f" hint-placeholder-count="7">
+                    <button type="button" onClick="{{ f.select }}" class="btn {{ f.cls }}" style="justify-content: space-between; display: flex; width: 100%;"><span>{{ f.label }}</span><span style="color: var(--color-neutral-500); font-size: 12px;">{{ f.count }}</span></button>
+                  </sc-for>
+                </div>
+                <div>
+                  <div class="cs-repo-drop {{ repoDropCls }}" tabindex="0" onDragOver="{{ repoDragOver }}" onDragLeave="{{ repoDragLeave }}" onDrop="{{ repoDrop }}" onPaste="{{ repoPaste }}" style="margin-bottom: 18px;">
+                    <div style="margin-bottom: 10px;">Drop files into <strong>{{ repoFolderLabel }}</strong>, or</div>
+                    <div style="display: inline-flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
+                      <label class="btn btn-primary" style="cursor: pointer;">Browse…<input type="file" multiple="{{ true }}" onChange="{{ repoBrowse }}" style="display: none;"></label>
+                      <button type="button" onClick="{{ repoPasteButton }}" class="btn btn-secondary">Paste from clipboard</button>
+                    </div>
+                  </div>
+                  <sc-if value="{{ repoBusy }}" hint-placeholder-val="{{ false }}"><div style="font-size: 13px; color: var(--color-neutral-700); margin-bottom: 12px;">{{ repoBusy }}</div></sc-if>
+                  <sc-if value="{{ repoError }}" hint-placeholder-val="{{ false }}"><div style="font-size: 13px; color: var(--color-accent-800); margin-bottom: 12px;">{{ repoError }}</div></sc-if>
+                  <sc-if value="{{ repoEmpty }}" hint-placeholder-val="{{ false }}">
+                    <div class="card" style="padding: 32px; text-align: center; color: var(--color-neutral-600);">{{ repoEmptyText }}</div>
+                  </sc-if>
+                  <div class="cs-repo-grid">
+                    <sc-for list="{{ repoFiles }}" as="f" hint-placeholder-count="4">
+                      <div class="card" style="padding: 10px; display: flex; flex-direction: column; gap: 7px;">
+                        <a href="{{ f.url }}" target="_blank" rel="noopener" class="cs-repo-thumb" title="Open">
+                          <sc-if value="{{ f.isImage }}" hint-placeholder-val="{{ true }}"><img src="assets/piece-placeholder.png" data-img="{{ f.url }}" alt=""></sc-if>
+                          <sc-if value="{{ f.isVideo }}" hint-placeholder-val="{{ false }}"><video src="{{ f.url }}" muted preload="metadata" style="width: 100%; height: 100%; object-fit: cover;"></video></sc-if>
+                          <sc-if value="{{ f.isOther }}" hint-placeholder-val="{{ false }}"><span>{{ f.ext }}</span></sc-if>
+                        </a>
+                        <input class="input" defaultValue="{{ f.name }}" onBlur="{{ f.rename }}" title="Rename" style="font-size: 12.5px; padding: 6px 8px;">
+                        <div style="font-size: 11.5px; color: var(--color-neutral-500);">{{ f.meta }}</div>
+                        <sc-if value="{{ f.note }}" hint-placeholder-val="{{ false }}"><div style="font-size: 11.5px; color: var(--color-neutral-600);">{{ f.note }}</div></sc-if>
+                        <div style="display: flex; gap: 6px; align-items: center;">
+                          <select class="input" value="{{ f.folder }}" onChange="{{ f.move }}" title="Move to folder" style="font-size: 12px; padding: 5px 6px; flex: 1;">
+                            <sc-for list="{{ repoMoveOptions }}" as="o" hint-placeholder-count="7"><option value="{{ o.key }}">{{ o.label }}</option></sc-for>
+                          </select>
+                          <button type="button" onClick="{{ f.remove }}" class="btn btn-ghost" style="font-size: 12px; padding: 4px 8px;">Delete</button>
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- picker: choose an image from this project's files -->
+          <sc-if value="{{ repoPickOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="position: fixed; inset: 0; z-index: 260; display: grid; place-items: center; background: rgba(30,25,20,.55); padding: 24px;" onClick="{{ repoPickClose }}">
+              <div class="card elev-md" style="width: min(100%, 900px); max-height: 88vh; overflow: auto; padding: 24px 26px; position: relative;" onClick="{{ repoPickStop }}">
+                <button type="button" onClick="{{ repoPickClose }}" class="btn btn-ghost" style="position: absolute; right: 14px; top: 14px; width: 38px; height: 38px; border-radius: 50%; padding: 0; font-size: 20px;" aria-label="Close">×</button>
+                <div style="font-family: var(--font-heading); font-size: 24px; color: var(--color-accent-900); margin-bottom: 14px;">{{ repoPickTitle }}</div>
+                <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px;">
+                  <sc-for list="{{ repoPickFolders }}" as="f" hint-placeholder-count="7"><button type="button" onClick="{{ f.select }}" class="btn {{ f.cls }}" style="font-size: 12.5px;">{{ f.label }}</button></sc-for>
+                  <div style="flex: 1;"></div>
+                  <label class="btn btn-secondary" style="cursor: pointer; font-size: 12.5px;">Upload here…<input type="file" accept="image/*" multiple="{{ repoPickMulti }}" onChange="{{ repoPickUpload }}" style="display: none;"></label>
+                </div>
+                <sc-if value="{{ repoPickBusy }}" hint-placeholder-val="{{ false }}"><div style="font-size: 13px; color: var(--color-neutral-700); margin-bottom: 10px;">{{ repoPickBusy }}</div></sc-if>
+                <sc-if value="{{ repoPickEmpty }}" hint-placeholder-val="{{ false }}"><div style="padding: 30px; text-align: center; color: var(--color-neutral-600);">No images in this folder yet — upload one, or add files in the project's Files tab.</div></sc-if>
+                <div class="cs-repo-grid">
+                  <sc-for list="{{ repoPickItems }}" as="f" hint-placeholder-count="4">
+                    <button type="button" onClick="{{ f.choose }}" class="cs-pick-tile {{ f.cls }}">
+                      <div class="cs-repo-thumb"><img src="assets/piece-placeholder.png" data-img="{{ f.url }}" alt=""></div>
+                      <div style="font-size: 12px; margin-top: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ f.name }}</div>
+                    </button>
+                  </sc-for>
+                </div>
+                <sc-if value="{{ repoPickMulti }}" hint-placeholder-val="{{ false }}">
+                  <div style="display: flex; gap: 10px; margin-top: 18px;">
+                    <button type="button" onClick="{{ repoPickConfirm }}" class="btn btn-primary" disabled="{{ repoPickConfirmDisabled }}">{{ repoPickConfirmLabel }}</button>
+                    <button type="button" onClick="{{ repoPickClose }}" class="btn btn-ghost">Cancel</button>
+                  </div>
+                </sc-if>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- AI floor plan: measured plan + style example → new furnished layout (SVG drawn by Claude) -->
+          <sc-if value="{{ aiPlanOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="position: fixed; inset: 0; z-index: 220; display: grid; place-items: center; background: rgba(30,25,20,.55); padding: 24px;">
+              <div class="card elev-md" style="width: min(100%, 1040px); max-height: 92vh; overflow: auto; padding: 26px 28px; position: relative;" onClick="{{ aiPlanStop }}">
+                <button type="button" onClick="{{ aiPlanClose }}" class="btn btn-ghost" style="position: absolute; right: 14px; top: 14px; width: 38px; height: 38px; border-radius: 50%; padding: 0; font-size: 20px;" aria-label="Close">×</button>
+                <div style="font-family: var(--font-heading); font-size: 26px; color: var(--color-accent-900);">Draw a layout with AI</div>
+                <div style="font-size: 13.5px; color: var(--color-neutral-600); margin: 4px 0 20px;">Claude reads the measured plan, follows the style of the example, and draws a new furnished 2D plan. It's a proposal — check the sizes against the measured plan before presenting it.</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px;" class="cs-aiplan-grid">
+                  <div>
+                    <div style="font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--color-neutral-600); margin-bottom: 8px;">1 · Floor plan with measurements</div>
+                    <div class="cs-repo-thumb" style="aspect-ratio: 4 / 3;"><sc-if value="{{ baseHas }}" hint-placeholder-val="{{ false }}"><img src="assets/piece-placeholder.png" data-img="{{ baseUrl }}" alt=""></sc-if></div>
+                    <sc-if value="{{ aiPlanHasExisting }}" hint-placeholder-val="{{ false }}">
+                      <div style="font-size: 12px; color: var(--color-neutral-600); margin: 8px 0 4px;">From this project's floor plans:</div>
+                      <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                        <sc-for list="{{ aiPlanExisting }}" as="x" hint-placeholder-count="2"><button type="button" onClick="{{ x.use }}" class="cs-pick-tile {{ x.cls }}" style="width: 72px; padding: 3px;"><div class="cs-repo-thumb"><img src="assets/piece-placeholder.png" data-img="{{ x.url }}" alt=""></div></button></sc-for>
+                      </div>
+                    </sc-if>
+                    <div style="display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px;">
+                      <button type="button" onClick="{{ baseFromFiles }}" class="btn btn-secondary" style="font-size: 12px;">From project files</button>
+                      <label class="btn btn-secondary" style="cursor: pointer; font-size: 12px;">Upload<input type="file" accept="image/*" onChange="{{ baseUpload }}" style="display: none;"></label>
+                      <button type="button" onClick="{{ basePaste }}" class="btn btn-secondary" style="font-size: 12px;">Paste</button>
+                    </div>
+                  </div>
+                  <div>
+                    <div style="font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--color-neutral-600); margin-bottom: 8px;">2 · Example of the style you want (optional)</div>
+                    <div class="cs-repo-thumb" style="aspect-ratio: 4 / 3;"><sc-if value="{{ exampleHas }}" hint-placeholder-val="{{ false }}"><img src="assets/piece-placeholder.png" data-img="{{ exampleUrl }}" alt=""></sc-if></div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px;">
+                      <button type="button" onClick="{{ exampleFromFiles }}" class="btn btn-secondary" style="font-size: 12px;">From project files</button>
+                      <label class="btn btn-secondary" style="cursor: pointer; font-size: 12px;">Upload<input type="file" accept="image/*" onChange="{{ exampleUpload }}" style="display: none;"></label>
+                      <button type="button" onClick="{{ examplePaste }}" class="btn btn-secondary" style="font-size: 12px;">Paste</button>
+                      <sc-if value="{{ exampleHas }}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ exampleClear }}" class="btn btn-ghost" style="font-size: 12px;">Remove</button></sc-if>
+                    </div>
+                  </div>
+                </div>
+                <div class="field" style="margin-top: 18px;"><label>Space</label>
+                  <select class="input" value="{{ aiPlanRoomId }}" onChange="{{ aiPlanSetRoom }}">
+                    <sc-for list="{{ aiPlanRooms }}" as="r" hint-placeholder-count="3"><option value="{{ r.id }}">{{ r.name }}</option></sc-for>
+                  </select>
+                </div>
+                <div class="field" style="margin-top: 12px;"><label>What should the layout do?</label>
+                  <textarea class="input" rows="3" value="{{ aiPlanInstructions }}" onChange="{{ aiPlanSetInstructions }}" placeholder="e.g. Oval table for 10 centred on the niche, credenza on the long wall, bar cart by the pantry door, keep 42&quot; around the table" style="resize: vertical; font-family: var(--font-body);"></textarea>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px; margin-top: 16px;">
+                  <button type="button" onClick="{{ aiPlanGenerate }}" class="btn btn-primary" disabled="{{ aiPlanBusy }}">{{ aiPlanGenerateLabel }}</button>
+                  <sc-if value="{{ aiPlanError }}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; color: var(--color-accent-800);">{{ aiPlanError }}</span></sc-if>
+                </div>
+                <sc-if value="{{ aiPlanHasResult }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top: 22px; border-top: 1px solid var(--color-neutral-200); padding-top: 18px;">
+                    <a href="{{ aiPlanResultUrl }}" target="_blank" rel="noopener" style="display: block; border: 1px solid var(--color-neutral-200); border-radius: var(--radius-md); overflow: hidden; background: #fff;"><img src="assets/piece-placeholder.png" data-img="{{ aiPlanResultUrl }}" alt="AI layout" style="width: 100%; display: block;"></a>
+                    <sc-if value="{{ aiPlanSummary }}" hint-placeholder-val="{{ false }}"><p style="font-size: 13.5px; color: var(--color-neutral-700); margin: 12px 0 0;">{{ aiPlanSummary }}</p></sc-if>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-top: 14px; flex-wrap: wrap;">
+                      <sc-if value="{{ !aiPlanAdded }}"><button type="button" onClick="{{ aiPlanAddToPlans }}" class="btn btn-primary">Add to floor plans</button></sc-if>
+                      <sc-if value="{{ aiPlanAdded }}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; color: var(--color-accent-800);">Added — remember to save.</span></sc-if>
+                      <span style="font-size: 12.5px; color: var(--color-neutral-600);">Already saved in Files → 2D Layouts.</span>
+                    </div>
+                  </div>
+                </sc-if>
+              </div>
+            </div>
+          </sc-if>
         </div>
       </sc-if>
 
@@ -2368,8 +2603,17 @@ const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review
 // reaches this file — the version badge in the top bar and the Studio →
 // Changelog page both read straight from this, nothing else to update.
 // Versioning starts at 1.1; anything before that lives only in git log.
-const APP_VERSION = '3.8';
+const APP_VERSION = '3.9';
 const CHANGELOG = [
+  { version: '3.9', date: '2026-10-03', changes: [
+    'Project files: every project has a Files tab with its own folders — Floorplans, Materials, 2D Layouts, Moodboards, Renderings, Videos, Others. Drop, browse or paste files in (any type, up to 50 MB); rename, move between folders or delete. These belong to that project only — the catalog is still the shared library.',
+    'Every image box in a project (cover, portrait, materials, floor plans, space carousels — Concept and Design & sourcing) now has "From project files" next to Choose and Paste.',
+    'AI writing help: click into any text box and an AI button appears in its corner — Fix grammar, Improve writing or Make shorter, with Undo. It keeps the language you wrote in. Powered by Claude.',
+    'Import from moodboard (Library): drop in a moodboard image and Claude lists every captioned piece, looks each one up on the retailer\'s site and shows photo, price, size and link. Tick what you want and confirm — nothing is added before that. Imported pieces show a "New" badge until you open and save them, or "Mark as seen".',
+    'Fetch details on a catalog piece now has Claude read the retailer page, so dimensions, finish, colour and a short note come back far more often; it still falls back to a web search when a retailer blocks the page.',
+    'Floor plans: "Draw with AI" — give it the measured plan and, optionally, an example of the drawing style you like, plus what the layout should do. Claude draws a new furnished 2D plan; it is saved in Files → 2D Layouts and can be added to the floor plans in one click. Treat it as a proposal and check it against the measured plan.',
+    'Fixed: choosing several images at once (space carousels, the client\'s photo upload) only ever took one.',
+  ] },
   { version: '3.8', date: '2026-09-30', changes: [
     'Exported HTML: the browser tab now shows the studio\'s CS monogram (the same icon as the platform), embedded in the file so it shows offline too.',
   ] },
@@ -2494,8 +2738,12 @@ const TABS = [
   { key: 'discovery', label: 'Discovery' }, { key: 'concept', label: 'Concept' }, { key: 'design', label: 'Design & sourcing' },
   { key: 'styling', label: 'Styling & reveal' },
   { key: 'selection', label: 'Selection' }, { key: 'feedback', label: 'Feedback' }, { key: 'sharing', label: 'Sharing' },
+  // This project's own files — not shared with other projects (the catalog is).
+  { key: 'files', label: 'Files' },
 ];
 const PLACEHOLDER = 'assets/piece-placeholder.png';
+// The carousel media type an image gets when picked from a project files folder.
+const REPO_MEDIA_TYPE = { moodboards: 'moodboard', floorplans: 'floorplan', layouts: 'floorplan', renderings: 'rendering', videos: 'video' };
 const CONCEPT_INTRO_DEFAULT = 'Five spaces on the ground floor and above, designed one at a time — concept, plan, rendering and sourcing complete before anything is ordered. This document walks all five spaces, then closes with what it costs.';
 const STUDIO_PROFILE_DEFAULT = {
   name: 'Cybelle Sampaio', role: 'Founder & lead designer', strap: 'Design & Decoration · Orange County, CA', portrait: 'assets/cybelle-portrait.png',
@@ -2577,6 +2825,7 @@ class Component extends DCLogic {
     const api = await import('./platform-data.js');
     const mode = await api.init();
     this.setState({ api, mode });
+    this.installAiTextAssist();
     const token = (location.hash.match(/share=([a-z0-9]+)/i) || [])[1];
     if (token) {
       const found = await api.findByShare(token);
@@ -3309,6 +3558,242 @@ class Component extends DCLogic {
     return null;
   }
 
+  /* ---------- project files (repository) ---------- */
+  // Files live on the project (project.repository) and in Storage under
+  // {projectId}/repository/{folder}/. Unlike the catalog, nothing here is
+  // shared between projects.
+  repoItems() { return (this.state.proj && this.state.proj.repository) || []; }
+
+  async repoAddFiles(folder, files) {
+    const api = this.state.api, p = this.state.proj;
+    files = Array.from(files || []);
+    if (!p || !files.length) return [];
+    const tooBig = files.find((f) => f.size > 50 * 1024 * 1024);
+    if (tooBig) { this.setState({ repoError: tooBig.name + ' is larger than 50 MB.' }); return []; }
+    const added = [];
+    this.setState({ repoError: '' });
+    try {
+      for (const [i, f] of files.entries()) {
+        this.setState({ repoBusy: 'Uploading ' + (i + 1) + ' of ' + files.length + ' — ' + f.name });
+        added.push(await api.uploadRepoFile(p.id, folder, f));
+      }
+    } catch (e) {
+      this.setState({ repoError: 'Upload failed — ' + ((e && e.message) || e) });
+    }
+    if (added.length) await this.persist({ repository: [...this.repoItems(), ...added] });
+    this.setState({ repoBusy: '' });
+    return added;
+  }
+
+  async repoUpdate(id, patch) {
+    await this.persist({ repository: this.repoItems().map((it) => (it.id === id ? { ...it, ...patch } : it)) });
+  }
+
+  repoRemove(item) {
+    this.askConfirm({
+      title: 'Delete this file?',
+      body: (item.name || 'This file') + ' will be removed from the project files. Anything already using it keeps showing it until replaced.',
+      confirmLabel: 'Delete', danger: true,
+      onConfirm: async () => {
+        await this.state.api.deleteRepoFile(item);
+        await this.persist({ repository: this.repoItems().filter((it) => it.id !== item.id) });
+      },
+    });
+  }
+
+  /** opts: { folder, multiple, title, imagesOnly }. onPick receives an array of file records. */
+  openRepoPicker(opts, onPick) {
+    this.setState({ repoPick: { folder: opts.folder || 'floorplans', multiple: !!opts.multiple, title: opts.title || 'Choose from project files',
+      imagesOnly: opts.imagesOnly !== false, selected: [], onPick } });
+  }
+
+  /* ---------- AI: floor plan ---------- */
+  async svgToPngFile(svg, name) {
+    const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
+    try {
+      const img = new Image();
+      await new Promise((ok, bad) => { img.onload = ok; img.onerror = () => bad(new Error('The drawing could not be rendered.')); img.src = url; });
+      const w = img.naturalWidth || 2400, h = img.naturalHeight || 1600;
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h);
+      ctx.drawImage(img, 0, 0, w, h);
+      const blob = await new Promise((res) => canvas.toBlob(res, 'image/png'));
+      return new File([blob], name, { type: 'image/png' });
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  }
+
+  async aiPlanGenerate() {
+    const s = this.state, plan = s.aiPlan, api = s.api, p = s.proj;
+    if (!plan || plan.busy) return;
+    if (!plan.baseUrl) return this.setState({ aiPlan: { ...plan, error: 'Choose the floor plan with measurements first.' } });
+    this.setState({ aiPlan: { ...plan, busy: true, error: '', resultUrl: '', summary: '' } });
+    try {
+      const room = (this.rooms().find((r) => r.id === plan.roomId) || null);
+      const roomText = room ? [room.name, room.goal, room.brief].filter(Boolean).join(' — ') : '';
+      const { svg, summary } = await api.aiFloorPlan({ baseUrl: plan.baseUrl, exampleUrl: plan.exampleUrl || '', instructions: plan.instructions || '', room: roomText });
+      const title = 'AI layout' + (room ? ' — ' + room.name : '') + ' ' + new Date().toISOString().slice(0, 16).replace('T', ' ');
+      const png = await this.svgToPngFile(svg, title.replace(/[^\w\- ]+/g, '').replace(/\s+/g, '-') + '.png');
+      // Saved to 2D Layouts straight away, so a result is never lost even if
+      // the modal is closed without adding it to the floor plans.
+      const [rec] = await this.repoAddFiles('layouts', [png]);
+      if (!rec) throw new Error(this.state.repoError || 'Could not save the drawing.');
+      await this.repoUpdate(rec.id, { name: title + '.png', note: summary });
+      this.setState({ aiPlan: { ...this.state.aiPlan, busy: false, resultUrl: rec.url, summary, resultTitle: title } });
+    } catch (e) {
+      this.setState({ aiPlan: { ...this.state.aiPlan, busy: false, error: (e && e.message) || String(e) } });
+    }
+  }
+
+  /* ---------- AI: moodboard → catalog ---------- */
+  async boardStart(file) {
+    const api = this.state.api;
+    if (!file) return;
+    this.setState({ board: { stage: 'reading', items: [], error: '', note: 'Reading the moodboard…' } });
+    try {
+      const imageUrl = await api.uploadFile('catalog', file);
+      const items = await api.aiReadBoard(imageUrl);
+      if (!items.length) throw new Error('No products were recognised on that image.');
+      const norm = (x) => String(x || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+      const catalog = this.state.catalog || [];
+      const rows = items.map((it, i) => {
+        const dup = catalog.find((c) => norm(c.name) && norm(c.name) === norm(it.name));
+        return { key: 'b' + i, name: it.name, retailer: it.retailer, type: it.type, status: 'searching', product: null, checked: false, dupName: dup ? dup.name : '' };
+      });
+      this.setState({ board: { stage: 'review', items: rows, error: '', imageUrl } });
+      // A few lookups at a time: each one is a web search, and the rows fill
+      // in as they come back rather than all at the end.
+      const queue = rows.slice();
+      const setRow = (key, patch) => this.setState((st) => st.board ? { board: { ...st.board, items: st.board.items.map((r) => (r.key === key ? { ...r, ...patch } : r)) } } : null);
+      const worker = async () => {
+        while (queue.length) {
+          const row = queue.shift();
+          try {
+            const product = await api.aiFindProduct(row.name, row.retailer);
+            setRow(row.key, product ? { status: 'found', product, checked: !row.dupName } : { status: 'notfound' });
+          } catch (e) {
+            setRow(row.key, { status: 'error', error: (e && e.message) || String(e) });
+          }
+        }
+      };
+      await Promise.all([worker(), worker(), worker()]);
+    } catch (e) {
+      this.setState({ board: { stage: 'pick', items: [], error: (e && e.message) || String(e) } });
+    }
+  }
+
+  async boardAdd() {
+    const s = this.state, api = s.api, board = s.board;
+    if (!board || board.saving) return;
+    const chosen = board.items.filter((r) => r.checked);
+    if (!chosen.length) return;
+    this.setState({ board: { ...board, saving: true } });
+    const TYPE_FROM_BOARD = { sofa: 'Sofa', chair: 'Armchair', table: 'Side table', bed: 'Bed', lighting: 'Lighting', rug: 'Rug' };
+    for (const row of chosen) {
+      const p = row.product || {};
+      const name = p.name || row.name;
+      await api.saveCatalogItem({
+        name, retailer: p.retailer || row.retailer || '', type: this.inferCatalogType(name) || TYPE_FROM_BOARD[row.type] || '',
+        url: p.url || '', image: p.image || '', dimensions: p.dimensions || '', finish: p.finish || '', color: p.color || '',
+        price: p.price == null ? null : p.price, notes: p.notes || '', tags: ['moodboard import'], rooms: [], room: '',
+        // "New" until someone opens and saves it, or marks all as seen.
+        isNew: true,
+      });
+    }
+    this.setState({ board: null, catalog: await api.listCatalog(),
+      boardNotice: chosen.length + (chosen.length === 1 ? ' piece' : ' pieces') + ' added to the library — marked New.' });
+    setTimeout(() => this.setState({ boardNotice: '' }), 6000);
+  }
+
+  /* ---------- AI: text boxes ---------- */
+  // One floating "AI" button follows whichever textarea has focus, instead of
+  // a button wired into each of the app's ~30 text boxes. It writes back
+  // through the native value setter plus an input event, which is what React
+  // listens to — so each box's own onChange (and its save) runs as if typed.
+  installAiTextAssist() {
+    if (this._aiFab) return;
+    const fab = document.createElement('div');
+    fab.className = 'cs-ai-fab';
+    fab.innerHTML = '<button type="button" class="cs-ai-fab-btn" data-act="toggle" title="AI writing help" aria-haspopup="true">'
+      + '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l1.8 5.6L19.5 9.5l-5.7 1.9L12 17l-1.8-5.6L4.5 9.5l5.7-1.9z"/><path d="M19 14l.9 2.6 2.6.9-2.6.9L19 21l-.9-2.6-2.6-.9 2.6-.9z"/></svg>'
+      + '<span>AI</span></button>'
+      + '<div class="cs-ai-fab-menu" role="menu">'
+      + '<button type="button" role="menuitem" data-act="fix">Fix grammar</button>'
+      + '<button type="button" role="menuitem" data-act="improve">Improve writing</button>'
+      + '<button type="button" role="menuitem" data-act="shorten">Make shorter</button>'
+      + '<button type="button" role="menuitem" data-act="undo" class="cs-ai-undo">Undo AI change</button>'
+      + '<div class="cs-ai-status" aria-live="polite"></div></div>';
+    document.body.appendChild(fab);
+    this._aiFab = fab;
+    let target = null, undo = null, busy = false;
+    const status = fab.querySelector('.cs-ai-status');
+    const allowed = () => { const u = this.state.user; return !this.state.share && !!u && (u.role === 'admin' || u.role === 'designer'); };
+    const place = () => {
+      if (!target || !document.contains(target)) { fab.classList.remove('show'); return; }
+      const r = target.getBoundingClientRect();
+      if (r.bottom < 0 || r.top > window.innerHeight || r.height < 24) { fab.classList.remove('show'); return; }
+      // Shown before measuring — a hidden element measures 0 wide.
+      fab.classList.add('show');
+      // Bottom-right inside the box, clear of the resize grip; the menu opens
+      // upward when there's no room below.
+      fab.style.top = Math.max(4, r.bottom - fab.offsetHeight - 8) + 'px';
+      fab.style.left = (r.right - fab.offsetWidth - 20) + 'px';
+      fab.classList.toggle('up', r.bottom > window.innerHeight - 220);
+    };
+    const hide = () => { fab.classList.remove('show', 'open'); };
+    const setValue = (el, value) => {
+      Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set.call(el, value);
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+    };
+    const contextOf = (el) => {
+      const field = el.closest('.field, .card, div');
+      const label = field && field.querySelector('label');
+      const p = this.state.proj;
+      return [p && ('Project: ' + p.name), label && ('Field: ' + label.textContent.trim()), el.placeholder && ('Hint: ' + el.placeholder)].filter(Boolean).join('. ');
+    };
+    document.addEventListener('focusin', (e) => {
+      const el = e.target;
+      if (fab.contains(el)) return;
+      if (!(el instanceof HTMLTextAreaElement) || el.hasAttribute('data-no-ai') || !allowed()) { if (!busy) { target = null; hide(); } return; }
+      if (el !== target) { fab.classList.remove('open'); status.textContent = ''; }
+      target = el; place();
+    });
+    document.addEventListener('focusout', () => setTimeout(() => {
+      const a = document.activeElement;
+      if (!busy && a !== target && !fab.contains(a)) hide();
+    }, 180));
+    window.addEventListener('scroll', place, true);
+    window.addEventListener('resize', place);
+    // Keep the textarea focused while the menu is used.
+    fab.addEventListener('mousedown', (e) => e.preventDefault());
+    fab.addEventListener('click', async (e) => {
+      const btn = e.target.closest('button');
+      if (!btn || !target || busy) return;
+      const act = btn.getAttribute('data-act');
+      if (act === 'toggle') { fab.classList.toggle('open'); fab.classList.toggle('can-undo', !!undo && undo.el === target); return; }
+      if (act === 'undo') { if (undo && undo.el === target) { setValue(target, undo.value); undo = null; status.textContent = 'Restored.'; fab.classList.remove('can-undo'); } return; }
+      const text = target.value;
+      if (!text.trim()) { status.textContent = 'Type something first.'; return; }
+      const el = target;
+      busy = true; fab.classList.add('busy'); status.textContent = 'Working…';
+      try {
+        const out = await this.state.api.aiAssist(text, act, contextOf(el));
+        if (!out) throw new Error('No text came back.');
+        undo = { el, value: text };
+        setValue(el, out);
+        status.textContent = 'Done — review it, or Undo.';
+        fab.classList.add('can-undo');
+      } catch (err) {
+        status.textContent = (err && err.message) || 'Something went wrong.';
+      } finally {
+        busy = false; fab.classList.remove('busy'); place();
+      }
+    });
+  }
+
   removeCatalogImage() {
     this.setState({ form: { ...this.state.form, image: '' }, imageNotice: 'Photo removed.', imageNoticeKind: 'status' });
   }
@@ -3397,7 +3882,7 @@ class Component extends DCLogic {
       spec: [c.dimensions, c.color].filter(Boolean).join(' · ') || ' ',
       image: c.image || PLACEHOLDER,
       price: this.money(c.price),
-      canDrag,
+      canDrag, isNew: !!c.isNew,
       dragStart: (e) => { if (canDrag) this.startReorderDrag(e, c.id, groupIds, persist); },
       canEdit: admin,
       edit: () => this.openCatalogEditor({ ...c, price: c.price == null ? '' : String(c.price), tags: (c.tags || []).join(', ') }),
@@ -3469,6 +3954,15 @@ class Component extends DCLogic {
       setFStore: (e) => this.setState({ fStore: e.target.value }),
       setSort: (e) => this.setState({ sort: e.target.value }),
       newPiece: () => this.openCatalogEditor({ name: '', type: 'Sofa', room: 'Any room', retailer: '', url: '', image: '', dimensions: '', finish: '', color: '', price: '', notes: '', tags: '' }),
+      hasNew: all.some((c) => c.isNew),
+      newSeenLabel: 'Mark ' + all.filter((c) => c.isNew).length + ' new as seen',
+      markAllSeen: async () => {
+        await Promise.all(all.filter((c) => c.isNew).map((c) => api.saveCatalogItem({ ...c, isNew: false })));
+        this.setState({ catalog: await api.listCatalog() });
+      },
+      openBoardImport: () => this.setState({ board: { stage: 'pick', items: [], error: '' } }),
+      boardNotice: s.boardNotice || '',
+      ...this.boardVals(),
       catalogGroups,
       hasCatalogGroups: catalogGroups.length > 0,
       noCatalogGroups: catalogGroups.length === 0,
@@ -3590,7 +4084,8 @@ class Component extends DCLogic {
             retailer: findCanonical(f2.retailer, stores) || f2.retailer,
             price: f2.price === '' ? null : Number(String(f2.price).replace(/[^0-9.]/g, '')),
             tags: Array.isArray(f2.tags) ? f2.tags : String(f2.tags || '').split(',').map((x) => x.trim()).filter(Boolean),
-            rooms, room: rooms[0] || '' };
+            // Opening and saving an imported piece is the review — it stops being "New".
+            rooms, room: rooms[0] || '', isNew: false };
           await api.saveCatalogItem(rec);
           this.setState({ form: null, catalog: await api.listCatalog() });
         },
@@ -3607,6 +4102,51 @@ class Component extends DCLogic {
       });
     }
     return v;
+  }
+
+  boardVals() {
+    const b = this.state.board;
+    if (!b) return { boardOpen: false };
+    const rows = b.items || [];
+    const pending = rows.filter((r) => r.status === 'searching').length;
+    const chosen = rows.filter((r) => r.checked).length;
+    const STATUS = { searching: ['Searching…', 'tag-outline'], found: ['Found', 'tag-accent'], notfound: ['Not found', ''], error: ['Error', ''] };
+    const pastedFile = async (e) => {
+      if (e && e.clipboardData) {
+        e.preventDefault();
+        return Array.from(e.clipboardData.files || []).find((f) => String(f.type || '').startsWith('image/')) || null;
+      }
+      return this.conceptClipboardImage();
+    };
+    return {
+      boardOpen: true,
+      boardStagePick: b.stage === 'pick', boardStageReading: b.stage === 'reading', boardStageReview: b.stage === 'review',
+      boardError: b.error || '',
+      boardClose: () => this.setState({ board: null }),
+      boardPick: (e) => this.boardStart(e.target.files && e.target.files[0]),
+      boardPaste: async (e) => this.boardStart(await pastedFile(e)),
+      boardPasteButton: async () => this.boardStart(await pastedFile(null)),
+      boardProgress: pending
+        ? 'Found ' + rows.length + ' pieces on the board — looking each one up online (' + (rows.length - pending) + ' of ' + rows.length + ' done)…'
+        : rows.length + ' pieces on the board. Tick the ones to add — pieces already in the library are left unticked.',
+      boardRows: rows.map((r) => {
+        const p = r.product || {};
+        const [statusLabel, tagCls] = STATUS[r.status] || ['', ''];
+        return {
+          name: p.name || r.name,
+          meta: [p.retailer || r.retailer, p.price != null ? this.money(p.price) : ''].filter(Boolean).join(' · '),
+          spec: [p.dimensions, p.finish, p.color].filter(Boolean).join(' · '),
+          url: p.url || '', image: p.image || PLACEHOLDER,
+          warn: r.dupName ? 'Already in the library as "' + r.dupName + '".' : (r.status === 'notfound' ? 'Not found online — tick to add it by name only.' : (r.error || '')),
+          statusLabel, tagCls, checked: !!r.checked, searching: r.status === 'searching',
+          opacity: r.status === 'searching' ? '0.6' : '1',
+          toggle: () => this.setState((st) => ({ board: { ...st.board, items: st.board.items.map((x) => (x.key === r.key ? { ...x, checked: !x.checked } : x)) } })),
+        };
+      }),
+      boardAddLabel: b.saving ? 'Adding…' : 'Add ' + chosen + (chosen === 1 ? ' piece' : ' pieces') + ' to library',
+      boardAddDisabled: !chosen || !!b.saving,
+      boardAdd: () => this.boardAdd(),
+    };
   }
 
   productDetailsFromText(text, url) {
@@ -3641,7 +4181,7 @@ class Component extends DCLogic {
       name: this.state.form.name || withType.name || '', retailer: this.state.form.retailer || withType.retailer || '',
       type: withType.type || this.state.form.type || '', dimensions: this.state.form.dimensions || withType.dimensions || '',
       finish: this.state.form.finish || withType.finish || '', color: this.state.form.color || withType.color || '',
-      image: this.state.form.image || withType.image || '',
+      image: this.state.form.image || withType.image || '', notes: this.state.form.notes || withType.notes || '',
       price: this.state.form.price || (withType.price == null ? '' : String(withType.price)) };
     this.setState({ fetching: false, fetchProgress: 100, fetchMissing: missing, pasteOpen: false, pasteText: '',
       fetchNotice: missing.length ? 'Details added. Some information still needs your review.' : 'All available product details were added. Review before saving.', form });
@@ -3705,6 +4245,7 @@ class Component extends DCLogic {
       tabSelection: s.tab === 'selection',
       tabFeedback: s.tab === 'feedback',
       tabSharing: s.tab === 'sharing',
+      tabFiles: s.tab === 'files',
       showPrice: s.tab === 'design' || s.tab === 'styling' || admin || (s.user && s.user.role === 'designer'),
     };
 
@@ -3822,6 +4363,7 @@ class Component extends DCLogic {
       v.introBody = draft.intro.body; v.setIntroBody = setIntro('body'); v.introHero = draft.intro.hero;
       v.pickIntroHero = async (e) => { const file = e.target.files && e.target.files[0]; if (file) setDraft({ intro: { ...draft.intro, hero: await api.uploadFile(p.id, file) } }); };
       v.pasteIntroHero = async () => { const file = await this.conceptClipboardImage(); if (file) setDraft({ intro: { ...draft.intro, hero: await api.uploadFile(p.id, file) } }); };
+      v.repoIntroHero = () => this.openRepoPicker({ folder: 'renderings', title: 'Choose the cover image' }, ([x]) => setDraft({ intro: { ...draft.intro, hero: x.url } }));
 
       const setStudio = (key) => (e) => setDraft({ studio: { ...draft.studio, [key]: e.target.value } });
       v.studioName = draft.studio.name; v.setStudioName = setStudio('name');
@@ -3830,6 +4372,7 @@ class Component extends DCLogic {
       v.studioPortrait = draft.studio.portrait;
       v.pickStudioPortrait = async (e) => { const file = e.target.files && e.target.files[0]; if (file) setDraft({ studio: { ...draft.studio, portrait: await api.uploadFile(p.id, file) } }); };
       v.pasteStudioPortrait = async () => { const file = await this.conceptClipboardImage(); if (file) setDraft({ studio: { ...draft.studio, portrait: await api.uploadFile(p.id, file) } }); };
+      v.repoStudioPortrait = () => this.openRepoPicker({ folder: 'others', title: 'Choose the portrait' }, ([x]) => setDraft({ studio: { ...draft.studio, portrait: x.url } }));
       const setBio = (i) => (e) => { const bio = draft.studio.bio.slice(); bio[i] = e.target.value; setDraft({ studio: { ...draft.studio, bio } }); };
       v.studioBio1 = draft.studio.bio[0] || ''; v.setStudioBio1 = setBio(0);
       v.studioBio2 = draft.studio.bio[1] || ''; v.setStudioBio2 = setBio(1);
@@ -3873,10 +4416,22 @@ class Component extends DCLogic {
         setName: materialsC.setField(i, 'name'), setNote: materialsC.setField(i, 'note'), remove: materialsC.remove(i),
         pickImage: async (e) => { const file = e.target.files && e.target.files[0]; if (!file) return; const next = draft.materials.slice(); next[i] = { ...next[i], image: await api.uploadFile(p.id, file) }; setDraft({ materials: next }); },
         pasteImage: async () => { const file = await this.conceptClipboardImage(); if (!file) return; const next = draft.materials.slice(); next[i] = { ...next[i], image: await api.uploadFile(p.id, file) }; setDraft({ materials: next }); },
+        repoImage: () => this.openRepoPicker({ folder: 'materials', title: 'Choose the material image' }, ([x]) => { const next = draft.materials.slice(); next[i] = { ...next[i], image: x.url }; setDraft({ materials: next }); }),
         clearImage: () => { const next = draft.materials.slice(); next[i] = { ...next[i], image: '' }; setDraft({ materials: next }); },
       }));
 
       v.addConceptFloor = () => setDraft({ floorPlans: draft.floorPlans.concat([{ title: 'Floor plan ' + String(draft.floorPlans.length + 1).padStart(2, '0'), image: '', comment: '' }]) });
+      v.openAiPlan = () => { const existing = draft.floorPlans.map((x) => x.image).filter(Boolean); this.setState({ aiPlan: { existing, baseUrl: existing[0] || '', exampleUrl: '', instructions: '', roomId: '' } }); };
+      v.aiPlanAddToPlans = () => {
+        const plan = this.state.aiPlan;
+        if (!plan || !plan.resultUrl) return;
+        // Fills the first empty card (a fresh project starts with one) before adding a new one.
+        const card = { title: plan.resultTitle || 'AI layout', image: plan.resultUrl, comment: plan.summary || '' };
+        const next = draft.floorPlans.slice(); const empty = next.findIndex((x) => !x.image);
+        if (empty >= 0) next[empty] = { ...next[empty], ...card }; else next.push(card);
+        setDraft({ floorPlans: next });
+        this.setState({ aiPlan: { ...this.state.aiPlan, added: true } });
+      };
       // Floor plans carry no id of their own, so a drag works on positions —
       // the ids only need to hold still for the length of one drag.
       const floorIds = draft.floorPlans.map((_, i) => 'fp-' + i);
@@ -3888,6 +4443,7 @@ class Component extends DCLogic {
           setTitle: (e) => setFloor({ title: e.target.value }), setComment: (e) => setFloor({ comment: e.target.value }),
           pickImage: async (e) => { const file = e.target.files && e.target.files[0]; if (file) setFloor({ image: await api.uploadFile(p.id, file) }); },
           pasteImage: async () => { const file = await this.conceptClipboardImage(); if (file) setFloor({ image: await api.uploadFile(p.id, file) }); },
+          repoImage: () => this.openRepoPicker({ folder: 'floorplans', title: 'Choose the floor plan' }, ([x]) => setFloor({ image: x.url })),
           remove: () => { if (draft.floorPlans.length > 1) setDraft({ floorPlans: draft.floorPlans.filter((_, j) => j !== fi) }); }
         };
       });
@@ -3933,6 +4489,7 @@ class Component extends DCLogic {
             for (const file of files) added.push({ id: 'media-' + Date.now().toString(36) + '-' + added.length, type: 'moodboard', title: file.name.replace(/\.[^.]+$/, ''), url: await api.uploadFile(p.id, file) });
             setRoom({ conceptMedia: [...(room.conceptMedia || []), ...added] });
           },
+          repoMedia: () => this.openRepoPicker({ folder: 'moodboards', multiple: true, title: 'Add images from project files' }, (files) => setRoom({ conceptMedia: [...(room.conceptMedia || []), ...files.map((x, k) => ({ id: 'media-' + Date.now().toString(36) + '-' + k, type: REPO_MEDIA_TYPE[x.folder] || 'moodboard', title: String(x.name || '').replace(/.[^.]+$/, ''), url: x.url }))] })),
           pasteMedia: async () => {
             const file = await this.conceptClipboardImage();
             if (!file) return;
@@ -4030,6 +4587,7 @@ class Component extends DCLogic {
       v.designIntroBody = draft.intro.body; v.setDesignIntroBody = setDesignIntro('body'); v.designIntroHero = draft.intro.hero;
       v.pickDesignIntroHero = async (e) => { const file = e.target.files && e.target.files[0]; if (file) setDraft({ intro: { ...draft.intro, hero: await api.uploadFile(p.id, file) } }); };
       v.pasteDesignIntroHero = async () => { const file = await this.conceptClipboardImage(); if (file) setDraft({ intro: { ...draft.intro, hero: await api.uploadFile(p.id, file) } }); };
+      v.repoDesignIntroHero = () => this.openRepoPicker({ folder: 'renderings', title: 'Choose the cover image' }, ([x]) => setDraft({ intro: { ...draft.intro, hero: x.url } }));
 
       const setDesignStudio = (key) => (e) => setDraft({ studio: { ...draft.studio, [key]: e.target.value } });
       v.designStudioName = draft.studio.name; v.setDesignStudioName = setDesignStudio('name');
@@ -4038,6 +4596,7 @@ class Component extends DCLogic {
       v.designStudioPortrait = draft.studio.portrait;
       v.pickDesignStudioPortrait = async (e) => { const file = e.target.files && e.target.files[0]; if (file) setDraft({ studio: { ...draft.studio, portrait: await api.uploadFile(p.id, file) } }); };
       v.pasteDesignStudioPortrait = async () => { const file = await this.conceptClipboardImage(); if (file) setDraft({ studio: { ...draft.studio, portrait: await api.uploadFile(p.id, file) } }); };
+      v.repoDesignStudioPortrait = () => this.openRepoPicker({ folder: 'others', title: 'Choose the portrait' }, ([x]) => setDraft({ studio: { ...draft.studio, portrait: x.url } }));
       const setDesignBio = (i) => (e) => { const bio = draft.studio.bio.slice(); bio[i] = e.target.value; setDraft({ studio: { ...draft.studio, bio } }); };
       v.designStudioBio1 = draft.studio.bio[0] || ''; v.setDesignStudioBio1 = setDesignBio(0);
       v.designStudioBio2 = draft.studio.bio[1] || ''; v.setDesignStudioBio2 = setDesignBio(1);
@@ -4071,11 +4630,23 @@ class Component extends DCLogic {
         setName: materialsC.setField(i, 'name'), setNote: materialsC.setField(i, 'note'), remove: materialsC.remove(i),
         pickImage: async (e) => { const file = e.target.files && e.target.files[0]; if (!file) return; const next = draft.materials.slice(); next[i] = { ...next[i], image: await api.uploadFile(p.id, file) }; setDraft({ materials: next }); },
         pasteImage: async () => { const file = await this.conceptClipboardImage(); if (!file) return; const next = draft.materials.slice(); next[i] = { ...next[i], image: await api.uploadFile(p.id, file) }; setDraft({ materials: next }); },
+        repoImage: () => this.openRepoPicker({ folder: 'materials', title: 'Choose the material image' }, ([x]) => { const next = draft.materials.slice(); next[i] = { ...next[i], image: x.url }; setDraft({ materials: next }); }),
         clearImage: () => { const next = draft.materials.slice(); next[i] = { ...next[i], image: '' }; setDraft({ materials: next }); },
       }));
 
       v.copyDesignFloorPlans = () => setDraft({ floorPlans: (p.floorPlans || []).map((x) => ({ ...x })) });
       v.addDesignFloor = () => setDraft({ floorPlans: draft.floorPlans.concat([{ title: 'Floor plan ' + String(draft.floorPlans.length + 1).padStart(2, '0'), image: '', comment: '' }]) });
+      v.openAiPlan = () => { const existing = draft.floorPlans.map((x) => x.image).filter(Boolean); this.setState({ aiPlan: { existing, baseUrl: existing[0] || '', exampleUrl: '', instructions: '', roomId: '' } }); };
+      v.aiPlanAddToPlans = () => {
+        const plan = this.state.aiPlan;
+        if (!plan || !plan.resultUrl) return;
+        // Fills the first empty card (a fresh project starts with one) before adding a new one.
+        const card = { title: plan.resultTitle || 'AI layout', image: plan.resultUrl, comment: plan.summary || '' };
+        const next = draft.floorPlans.slice(); const empty = next.findIndex((x) => !x.image);
+        if (empty >= 0) next[empty] = { ...next[empty], ...card }; else next.push(card);
+        setDraft({ floorPlans: next });
+        this.setState({ aiPlan: { ...this.state.aiPlan, added: true } });
+      };
       const designFloorIds = draft.floorPlans.map((_, i) => 'fp-' + i);
       const persistDesignFloorOrder = (nextIds) => setDraft({ floorPlans: nextIds.map((id) => draft.floorPlans[designFloorIds.indexOf(id)]) });
       v.designFloors = draft.floorPlans.map((floor, fi) => {
@@ -4085,6 +4656,7 @@ class Component extends DCLogic {
           setTitle: (e) => setFloor({ title: e.target.value }), setComment: (e) => setFloor({ comment: e.target.value }),
           pickImage: async (e) => { const file = e.target.files && e.target.files[0]; if (file) setFloor({ image: await api.uploadFile(p.id, file) }); },
           pasteImage: async () => { const file = await this.conceptClipboardImage(); if (file) setFloor({ image: await api.uploadFile(p.id, file) }); },
+          repoImage: () => this.openRepoPicker({ folder: 'floorplans', title: 'Choose the floor plan' }, ([x]) => setFloor({ image: x.url })),
           remove: () => setDraft({ floorPlans: draft.floorPlans.filter((_, j) => j !== fi) }),
         };
       });
@@ -4120,6 +4692,7 @@ class Component extends DCLogic {
             for (const file of files) added.push({ id: 'media-' + Date.now().toString(36) + '-' + added.length, type: 'rendering', title: file.name.replace(/\.[^.]+$/, ''), url: await api.uploadFile(p.id, file) });
             setRoom({ designMedia: [...(room.designMedia || []), ...added] });
           },
+          repoMedia: () => this.openRepoPicker({ folder: 'renderings', multiple: true, title: 'Add images from project files' }, (files) => setRoom({ designMedia: [...(room.designMedia || []), ...files.map((x, k) => ({ id: 'media-' + Date.now().toString(36) + '-' + k, type: REPO_MEDIA_TYPE[x.folder] || 'rendering', title: String(x.name || '').replace(/.[^.]+$/, ''), url: x.url }))] })),
           pasteMedia: async () => {
             const file = await this.conceptClipboardImage();
             if (!file) return;
@@ -4593,7 +5166,131 @@ class Component extends DCLogic {
         }),
       }));
     }
+    Object.assign(v, this.repoVals(v.tabFiles), this.repoPickVals(), this.aiPlanVals());
     return v;
+  }
+
+  repoFolders() { return (this.state.api && this.state.api.REPO_FOLDERS) || []; }
+
+  repoFileVal(f) {
+    const type = String(f.type || '');
+    const ext = (String(f.name || '').split('.').pop() || 'file').slice(0, 5);
+    const kb = (f.size || 0) / 1024;
+    return {
+      id: f.id, name: f.name || 'file', url: f.url || '',
+      isImage: type.startsWith('image/'), isVideo: type.startsWith('video/'), isOther: !type.startsWith('image/') && !type.startsWith('video/'),
+      ext, note: f.note || '',
+      meta: [kb > 1024 ? (kb / 1024).toFixed(1) + ' MB' : Math.max(1, Math.round(kb)) + ' KB', f.createdAt ? new Date(f.createdAt).toLocaleDateString() : ''].filter(Boolean).join(' · '),
+    };
+  }
+
+  repoVals(active) {
+    if (!active) return {};
+    const s = this.state;
+    const folder = s.repoFolder || 'floorplans';
+    const items = this.repoItems();
+    const pastedFiles = async (e) => {
+      if (e && e.clipboardData) { e.preventDefault(); return Array.from(e.clipboardData.files || []); }
+      const file = await this.conceptClipboardImage();
+      return file ? [file] : [];
+    };
+    return {
+      repoFolderList: this.repoFolders().map((f) => ({
+        label: f.label, count: items.filter((it) => it.folder === f.key).length,
+        cls: f.key === folder ? 'btn-secondary' : 'btn-ghost',
+        select: () => this.setState({ repoFolder: f.key }),
+      })),
+      repoFolderLabel: (this.repoFolders().find((f) => f.key === folder) || {}).label || '',
+      repoMoveOptions: this.repoFolders(),
+      repoFiles: items.filter((it) => it.folder === folder).slice().reverse().map((f) => ({
+        ...this.repoFileVal(f), folder: f.folder,
+        rename: (e) => { const name = e.target.value.trim(); if (name && name !== f.name) this.repoUpdate(f.id, { name }); },
+        move: (e) => this.repoUpdate(f.id, { folder: e.target.value }),
+        remove: () => this.repoRemove(f),
+      })),
+      repoEmpty: !items.some((it) => it.folder === folder),
+      repoEmptyText: 'Nothing in ' + ((this.repoFolders().find((f) => f.key === folder) || {}).label || 'this folder') + ' yet.',
+      repoBusy: s.repoBusy || '', repoError: s.repoError || '',
+      repoDropCls: s.repoOver ? 'over' : '',
+      repoBrowse: (e) => { this.repoAddFiles(folder, e.target.files); e.target.value = ''; },
+      repoPaste: async (e) => this.repoAddFiles(folder, await pastedFiles(e)),
+      repoPasteButton: async () => this.repoAddFiles(folder, await pastedFiles(null)),
+      repoDragOver: (e) => { e.preventDefault(); if (!this.state.repoOver) this.setState({ repoOver: true }); },
+      repoDragLeave: () => this.setState({ repoOver: false }),
+      repoDrop: (e) => { e.preventDefault(); this.setState({ repoOver: false }); this.repoAddFiles(folder, e.dataTransfer && e.dataTransfer.files); },
+    };
+  }
+
+  repoPickVals() {
+    const pick = this.state.repoPick;
+    if (!pick) return { repoPickOpen: false };
+    const items = this.repoItems().filter((it) => it.folder === pick.folder && (!pick.imagesOnly || String(it.type || '').startsWith('image/')));
+    const close = () => this.setState({ repoPick: null });
+    const done = (chosen) => { close(); if (chosen.length) pick.onPick(chosen); };
+    return {
+      repoPickOpen: true, repoPickTitle: pick.title, repoPickMulti: pick.multiple,
+      repoPickFolders: this.repoFolders().map((f) => ({
+        label: f.label, cls: f.key === pick.folder ? 'btn-secondary' : 'btn-ghost',
+        select: () => this.setState({ repoPick: { ...this.state.repoPick, folder: f.key, selected: [] } }),
+      })),
+      repoPickItems: items.slice().reverse().map((f) => ({
+        ...this.repoFileVal(f),
+        cls: pick.selected.includes(f.id) ? 'on' : '',
+        choose: () => {
+          if (!pick.multiple) return done([f]);
+          const sel = this.state.repoPick.selected;
+          this.setState({ repoPick: { ...this.state.repoPick, selected: sel.includes(f.id) ? sel.filter((x) => x !== f.id) : sel.concat(f.id) } });
+        },
+      })),
+      repoPickEmpty: !items.length,
+      repoPickUpload: async (e) => {
+        const added = await this.repoAddFiles(pick.folder, e.target.files);
+        e.target.value = '';
+        if (added.length && !pick.multiple) done([added[0]]);
+      },
+      repoPickBusy: this.state.repoBusy || '',
+      repoPickConfirmLabel: 'Use ' + pick.selected.length + (pick.selected.length === 1 ? ' file' : ' files'),
+      repoPickConfirmDisabled: !pick.selected.length,
+      repoPickConfirm: () => done(this.repoItems().filter((it) => pick.selected.includes(it.id))),
+      repoPickClose: close,
+      repoPickStop: (e) => e.stopPropagation(),
+    };
+  }
+
+  aiPlanVals() {
+    const plan = this.state.aiPlan;
+    if (!plan) return { aiPlanOpen: false };
+    const set = (patch) => this.setState({ aiPlan: { ...this.state.aiPlan, ...patch } });
+    const imageSlot = (key, folder, title) => ({
+      [key + 'Url']: plan[key + 'Url'] || '',
+      [key + 'Has']: !!plan[key + 'Url'],
+      [key + 'FromFiles']: () => this.openRepoPicker({ folder, title }, ([f]) => set({ [key + 'Url']: f.url })),
+      [key + 'Upload']: async (e) => { const [f] = await this.repoAddFiles(folder, e.target.files); e.target.value = ''; if (f) set({ [key + 'Url']: f.url }); },
+      [key + 'Paste']: async () => { const file = await this.conceptClipboardImage(); if (!file) return; const [f] = await this.repoAddFiles(folder, [file]); if (f) set({ [key + 'Url']: f.url }); },
+      [key + 'Clear']: () => set({ [key + 'Url']: '' }),
+    });
+    return {
+      aiPlanOpen: true,
+      ...imageSlot('base', 'floorplans'),
+      ...imageSlot('example', 'layouts'),
+      aiPlanExisting: (plan.existing || []).map((url) => ({ url, cls: url === plan.baseUrl ? 'on' : '', use: () => set({ baseUrl: url }) })),
+      aiPlanHasExisting: !!(plan.existing || []).length,
+      aiPlanRooms: [{ id: '', name: 'Whole plan — no specific space' }].concat(this.rooms().map((r) => ({ id: r.id, name: r.name }))),
+      aiPlanRoomId: plan.roomId || '',
+      aiPlanSetRoom: (e) => set({ roomId: e.target.value }),
+      aiPlanInstructions: plan.instructions || '',
+      aiPlanSetInstructions: (e) => set({ instructions: e.target.value }),
+      aiPlanBusy: !!plan.busy,
+      aiPlanGenerateLabel: plan.busy ? 'Drawing… (1–4 min)' : (plan.resultUrl ? 'Draw another version' : 'Generate plan'),
+      aiPlanGenerate: () => this.aiPlanGenerate(),
+      aiPlanError: plan.error || '',
+      aiPlanHasResult: !!plan.resultUrl,
+      aiPlanResultUrl: plan.resultUrl || '',
+      aiPlanSummary: plan.summary || '',
+      aiPlanAdded: !!plan.added,
+      aiPlanClose: () => this.setState({ aiPlan: null }),
+      aiPlanStop: (e) => e.stopPropagation(),
+    };
   }
 
   /* ---------- client share: swipeable review cards ---------- */

@@ -5,12 +5,96 @@ const { initializeApp } = require('firebase-admin/app');
 const { getAuth } = require('firebase-admin/auth');
 const { getFirestore } = require('firebase-admin/firestore');
 const dns = require('node:dns').promises;
+const Anthropic = require('@anthropic-ai/sdk').default;
 
 initializeApp();
 
 const MAX_RESPONSE_BYTES = 2 * 1024 * 1024;
 const STUDIO_ADMINS = new Set(['arossler74@gmail.com', 'cybellesampaio77@gmail.com']);
-const openAiApiKey = defineSecret('OPENAI_API_KEY');
+const anthropicApiKey = defineSecret('ANTHROPIC_API_KEY');
+// One place to move every AI call to a newer model.
+const MODEL = 'claude-opus-5';
+// Server-side refusal fallback: if a safety classifier declines a request,
+// the API re-runs it on a suitable model inside the same call.
+const FALLBACK = { betas: ['server-side-fallback-2026-07-01'], fallbacks: 'default' };
+
+class HttpError extends Error {
+  constructor(status, message) { super(message); this.status = status; }
+}
+
+// Every AI endpoint costs money per call and reads arbitrary URLs, so each
+// one is limited to signed-in studio staff — same gate fetchProductDetails
+// has always had, shared here instead of repeated.
+async function requireStudioUser(req) {
+  const token = String(req.get('authorization') || '').replace(/^Bearer\s+/i, '');
+  if (!token) throw new HttpError(401, 'Sign in to use this.');
+  const user = await getAuth().verifyIdToken(token);
+  const profile = await getFirestore().doc('users/' + user.uid).get();
+  const role = profile.exists ? profile.data().role : '';
+  if (!(role === 'admin' || role === 'designer' || STUDIO_ADMINS.has(String(user.email || '').toLowerCase()))) {
+    throw new HttpError(403, 'Only studio users can use this.');
+  }
+  return user;
+}
+
+function claude() {
+  const apiKey = anthropicApiKey.value();
+  if (!apiKey) throw new HttpError(503, 'The AI key is not configured on the server.');
+  return new Anthropic({ apiKey });
+}
+
+function textOf(message) {
+  return message.content.filter((block) => block.type === 'text').map((block) => block.text).join('');
+}
+
+function checkStop(message) {
+  if (message.stop_reason === 'refusal') throw new HttpError(422, 'The AI declined this request.');
+  if (message.stop_reason === 'max_tokens') throw new Error('The AI response was cut off before it finished.');
+}
+
+// One Claude call constrained to a JSON schema; returns the parsed object.
+// stream: for long outputs (an SVG plan), so the HTTP request can't time out.
+async function claudeJson({ system, content, schema, effort, maxTokens, stream }) {
+  const params = {
+    model: MODEL, max_tokens: maxTokens || 16000, ...FALLBACK, system,
+    messages: [{ role: 'user', content }],
+    output_config: { effort: effort || 'medium', format: { type: 'json_schema', schema } }
+  };
+  const client = claude();
+  const message = stream ? await client.beta.messages.stream(params).finalMessage() : await client.beta.messages.create(params);
+  checkStop(message);
+  return JSON.parse(textOf(message));
+}
+
+// Web search, then the answer as a JSON object at the end of the reply.
+// (Structured outputs can't be combined with search citations, so the JSON
+// is asked for in the prompt and parsed from the final text.) Server tools
+// can pause a long turn — pause_turn — which is resumed by sending the
+// paused assistant turn straight back.
+async function claudeSearchJson({ system, prompt, maxUses }) {
+  const client = claude();
+  const messages = [{ role: 'user', content: prompt }];
+  let message;
+  for (let round = 0; round < 4; round++) {
+    message = await client.beta.messages.create({
+      model: MODEL, max_tokens: 16000, ...FALLBACK, system, messages,
+      tools: [{ type: 'web_search_20260209', name: 'web_search', max_uses: maxUses || 6 }],
+      output_config: { effort: 'medium' }
+    });
+    if (message.stop_reason !== 'pause_turn') break;
+    messages.push({ role: 'assistant', content: message.content });
+  }
+  checkStop(message);
+  const text = textOf(message);
+  const json = text.match(/\{[\s\S]*\}/g);
+  if (!json) return null;
+  try { return JSON.parse(json[json.length - 1]); } catch (e) { return null; }
+}
+
+function sendError(res, error, fallbackStatus) {
+  const status = (error && error.status) || fallbackStatus || 500;
+  return res.status(status).json({ error: (error && error.message) || 'Something went wrong.' });
+}
 
 function setCors(res) {
   res.set('Access-Control-Allow-Origin', '*');
@@ -148,76 +232,79 @@ function extractProduct(html, pageUrl) {
   };
 }
 
-function responseText(response) {
-  if (typeof response.output_text === 'string') return response.output_text;
-  return (response.output || [])
-    .filter((item) => item && item.type === 'message')
-    .flatMap((item) => item.content || [])
-    .filter((item) => item && item.type === 'output_text')
-    .map((item) => item.text || '')
-    .join('');
+const PRODUCT_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    found: { type: 'boolean' },
+    name: { type: 'string' },
+    retailer: { type: 'string' },
+    dimensions: { type: 'string' },
+    finish: { type: 'string' },
+    color: { type: 'string' },
+    price: { anyOf: [{ type: 'number' }, { type: 'null' }] },
+    image: { type: 'string' },
+    notes: { type: 'string' }
+  },
+  required: ['found', 'name', 'retailer', 'dimensions', 'finish', 'color', 'price', 'image', 'notes']
+};
+
+const PRODUCT_RULES = 'Fields: name = the product name as the retailer titles it; retailer = the store or brand; '
+  + 'dimensions = overall size as W x D x H with units exactly as published (e.g. 84"W x 38"D x 30"H), '
+  + 'add seat height or other key measurements after a semicolon if listed; finish = materials/finish (frame, '
+  + 'upholstery, top…); color = the selected colour or fabric name; price = the current USD price as a number '
+  + '(sale price if on sale), null if not shown; image = the main product image URL (absolute); notes = one or two '
+  + 'short sentences an interior designer would want (construction, care, lead time, COM, variants). '
+  + 'Never invent values: use an empty string (or null for price) for anything the source does not state. '
+  + 'found=false only when the source clearly is not a single product page.';
+
+function normalizeProduct(result) {
+  if (!result || !result.found || !result.name) return null;
+  return {
+    name: decode(result.name), retailer: decode(result.retailer), dimensions: decode(result.dimensions),
+    finish: decode(result.finish), color: decode(result.color),
+    price: Number.isFinite(result.price) && result.price > 0 ? result.price : null,
+    image: String(result.image || ''), notes: decode(result.notes)
+  };
 }
 
-// Retailers sometimes deny server requests or return bot-challenge HTML. In
-// that case, use OpenAI's server-side web-search tool to locate public product
-// information. This is deliberately a fallback: direct product metadata is
-// faster, more precise, and does not consume an AI/web-search request.
-async function openAiProductFallback(pageUrl) {
-  const apiKey = openAiApiKey.value();
-  if (!apiKey) return null;
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 25000);
-  try {
-    const response = await fetch('https://api.openai.com/v1/responses', {
-      method: 'POST',
-      signal: controller.signal,
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + apiKey },
-      body: JSON.stringify({
-        model: 'gpt-5.4',
-        tools: [{ type: 'web_search_preview', search_context_size: 'medium' }],
-        tool_choice: 'required',
-        store: false,
-        max_output_tokens: 500,
-        text: {
-          format: {
-            type: 'json_schema',
-            name: 'product_details',
-            strict: true,
-            schema: {
-              type: 'object',
-              additionalProperties: false,
-              properties: {
-                found: { type: 'boolean' },
-                name: { type: 'string' },
-                retailer: { type: 'string' },
-                dimensions: { type: 'string' },
-                finish: { type: 'string' },
-                color: { type: 'string' },
-                price: { type: ['number', 'null'] },
-                image: { type: 'string' }
-              },
-              required: ['found', 'name', 'retailer', 'dimensions', 'finish', 'color', 'price', 'image']
-            }
-          }
-        },
-        input: 'Find the product at this exact URL: ' + pageUrl + '\n'
-          + 'Use web search. Return details only when they clearly match this URL or its product SKU. '
-          + 'Do not guess. Use empty strings for unavailable text fields, null for unavailable price, '
-          + 'and found=false when the product cannot be confidently matched. Preserve dimensions and price exactly.'
-      })
-    });
-    if (!response.ok) throw new Error('OpenAI fallback returned HTTP ' + response.status + '.');
-    const result = JSON.parse(responseText(await response.json()));
-    if (!result || !result.found || !result.name) return null;
-    return {
-      name: decode(result.name), retailer: decode(result.retailer), dimensions: decode(result.dimensions),
-      finish: decode(result.finish), color: decode(result.color),
-      price: Number.isFinite(result.price) && result.price > 0 ? result.price : null,
-      image: String(result.image || '')
-    };
-  } finally {
-    clearTimeout(timer);
-  }
+// The page as readable text for the model: product JSON-LD and meta tags
+// first (the most reliable parts), then the visible text with scripts,
+// styles and markup stripped. The page itself is already capped at 2 MB by
+// fetchPublicPage; these generous bounds only stop a pathological page (a
+// whole catalogue rendered inline) from turning one lookup into a huge bill.
+function pageDigest(html) {
+  const jsonLd = (html.match(/<script[^>]+type=["']application\/ld\+json["'][^>]*>[\s\S]*?<\/script>/gi) || [])
+    .map((block) => block.replace(/^.*?>/, '').replace(/<\/script>$/i, '').trim()).join('\n').slice(0, 60000);
+  const metas = (html.match(/<meta[^>]+>/gi) || []).filter((tag) => /og:|product:|twitter:|description/i.test(tag)).join('\n').slice(0, 10000);
+  const visible = htmlText(html.replace(/<(script|style|noscript|svg|template)[\s\S]*?<\/\1>/gi, ' ')).slice(0, 120000);
+  return 'JSON-LD:\n' + jsonLd + '\n\nMETA:\n' + metas + '\n\nPAGE TEXT:\n' + visible;
+}
+
+const PRODUCT_SYSTEM = 'You find and extract furniture/decor product details for Cybelle Sampaio Studio, an interior design studio. ' + PRODUCT_RULES;
+const PRODUCT_JSON_KEYS = 'found (boolean), name, retailer, dimensions, finish, color, price (number or null), image, notes';
+
+// Reads the fetched page with Claude — much better than regexes at
+// dimensions/finish/colour, which every retailer formats differently.
+async function aiProductFromPage(pageUrl, html) {
+  const result = await claudeJson({
+    system: PRODUCT_SYSTEM,
+    content: 'Extract the product on this retailer page.\nURL: ' + pageUrl + '\n\n' + pageDigest(html),
+    schema: PRODUCT_SCHEMA, effort: 'low', maxTokens: 4000
+  });
+  return normalizeProduct(result);
+}
+
+// Retailers sometimes deny server requests or return bot-challenge HTML;
+// then Claude looks the product up with web search instead.
+async function aiProductSearch(pageUrl) {
+  const result = await claudeSearchJson({
+    system: PRODUCT_SYSTEM,
+    prompt: 'Find the product at this exact URL: ' + pageUrl + '\n'
+      + 'Use web search. Use details only when they clearly match this URL or its product SKU.\n'
+      + 'End your reply with one JSON object with these keys: ' + PRODUCT_JSON_KEYS + '.'
+  });
+  return normalizeProduct(result);
 }
 
 // Crate & Barrel's US storefront runs bot-mitigation that returns HTTP 403 to
@@ -359,26 +446,33 @@ exports.shareLink = onRequest({ region: 'us-west1', timeoutSeconds: 10, memory: 
   }
 });
 
-exports.fetchProductDetails = onRequest({ region: 'us-west1', timeoutSeconds: 60, memory: '256MiB', secrets: [openAiApiKey] }, async (req, res) => {
+exports.fetchProductDetails = onRequest({ region: 'us-west1', timeoutSeconds: 180, memory: '256MiB', secrets: [anthropicApiKey] }, async (req, res) => {
   setCors(res);
   if (req.method === 'OPTIONS') return res.status(204).send('');
   if (req.method !== 'POST') return res.status(405).json({ error: 'Use POST.' });
   const inputUrl = req.body && req.body.url;
   try {
-    const token = String(req.get('authorization') || '').replace(/^Bearer\s+/i, '');
-    if (!token) return res.status(401).json({ error: 'Sign in to fetch product details.' });
-    const user = await getAuth().verifyIdToken(token);
-    const profile = await getFirestore().doc('users/' + user.uid).get();
-    const role = profile.exists ? profile.data().role : '';
-    if (!(role === 'admin' || role === 'designer' || STUDIO_ADMINS.has(String(user.email || '').toLowerCase()))) {
-      return res.status(403).json({ error: 'Only studio users can fetch product details.' });
-    }
+    await requireStudioUser(req);
     const safeUrl = await publicUrl(inputUrl);
     let product = null;
     let pageError = null;
     try {
       const page = await fetchPublicPage(safeUrl.href);
-      product = extractProduct(page.html, page.url);
+      const direct = extractProduct(page.html, page.url);
+      // Claude reads the page we already have; the structured fields the
+      // retailer publishes for machines (JSON-LD name/price/image) still win
+      // over Claude's reading of them, Claude wins on the free-text fields
+      // the regexes only guess at.
+      const ai = await aiProductFromPage(page.url, page.html).catch((error) => {
+        logger.warn('AI page read failed', { message: error && error.message });
+        return null;
+      });
+      product = ai ? {
+        name: direct.name || ai.name, retailer: direct.retailer || ai.retailer,
+        price: direct.price != null ? direct.price : ai.price, image: direct.image || ai.image,
+        dimensions: ai.dimensions || direct.dimensions, finish: ai.finish || direct.finish,
+        color: ai.color || direct.color, notes: ai.notes || ''
+      } : direct;
     } catch (error) {
       pageError = error;
     }
@@ -386,14 +480,170 @@ exports.fetchProductDetails = onRequest({ region: 'us-west1', timeoutSeconds: 60
       const fallback = await crateAndBarrelFallback(safeUrl.href).catch(() => null);
       if (fallback && fallback.name) product = fallback;
     }
-    if (!product || !product.name) product = await openAiProductFallback(safeUrl.href).catch((error) => {
-      logger.warn('OpenAI product fallback failed', { message: error && error.message });
+    if (!product || !product.name) product = await aiProductSearch(safeUrl.href).catch((error) => {
+      logger.warn('AI product search failed', { message: error && error.message });
       return null;
     });
     if (!product || !product.name) throw pageError || new Error('No readable product details were found on this page.');
     return res.json({ product });
   } catch (error) {
     logger.warn('fetchProductDetails failed', { message: error && error.message });
-    return res.status(422).json({ error: (error && error.message) || 'Could not read this retailer page.' });
+    return sendError(res, error, 422);
+  }
+});
+
+// The AI button on every text box: fix grammar, or rewrite for a client
+// document. The text comes back in the same language it was written in.
+const ASSIST_MODES = {
+  fix: 'Fix spelling, grammar and punctuation only. Keep the wording, tone, meaning, length and line breaks. Do not add or remove ideas.',
+  improve: 'Rewrite it as polished copy for a high-end interior design studio\'s client presentation: warm, confident, specific and concise. '
+    + 'Keep every fact, measurement, material and name, and add none. Keep roughly the same length.',
+  shorten: 'Make it noticeably shorter and tighter while keeping every key fact, measurement and name.',
+};
+
+exports.aiAssist = onRequest({ region: 'us-west1', timeoutSeconds: 120, memory: '256MiB', secrets: [anthropicApiKey] }, async (req, res) => {
+  setCors(res);
+  if (req.method === 'OPTIONS') return res.status(204).send('');
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Use POST.' });
+  try {
+    await requireStudioUser(req);
+    const body = req.body || {};
+    const text = String(body.text || '');
+    if (text.length > 20000) throw new HttpError(400, 'That text is too long to edit in one go — split it up.');
+    const mode = ASSIST_MODES[body.mode] ? body.mode : 'fix';
+    if (!text.trim()) throw new HttpError(400, 'There is no text to work on.');
+    const context = String(body.context || '').slice(0, 600);
+    const result = await claudeJson({
+      system: 'You edit text written by Cybelle Sampaio Studio, an interior design studio, for its client documents. '
+        + ASSIST_MODES[mode] + ' Answer in the same language as the text. Plain text only — no markdown, no surrounding quotes.',
+      content: (context ? 'Where this text is used: ' + context + '\n\n' : '') + '<text>\n' + text + '\n</text>',
+      schema: { type: 'object', additionalProperties: false, properties: { text: { type: 'string' } }, required: ['text'] },
+      effort: mode === 'fix' ? 'low' : 'medium', maxTokens: 16000
+    });
+    return res.json({ text: String((result && result.text) || '').trim() });
+  } catch (error) {
+    logger.warn('aiAssist failed', { message: error && error.message });
+    return sendError(res, error, 500);
+  }
+});
+
+// Moodboard → shopping list, step 1: read a board image (product photos with
+// "name – retailer" captions) and list every piece on it. Step 2 is
+// aiFindProduct, called once per row by the client so each row reports back
+// on its own instead of one long request timing out on a busy board.
+exports.aiReadBoard = onRequest({ region: 'us-west1', timeoutSeconds: 180, memory: '256MiB', secrets: [anthropicApiKey] }, async (req, res) => {
+  setCors(res);
+  if (req.method === 'OPTIONS') return res.status(204).send('');
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Use POST.' });
+  try {
+    await requireStudioUser(req);
+    const imageUrl = String((req.body || {}).imageUrl || '');
+    if (!/^https:\/\//.test(imageUrl)) throw new HttpError(400, 'Choose the moodboard image first.');
+    const result = await claudeJson({
+      system: 'You read interior design moodboards for Cybelle Sampaio Studio. List every distinct product shown, using the caption next to it '
+        + '(usually "product name – retailer"). For a piece with no caption, give a short descriptive name and leave retailer empty. '
+        + 'Keep names as captioned, fixing only obvious typos (e.g. "Create-Barrel" is Crate & Barrel). '
+        + 'type is one of: sofa, chair, table, storage, bed, lighting, rug, art, decor, textile, other.',
+      content: [
+        { type: 'image', source: { type: 'url', url: imageUrl } },
+        { type: 'text', text: 'List the products on this moodboard.' }
+      ],
+      schema: {
+        type: 'object', additionalProperties: false, required: ['items'],
+        properties: { items: { type: 'array', items: {
+          type: 'object', additionalProperties: false, required: ['name', 'retailer', 'type'],
+          properties: { name: { type: 'string' }, retailer: { type: 'string' }, type: { type: 'string' } }
+        } } }
+      },
+      effort: 'medium', maxTokens: 8000
+    });
+    return res.json({ items: (result && result.items) || [] });
+  } catch (error) {
+    logger.warn('aiReadBoard failed', { message: error && error.message });
+    return sendError(res, error, 500);
+  }
+});
+
+// Step 2: find one named product on its retailer's site and return the same
+// fields a pasted product URL fills in, plus the URL it found.
+exports.aiFindProduct = onRequest({ region: 'us-west1', timeoutSeconds: 300, memory: '256MiB', secrets: [anthropicApiKey] }, async (req, res) => {
+  setCors(res);
+  if (req.method === 'OPTIONS') return res.status(204).send('');
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Use POST.' });
+  try {
+    await requireStudioUser(req);
+    const body = req.body || {};
+    const name = String(body.name || '').slice(0, 200);
+    const retailer = String(body.retailer || '').slice(0, 120);
+    if (!name) throw new HttpError(400, 'Missing the product name.');
+    const result = await claudeSearchJson({
+      system: PRODUCT_SYSTEM,
+      prompt: 'Find this product on the retailer\'s own US website (not a marketplace or reseller, unless the retailer is one): "'
+        + name + '"' + (retailer ? ' sold by ' + retailer : '') + '.\n'
+        + 'End your reply with one JSON object with these keys: ' + PRODUCT_JSON_KEYS
+        + ', url (the product page URL; empty string if you could not find this exact product with confidence).'
+    });
+    const product = normalizeProduct(result);
+    if (product) product.url = String((result && result.url) || '');
+    return res.json({ product });
+  } catch (error) {
+    logger.warn('aiFindProduct failed', { message: error && error.message });
+    return sendError(res, error, 500);
+  }
+});
+
+// New furnished 2D plan, drawn by Claude as SVG: image 1 is the measured base
+// plan (walls, openings, dimensions — kept), image 2 an optional example
+// drawing whose graphic style the studio wants. Vector output means the
+// furniture sizes are real coordinates on the plan's own scale rather than a
+// painted impression, but it is still a proposal to check against the
+// measured plan — the UI says so.
+const PLAN_SCHEMA = {
+  type: 'object', additionalProperties: false, required: ['svg', 'summary'],
+  properties: { svg: { type: 'string' }, summary: { type: 'string' } }
+};
+
+exports.aiFloorPlan = onRequest({ region: 'us-west1', timeoutSeconds: 540, memory: '512MiB', secrets: [anthropicApiKey] }, async (req, res) => {
+  setCors(res);
+  if (req.method === 'OPTIONS') return res.status(204).send('');
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Use POST.' });
+  try {
+    await requireStudioUser(req);
+    const body = req.body || {};
+    if (!/^https:\/\//.test(String(body.baseUrl || ''))) throw new HttpError(400, 'Choose the floor plan with measurements first.');
+    const example = /^https:\/\//.test(String(body.exampleUrl || '')) ? body.exampleUrl : '';
+    const instructions = String(body.instructions || '').slice(0, 4000);
+    const room = String(body.room || '').slice(0, 2000);
+    const content = [
+      { type: 'text', text: 'Image 1 — the measured floor plan:' },
+      { type: 'image', source: { type: 'url', url: body.baseUrl } },
+      ...(example ? [
+        { type: 'text', text: 'Image 2 — an example of the studio\'s drawing style:' },
+        { type: 'image', source: { type: 'url', url: example } }
+      ] : []),
+      { type: 'text', text: [
+        'Draw a new furnished 2D floor plan for this space as a single SVG.',
+        room ? 'Room brief: ' + room : '',
+        instructions ? 'Designer instructions: ' + instructions : '',
+        'In summary, describe the layout in 2–4 sentences, including anything in the plan you had to assume.'
+      ].filter(Boolean).join('\n') }
+    ];
+    const result = await claudeJson({
+      system: [
+        'You are an interior architect at Cybelle Sampaio Studio drafting furnished 2D floor plans.',
+        'Read the measured plan carefully: its dimension strings set the scale. Reproduce its walls, doors with swings, windows, openings and room names at that scale, then lay out furniture inside it.',
+        'Furniture must be drawn at real sizes on that scale, labelled with name and size, with dimension lines for the key clearances and walkways of at least 36 in (91 cm).',
+        'If a style example is given, match its graphic language: line weights, furniture symbols, fills, label typography and title block.',
+        'SVG rules: a complete standalone <svg> with xmlns, a viewBox, width="2400" and a matching height; white background rect; only basic shapes, paths and text (no external images, fonts or scripts); font-family Arial, Helvetica, sans-serif; all text legible and correctly spelled.'
+      ].join('\n'),
+      content, schema: PLAN_SCHEMA, effort: 'high', maxTokens: 64000, stream: true
+    });
+    const svg = String((result && result.svg) || '').trim();
+    if (!/^<svg[\s>]/i.test(svg) || !/<\/svg>\s*$/i.test(svg)) throw new Error('The AI did not return a complete drawing. Try again.');
+    if (/<script|<foreignObject|\son\w+\s*=|href\s*=\s*["']\s*(?:https?:|javascript:)/i.test(svg)) throw new Error('The drawing contained content that is not allowed. Try again.');
+    return res.json({ svg, summary: String((result && result.summary) || '') });
+  } catch (error) {
+    logger.warn('aiFloorPlan failed', { message: error && error.message });
+    return sendError(res, error, 500);
   }
 });
