@@ -103,6 +103,13 @@ endpoint is POST, signed-in admin/designer only (`requireStudioUser`), called fr
 | `aiFindProduct` | same, once per row | web-searches one product and returns its fields + URL |
 | `aiFloorPlan` | "Draw with AI" on Floor plans | measured plan + style example → furnished plan as SVG, rasterised to PNG client-side and saved to Files → 2D Layouts |
 
+Cost: input tokens dominate. Web search pastes result pages into the conversation and every
+`pause_turn` resume re-sends all of it, so `aiFindProduct` searches only for the product URL (≤ 2
+searches, 1 resume, short JSON answer) and then reads the page itself through `readProductPage()` —
+retailer JSON-LD first (free), then a lean `pageDigest()` (~25k chars, starting at the product name)
+read by Haiku. Every call logs `ai usage` (label, model, input/output tokens, searches) to the
+Cloud Functions logs — check there before re-tuning a model or limit.
+
 Moodboard imports never write to the catalog on their own: the designer ticks rows and confirms,
 and imported pieces carry `isNew: true` ("New" badge) until opened and saved, or "Mark … as seen".
 

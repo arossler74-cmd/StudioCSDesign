@@ -63,9 +63,17 @@ function checkStop(message) {
   if (message.stop_reason === 'max_tokens') throw new Error('The AI response was cut off before it finished.');
 }
 
+// Every call logs what it cost, so spend can be checked per feature in the
+// Cloud Functions logs ("ai usage") rather than guessed from the console total.
+function logUsage(label, model, message, rounds) {
+  const u = message.usage || {};
+  logger.info('ai usage', { label, model, rounds: rounds || 1, input: u.input_tokens, output: u.output_tokens,
+    cacheRead: u.cache_read_input_tokens, searches: (u.server_tool_use || {}).web_search_requests });
+}
+
 // One Claude call constrained to a JSON schema; returns the parsed object.
 // stream: for long outputs (an SVG plan), so the HTTP request can't time out.
-async function claudeJson({ model, system, content, schema, effort, maxTokens, stream }) {
+async function claudeJson({ label, model, system, content, schema, effort, maxTokens, stream }) {
   model = model || MODELS.products;
   // Haiku 4.5 takes no effort setting (it's a 400 there) and has no
   // server-side refusal fallback — both only apply to the Opus models.
@@ -76,6 +84,7 @@ async function claudeJson({ model, system, content, schema, effort, maxTokens, s
   };
   const client = claude();
   const message = stream ? await client.beta.messages.stream(params).finalMessage() : await client.beta.messages.create(params);
+  logUsage(label || 'json', model, message);
   checkStop(message);
   return JSON.parse(textOf(message));
 }
@@ -85,7 +94,12 @@ async function claudeJson({ model, system, content, schema, effort, maxTokens, s
 // is asked for in the prompt and parsed from the final text.) Server tools
 // can pause a long turn — pause_turn — which is resumed by sending the
 // paused assistant turn straight back.
-async function claudeSearchJson({ model, system, prompt, maxUses, effort }) {
+//
+// Cost: search results are pasted into the conversation and every resume
+// re-sends all of it, so input tokens grow fast with each extra search and
+// round. Callers ask for little (a URL), searches are capped at 2 and only
+// one resume is allowed — the page itself is read afterwards, more cheaply.
+async function claudeSearchJson({ label, model, system, prompt, maxUses, effort }) {
   const client = claude();
   const messages = [{ role: 'user', content: prompt }];
   let message;
@@ -93,15 +107,17 @@ async function claudeSearchJson({ model, system, prompt, maxUses, effort }) {
   // Haiku only has the basic web search tool (the _20260209 variant with
   // dynamic filtering needs Opus/Sonnet 4.6+), and no effort or fallbacks.
   const haiku = isHaiku(model);
-  for (let round = 0; round < 4; round++) {
+  for (let round = 0; round < 2; round++) {
     message = await client.beta.messages.create({
-      model, max_tokens: 16000, ...fallbackFor(model), system, messages,
-      tools: [{ type: haiku ? 'web_search_20250305' : 'web_search_20260209', name: 'web_search', max_uses: maxUses || 6 }],
-      ...(haiku ? {} : { output_config: { effort: effort || 'medium' } })
+      model, max_tokens: 4000, ...fallbackFor(model), system, messages,
+      tools: [{ type: haiku ? 'web_search_20250305' : 'web_search_20260209', name: 'web_search', max_uses: maxUses || 2 }],
+      ...(haiku ? {} : { output_config: { effort: effort || 'low' } })
     });
+    logUsage(label || 'search', model, message, round + 1);
     if (message.stop_reason !== 'pause_turn') break;
     messages.push({ role: 'assistant', content: message.content });
   }
+  if (message.stop_reason === 'pause_turn') return null;
   checkStop(message);
   const text = textOf(message);
   const json = text.match(/\{[\s\S]*\}/g);
@@ -286,17 +302,20 @@ function normalizeProduct(result) {
   };
 }
 
-// The page as readable text for the model: product JSON-LD and meta tags
-// first (the most reliable parts), then the visible text with scripts,
-// styles and markup stripped. The page itself is already capped at 2 MB by
-// fetchPublicPage; these generous bounds only stop a pathological page (a
-// whole catalogue rendered inline) from turning one lookup into a huge bill.
-function pageDigest(html) {
-  const jsonLd = (html.match(/<script[^>]+type=["']application\/ld\+json["'][^>]*>[\s\S]*?<\/script>/gi) || [])
-    .map((block) => block.replace(/^.*?>/, '').replace(/<\/script>$/i, '').trim()).join('\n').slice(0, 60000);
-  const metas = (html.match(/<meta[^>]+>/gi) || []).filter((tag) => /og:|product:|twitter:|description/i.test(tag)).join('\n').slice(0, 10000);
-  const visible = htmlText(html.replace(/<(script|style|noscript|svg|template)[\s\S]*?<\/\1>/gi, ' ')).slice(0, 120000);
-  return 'JSON-LD:\n' + jsonLd + '\n\nMETA:\n' + metas + '\n\nPAGE TEXT:\n' + visible;
+// The page as readable text for the model — kept lean, because this text is
+// the bulk of what each lookup costs: the product's own JSON-LD (minus
+// reviews/ratings, often the largest part), a few meta tags, and ~15k
+// characters of page text starting where the product name first appears,
+// rather than at the site's navigation menus.
+function pageDigest(html, name) {
+  const { review, reviews, aggregateRating, ...lean } = productJsonLd(html) || {};
+  const jsonLd = Object.keys(lean).length ? JSON.stringify(lean).slice(0, 8000) : '';
+  const metas = (html.match(/<meta[^>]+>/gi) || []).filter((tag) => /og:|product:|description/i.test(tag)).join('\n').slice(0, 2000);
+  const visible = htmlText(html.replace(/<(script|style|noscript|svg|template|header|footer|nav)[\s\S]*?<\/\1>/gi, ' '));
+  const key = String(name || '').toLowerCase().slice(0, 40);
+  const at = key ? visible.toLowerCase().indexOf(key) : -1;
+  const start = at > 0 ? Math.max(0, at - 300) : 0;
+  return 'JSON-LD:\n' + jsonLd + '\n\nMETA:\n' + metas + '\n\nPAGE TEXT:\n' + visible.slice(start, start + 15000);
 }
 
 const PRODUCT_SYSTEM = 'You find and extract furniture/decor product details for Cybelle Sampaio Studio, an interior design studio. ' + PRODUCT_RULES;
@@ -304,19 +323,40 @@ const PRODUCT_JSON_KEYS = 'found (boolean), name, retailer, dimensions, finish, 
 
 // Reads the fetched page with Claude — much better than regexes at
 // dimensions/finish/colour, which every retailer formats differently.
-async function aiProductFromPage(pageUrl, html) {
+async function aiProductFromPage(pageUrl, html, name) {
   const result = await claudeJson({
+    label: 'page-read', model: MODELS.products,
     system: PRODUCT_SYSTEM,
-    content: 'Extract the product on this retailer page.\nURL: ' + pageUrl + '\n\n' + pageDigest(html),
-    schema: PRODUCT_SCHEMA, effort: 'low', maxTokens: 4000
+    content: 'Extract the product on this retailer page.\nURL: ' + pageUrl + '\n\n' + pageDigest(html, name),
+    schema: PRODUCT_SCHEMA, effort: 'low', maxTokens: 2000
   });
   return normalizeProduct(result);
+}
+
+// Downloads one product page and reads it: the structured fields the
+// retailer publishes for machines (JSON-LD name/price/image) win over
+// Claude's reading of them; Claude wins on the free-text fields the regexes
+// only guess at. Throws when the page can't be fetched (bot walls etc.).
+async function readProductPage(url) {
+  const page = await fetchPublicPage(url);
+  const direct = extractProduct(page.html, page.url);
+  const ai = await aiProductFromPage(page.url, page.html, direct.name).catch((error) => {
+    logger.warn('AI page read failed', { message: error && error.message });
+    return null;
+  });
+  return ai ? {
+    name: direct.name || ai.name, retailer: direct.retailer || ai.retailer,
+    price: direct.price != null ? direct.price : ai.price, image: direct.image || ai.image,
+    dimensions: ai.dimensions || direct.dimensions, finish: ai.finish || direct.finish,
+    color: ai.color || direct.color, notes: ai.notes || ''
+  } : direct;
 }
 
 // Retailers sometimes deny server requests or return bot-challenge HTML;
 // then Claude looks the product up with web search instead.
 async function aiProductSearch(pageUrl) {
   const result = await claudeSearchJson({
+    label: 'fetch-search',
     system: PRODUCT_SYSTEM,
     prompt: 'Find the product at this exact URL: ' + pageUrl + '\n'
       + 'Use web search. Use details only when they clearly match this URL or its product SKU.\n'
@@ -475,22 +515,7 @@ exports.fetchProductDetails = onRequest({ region: 'us-west1', timeoutSeconds: 18
     let product = null;
     let pageError = null;
     try {
-      const page = await fetchPublicPage(safeUrl.href);
-      const direct = extractProduct(page.html, page.url);
-      // Claude reads the page we already have; the structured fields the
-      // retailer publishes for machines (JSON-LD name/price/image) still win
-      // over Claude's reading of them, Claude wins on the free-text fields
-      // the regexes only guess at.
-      const ai = await aiProductFromPage(page.url, page.html).catch((error) => {
-        logger.warn('AI page read failed', { message: error && error.message });
-        return null;
-      });
-      product = ai ? {
-        name: direct.name || ai.name, retailer: direct.retailer || ai.retailer,
-        price: direct.price != null ? direct.price : ai.price, image: direct.image || ai.image,
-        dimensions: ai.dimensions || direct.dimensions, finish: ai.finish || direct.finish,
-        color: ai.color || direct.color, notes: ai.notes || ''
-      } : direct;
+      product = await readProductPage(safeUrl.href);
     } catch (error) {
       pageError = error;
     }
@@ -532,7 +557,7 @@ exports.aiAssist = onRequest({ region: 'us-west1', timeoutSeconds: 120, memory: 
     if (!text.trim()) throw new HttpError(400, 'There is no text to work on.');
     const context = String(body.context || '').slice(0, 600);
     const result = await claudeJson({
-      model: MODELS.text,
+      label: 'text', model: MODELS.text,
       system: 'You edit text written by Cybelle Sampaio Studio, an interior design studio, for its client documents. '
         + ASSIST_MODES[mode] + ' Answer in the same language as the text. Plain text only — no markdown, no surrounding quotes.',
       content: (context ? 'Where this text is used: ' + context + '\n\n' : '') + '<text>\n' + text + '\n</text>',
@@ -559,7 +584,7 @@ exports.aiReadBoard = onRequest({ region: 'us-west1', timeoutSeconds: 180, memor
     const imageUrl = String((req.body || {}).imageUrl || '');
     if (!/^https:\/\//.test(imageUrl)) throw new HttpError(400, 'Choose the moodboard image first.');
     const result = await claudeJson({
-      model: MODELS.board,
+      label: 'board-read', model: MODELS.board,
       system: 'You read interior design moodboards for Cybelle Sampaio Studio. List every distinct product shown, using the caption next to it '
         + '(usually "product name – retailer"). For a piece with no caption, give a short descriptive name and leave retailer empty. '
         + 'Keep names as captioned, fixing only obvious typos (e.g. "Create-Barrel" is Crate & Barrel). '
@@ -596,16 +621,32 @@ exports.aiFindProduct = onRequest({ region: 'us-west1', timeoutSeconds: 300, mem
     const name = String(body.name || '').slice(0, 200);
     const retailer = String(body.retailer || '').slice(0, 120);
     if (!name) throw new HttpError(400, 'Missing the product name.');
-    const result = await claudeSearchJson({
-      model: MODELS.board, effort: 'high',
-      system: PRODUCT_SYSTEM,
-      prompt: 'Find this product on the retailer\'s own US website (not a marketplace or reseller, unless the retailer is one): "'
-        + name + '"' + (retailer ? ' sold by ' + retailer : '') + '.\n'
-        + 'End your reply with one JSON object with these keys: ' + PRODUCT_JSON_KEYS
-        + ', url (the product page URL; empty string if you could not find this exact product with confidence).'
+    // Two cheap steps instead of one expensive one: web search only to find
+    // the product page (a short answer), then the page itself is downloaded
+    // and read like Fetch details — free JSON-LD first, a lean Haiku read
+    // for the rest. Asking the search step for every field made Claude read
+    // whole result pages, which is what ran the token bill up.
+    const found = await claudeSearchJson({
+      label: 'find-url', model: MODELS.board, effort: 'medium',
+      system: 'You find furniture and decor products on retailers\' own US websites for an interior design studio.',
+      prompt: 'Find the product page for "' + name + '"' + (retailer ? ' sold by ' + retailer : '')
+        + ' on the retailer\'s own US website (not a marketplace or reseller, unless the retailer is one).\n'
+        + 'Reply briefly, ending with one JSON object: {"found": boolean, "url": "product page URL or empty", "name": "product name as the retailer titles it", "retailer": "store name"}.'
     });
-    const product = normalizeProduct(result);
-    if (product) product.url = String((result && result.url) || '');
+    const url = found && found.found && /^https?:\/\//.test(String(found.url || '')) ? String(found.url) : '';
+    if (!url) return res.json({ product: null });
+    let product = null;
+    try {
+      product = await readProductPage(url);
+    } catch (error) {
+      logger.warn('aiFindProduct page read failed', { url, message: error && error.message });
+    }
+    if (!product || !product.name) {
+      // The store blocked the download: keep what the search established,
+      // so the row still links to the right page for a manual check.
+      product = { name: decode(found.name || name), retailer: decode(found.retailer || retailer), dimensions: '', finish: '', color: '', price: null, image: '', notes: '' };
+    }
+    product.url = url;
     return res.json({ product });
   } catch (error) {
     logger.warn('aiFindProduct failed', { message: error && error.message });
@@ -650,7 +691,7 @@ exports.aiFloorPlan = onRequest({ region: 'us-west1', timeoutSeconds: 540, memor
       ].filter(Boolean).join('\n') }
     ];
     const result = await claudeJson({
-      model: MODELS.plan,
+      label: 'plan', model: MODELS.plan,
       system: [
         'You are an interior architect at Cybelle Sampaio Studio drafting furnished 2D floor plans.',
         'Read the measured plan carefully: its dimension strings set the scale. Reproduce its walls, doors with swings, windows, openings and room names at that scale, then lay out furniture inside it.',

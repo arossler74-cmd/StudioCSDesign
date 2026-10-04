@@ -2603,8 +2603,11 @@ const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review
 // reaches this file — the version badge in the top bar and the Studio →
 // Changelog page both read straight from this, nothing else to update.
 // Versioning starts at 1.1; anything before that lives only in git log.
-const APP_VERSION = '3.12';
+const APP_VERSION = '3.13';
 const CHANGELOG = [
+  { version: '3.13', date: '2026-10-04', changes: [
+    'AI cost cut for finding furniture: the moodboard import now uses web search only to find each piece\'s page (at most 2 searches), then reads that page directly — the store\'s own product data first, then a short, focused read by Claude Haiku. Fetch details reads a much smaller slice of the page too. Same fields come back; far fewer tokens are spent per piece.',
+  ] },
   { version: '3.12', date: '2026-10-03', changes: [
     'Fixed: pop-up windows (Import from moodboard, choosing project files, Draw with AI) opened in the middle of the whole page instead of the screen, so on a long page you had to scroll to find them. They now always open centred on what you are looking at.',
   ] },
