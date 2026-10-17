@@ -1175,6 +1175,9 @@
                 <div class="cs-inline-actions" style="display: flex; align-items: center; gap: 10px;">
                   <button type="button" onClick="{{ exportHtml }}" class="btn btn-secondary">{{ exportLabel }}</button>
                   <button type="button" onClick="{{ exportPdf }}" class="btn btn-ghost">Export PDF</button>
+                  <sc-if value="{{ canFlipbook }}" hint-placeholder-val="{{ false }}">
+                    <button type="button" onClick="{{ openFlipbook }}" class="btn btn-ghost" style="display: inline-flex; align-items: center; gap: 6px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 5.5C4.5 4 8 4 12 6c4-2 7.5-2 10-.5V19c-2.5-1.5-6-1.5-10 .5-4-2-7.5-2-10-.5Z"></path><path d="M12 6v13.5"></path></svg>Flipbook</button>
+                  </sc-if>
                   <sc-if value="{{ hasDoc }}" hint-placeholder-val="{{ false }}">
                     <a class="btn btn-primary" href="{{ docHref }}" target="_top">Open document</a>
                   </sc-if>
@@ -1210,6 +1213,9 @@
                 <div class="cs-inline-actions" style="display: flex; align-items: center; gap: 10px;">
                   <button type="button" onClick="{{ exportHtml }}" class="btn btn-secondary">{{ exportLabel }}</button>
                   <button type="button" onClick="{{ exportPdf }}" class="btn btn-ghost">Export PDF</button>
+                  <sc-if value="{{ canFlipbook }}" hint-placeholder-val="{{ false }}">
+                    <button type="button" onClick="{{ openFlipbook }}" class="btn btn-ghost" style="display: inline-flex; align-items: center; gap: 6px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 5.5C4.5 4 8 4 12 6c4-2 7.5-2 10-.5V19c-2.5-1.5-6-1.5-10 .5-4-2-7.5-2-10-.5Z"></path><path d="M12 6v13.5"></path></svg>Flipbook</button>
+                  </sc-if>
                 </div>
               </div>
               <sc-if value="{{ exportNote }}" hint-placeholder-val="{{ false }}">
@@ -1528,6 +1534,9 @@
                 <div class="cs-inline-actions" style="display: flex; align-items: center; gap: 10px;">
                   <button type="button" onClick="{{ exportHtml }}" class="btn btn-secondary">{{ exportLabel }}</button>
                   <button type="button" onClick="{{ exportPdf }}" class="btn btn-ghost">Export PDF</button>
+                  <sc-if value="{{ canFlipbook }}" hint-placeholder-val="{{ false }}">
+                    <button type="button" onClick="{{ openFlipbook }}" class="btn btn-ghost" style="display: inline-flex; align-items: center; gap: 6px;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 5.5C4.5 4 8 4 12 6c4-2 7.5-2 10-.5V19c-2.5-1.5-6-1.5-10 .5-4-2-7.5-2-10-.5Z"></path><path d="M12 6v13.5"></path></svg>Flipbook</button>
+                  </sc-if>
                 </div>
               </div>
               <sc-if value="{{ exportNote }}" hint-placeholder-val="{{ false }}">
@@ -2659,8 +2668,11 @@ const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review
 // reaches this file — the version badge in the top bar and the Studio →
 // Changelog page both read straight from this, nothing else to update.
 // Versioning starts at 1.1; anything before that lives only in git log.
-const APP_VERSION = '3.16';
+const APP_VERSION = '3.17';
 const CHANGELOG = [
+  { version: '3.17', date: '2026-10-17', changes: [
+    'Concept and Design & sourcing: a Flipbook button next to Export HTML / Export PDF opens that phase as the interactive flipbook in a new tab.',
+  ] },
   { version: '3.16', date: '2026-10-17', changes: [
     'Furniture lists and the investment table now show whole dollars — no cents — everywhere in the platform (the exports already did).',
     'Studio contact starts with the studio email and phone (cybellesampaio@hotmail.com, (314) 640-9048) and studiocsdesign.com; change them any time in Studio → Studio contact.',
@@ -4375,6 +4387,10 @@ class Component extends DCLogic {
       };
       Object.assign(v, {
         exportLabel: s.exporting ? 'Preparing…' : 'Export HTML',
+        // The interactive flipbook of this phase, in its own tab — the same
+        // book the client will turn (flipbook.html reads the live project).
+        canFlipbook: s.tab === 'concept' || s.tab === 'design',
+        openFlipbook: () => window.open('flipbook.html?project=' + encodeURIComponent(p.id) + '&phase=' + (s.tab === 'design' ? 'design' : 'concept'), '_blank'),
         exportNote: s.exportNote || '',
         exportHtml: async () => {
           if (this.state.exporting) return;
