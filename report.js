@@ -502,6 +502,7 @@ function sourcingSection(p, byId, img) {
     price: money(c.price, p.currency), url: c.url || '',
   }));
   let grand = 0;
+  const summary = [];
   const blocks = rooms.map((r) => {
     let sub = 0;
     let cards = '';
@@ -531,6 +532,7 @@ function sourcingSection(p, byId, img) {
       </tr>`;
     }
     grand += sub;
+    if ((r.selected || []).length) summary.push({ name: r.name, count: (r.selected || []).reduce((t, x) => t + Number(x.qty || 1), 0), sub });
     return `<div class="room">
       <h3>${esc(r.name)}</h3>
       <div class="sourcing-grid">${cards}</div>
@@ -545,9 +547,14 @@ function sourcingSection(p, byId, img) {
 <section><div class="wrap">
   <div class="kicker">Curated for you</div><h2>Sourcing &amp; investment</h2>
   ${blocks}
-  <div class="card" style="margin-top:30px;display:flex;justify-content:space-between;align-items:baseline">
-    <div style="font-size:17px">Total investment</div>
-    <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:34px;color:var(--accent-dark)">${esc(money(grand, p.currency))}</div>
+  <div class="card" style="margin-top:30px">
+    <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:26px;color:var(--accent-dark);margin-bottom:12px">Total investment</div>
+    ${summary.length > 1 ? `<table><thead><tr><th>Space</th><th class="num">Pieces</th><th class="num">Subtotal</th></tr></thead>
+      <tbody>${summary.map((x) => `<tr><td>${esc(x.name)}</td><td class="num">${x.count}</td><td class="num">${esc(money(x.sub, p.currency))}</td></tr>`).join('')}</tbody></table>` : ''}
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:${summary.length > 1 ? '14px' : '0'}">
+      <div style="font-size:17px">Total</div>
+      <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:34px;color:var(--accent-dark)">${esc(money(grand, p.currency))}</div>
+    </div>
   </div>
 </div></section>`;
 }
