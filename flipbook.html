@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flipbook</title>
+<link rel="stylesheet" href="assets/fonts.css">
+<style>
+  html, body { margin: 0; height: 100%; background: #1d1a17; }
+  body { display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: 'Jost', sans-serif; color: #EDE6DA; }
+  #fit { position: relative; flex: none; }
+  #book { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+  #bar { display: flex; align-items: center; gap: 14px; width: min(960px, 92vw); margin-top: 14px; font-size: 12px; letter-spacing: .08em; }
+  #bar button, #bar select { background: none; border: 1px solid rgba(237,230,218,.35); color: inherit; border-radius: 999px; padding: 6px 14px; font: inherit; cursor: pointer; }
+  #bar input[type=range] { flex: 1; accent-color: #A98A5F; }
+  #msg { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 14px; letter-spacing: .06em; color: #EDE6DA; }
+  body.capture { background: #000; display: block; }
+  body.capture #bar, body.capture #msg { display: none; }
+</style>
+</head>
+<body>
+<div id="fit"><div id="book"></div></div>
+<div id="bar">
+  <button type="button" id="play">Pause</button>
+  <input type="range" id="scrub" min="0" max="1000" value="0">
+  <span id="time">0.0s</span>
+  <select id="fmt"><option value="16x9">16:9</option><option value="1x1">1:1</option></select>
+</div>
+<div id="msg">Loading…</div>
+<script type="module">
+import { buildBook, createFlipbook } from './flipbook.js';
+
+// Data comes one of two ways: injected by the renderer as window.__FLIP_DATA
+// ({ project, phase, contact, format }), or — for previewing in a browser —
+// ?project=<id>&phase=concept|design, read live as the signed-in user.
+const q = new URLSearchParams(location.search);
+const capture = q.has('capture');
+if (capture) document.body.classList.add('capture');
+const msg = document.getElementById('msg');
+
+async function loadData() {
+  if (window.__FLIP_DATA) return window.__FLIP_DATA;
+  const api = await import('./platform-data.js');
+  await api.init();
+  const user = await new Promise((res) => api.onAuth((u) => res(u)));
+  if (!user) throw new Error('Sign in to the studio platform in this browser first.');
+  const project = await api.getProject(q.get('project') || '86-residence');
+  if (!project) throw new Error('Project not found.');
+  const contact = await api.getStudioContact().catch(() => api.STUDIO_CONTACT_DEFAULT());
+  return { project, contact, phase: q.get('phase') || 'concept', format: q.get('format') || '16x9' };
+}
+
+let fb = null, book = null, playing = !capture, t0 = 0, tNow = 0;
+const holder = document.getElementById('book'), fit = document.getElementById('fit');
+
+function layout() {
+  if (capture) { fit.style.width = fb.format.w + 'px'; fit.style.height = fb.format.h + 'px'; holder.style.transform = 'none'; return; }
+  const k = Math.min((innerWidth * 0.92) / fb.format.w, (innerHeight - 90) / fb.format.h);
+  holder.style.transform = `scale(${k})`;
+  fit.style.width = fb.format.w * k + 'px';
+  fit.style.height = fb.format.h * k + 'px';
+}
+
+async function mount(format) {
+  fb = createFlipbook(holder, book, format);
+  layout();
+  await fb.ready;
+  fb.render(tNow);
+}
+
+try {
+  const data = await loadData();
+  book = await buildBook(data.project, { phase: data.phase, contact: data.contact, resolveUrl: data.resolveUrl ? (u) => data.resolveUrl[u] || u : undefined });
+  document.getElementById('fmt').value = data.format || '16x9';
+  await mount(data.format || '16x9');
+  msg.remove();
+  const tl = fb.timeline;
+  window.__flip = { duration: fb.duration, pages: tl.pages, hold: tl.base, over: tl.over, render: (t) => fb.render(t), spreads: book.spreads.map((s) => s.kind) };
+  window.__flipReady = true;
+
+  if (!capture) {
+    const scrub = document.getElementById('scrub'), time = document.getElementById('time'), play = document.getElementById('play');
+    play.onclick = () => { playing = !playing; play.textContent = playing ? 'Pause' : 'Play'; t0 = performance.now() / 1000 - tNow; };
+    scrub.oninput = () => { tNow = scrub.value / 1000 * fb.duration; t0 = performance.now() / 1000 - tNow; fb.render(tNow); };
+    document.getElementById('fmt').onchange = async (e) => { await mount(e.target.value); };
+    addEventListener('resize', layout);
+    t0 = performance.now() / 1000;
+    const tick = () => {
+      if (playing) { tNow = (performance.now() / 1000 - t0) % fb.duration; fb.render(tNow); }
+      scrub.value = Math.round(tNow / fb.duration * 1000);
+      time.textContent = tNow.toFixed(1) + 's / ' + fb.duration.toFixed(1) + 's · ' + fb.timeline.pages + ' spreads';
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }
+} catch (err) {
+  msg.textContent = (err && err.message) || String(err);
+  window.__flipError = msg.textContent;
+}
+</script>
+</body>
+</html>

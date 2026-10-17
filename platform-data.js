@@ -604,6 +604,38 @@ export async function saveTradePrograms(programs) {
   return cleanPrograms;
 }
 
+/** The studio's public contact details — the closing page of client-facing
+ *  exports (the flipbook video's back cover) reads these. Blank fields are
+ *  simply left out there, so this can be filled in gradually. */
+export function STUDIO_CONTACT_DEFAULT() {
+  return {
+    studioName: 'Cybelle Sampaio Studio', tagline: 'Design & Decoration', location: 'Orange County, CA',
+    website: 'studiocsdesign.com', email: '', phone: '',
+    instagram: '', tiktok: '', pinterest: '', facebook: '', linkedin: '', houzz: '',
+  };
+}
+
+export async function getStudioContact() {
+  if (mode === 'firebase') {
+    const { doc, getDoc } = fb.D;
+    const snap = await getDoc(doc(fb.db, 'settings', 'studio-contact'));
+    return { ...STUDIO_CONTACT_DEFAULT(), ...(snap.exists() ? snap.data() : {}) };
+  }
+  const s = readLS();
+  return { ...STUDIO_CONTACT_DEFAULT(), ...(s.studioContact || {}) };
+}
+
+export async function saveStudioContact(contact) {
+  const clean = { ...STUDIO_CONTACT_DEFAULT(), ...contact, updatedAt: nowISO() };
+  if (mode === 'firebase') {
+    const { doc, setDoc } = fb.D;
+    await setDoc(doc(fb.db, 'settings', 'studio-contact'), clean);
+    return clean;
+  }
+  const s = readLS(); s.studioContact = clean; writeLS(s);
+  return clean;
+}
+
 /** The fee the rate card suggests for a room, by its type, falling back to the
  *  card's own fallback when the type is not listed. */
 export function suggestFee(rates, roomType) {

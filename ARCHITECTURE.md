@@ -11,6 +11,9 @@ firebase-config.js         your keys (gitignored)
 firestore.rules            security rules
 86 Residence - Simplified Proposal Generator.dc.html   → Concept phase deliverable
 86 Residence Design Proposal.dc.html                   → Design/Sourcing deliverable
+flipbook.js / flipbook.html  the flipbook video: project → spreads → render(t). Every frame is a pure
+                           function of t, so the browser preview and the frame-by-frame video render match
+assets/fonts.css, fonts/   local Cormorant Garamond + Jost, so a headless render never falls back
 ```
 
 Concept is edited natively in the project workspace and exported as a standalone client document; it is not an embedded HTML file. Furniture lives in the shared catalog and each project references catalog pieces by id (live link: editing the catalog updates every project using the piece).
@@ -74,6 +77,8 @@ projects/{id}
             a picked file's download URL is what travels, same as any other project image.
 
 settings/questionnaire  sections: [{ id, title, questions: [{ id, label, type, options? }] }]
+settings/studio-contact the studio's public contact (email, phone, website, social handles) — read by
+                        client exports for their closing page; blank fields are left out
 settings/trade-programs admin-maintained vendor directory: accounts, contacts, access URLs,
                         commercial terms, renewal dates, notes and image references
 ```

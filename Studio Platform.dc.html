@@ -2390,10 +2390,45 @@
               <span style="font-family: var(--font-heading); font-size: 24px; color: var(--color-accent-900);">Trade programs</span>
               <span style="font-size: 14px; color: var(--color-neutral-600);">Store accounts, representatives, discounts and partnership documents.</span>
             </button>
+            <button type="button" onClick="{{ goStudioContact }}" class="card cs-tappable" style="border: 1px solid var(--color-neutral-300); text-align: left; color: inherit; font: inherit;">
+              <span style="font-family: var(--font-heading); font-size: 24px; color: var(--color-accent-900);">Studio contact</span>
+              <span style="font-size: 14px; color: var(--color-neutral-600);">Email, phone, website and social accounts shown on client exports.</span>
+            </button>
             <button type="button" onClick="{{ goChangelog }}" class="card cs-tappable" style="border: 1px solid var(--color-neutral-300); text-align: left; color: inherit; font: inherit;">
               <span style="font-family: var(--font-heading); font-size: 24px; color: var(--color-accent-900);">Changelog · {{ appVersion }}</span>
               <span style="font-size: 14px; color: var(--color-neutral-600);">What changed in each version of the platform, and which one is live right now.</span>
             </button>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showStudioContact }}">
+        <div class="cs-page" style="max-width: 900px; margin: 0 auto; padding: 40px 32px 96px; animation: csFade .35s var(--ease-spring) backwards;">
+          <button type="button" onClick="{{ goStudio }}" class="btn btn-ghost" style="margin-bottom: 18px; padding: 4px 0;">← Studio settings</button>
+          <div style="margin-bottom: 26px;">
+            <div style="font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--color-accent-700); margin-bottom: 8px;">Studio administration</div>
+            <h1 class="cs-h1-display" style="font-family: var(--font-heading); font-size: 44px; margin: 0 0 6px; color: var(--color-accent-900);">Studio contact</h1>
+            <p style="margin: 0; color: var(--color-neutral-700); max-width: 60ch;">How clients reach the studio. These appear on the closing page of client exports, such as the flipbook video. Leave a field blank to keep it off — fill it in later and export again.</p>
+          </div>
+          <div class="card" style="padding: 24px 26px;">
+            <div class="cs-details-grid" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px;">
+              <div class="field"><label>Studio name</label><input type="text" class="input" value="{{ sc_studioName }}" onChange="{{ setsc_studioName }}" placeholder=""></div>
+              <div class="field"><label>Tagline</label><input type="text" class="input" value="{{ sc_tagline }}" onChange="{{ setsc_tagline }}" placeholder="Design & Decoration"></div>
+              <div class="field"><label>Location</label><input type="text" class="input" value="{{ sc_location }}" onChange="{{ setsc_location }}" placeholder="Orange County, CA"></div>
+              <div class="field"><label>Website</label><input type="text" class="input" value="{{ sc_website }}" onChange="{{ setsc_website }}" placeholder="studiocsdesign.com"></div>
+              <div class="field"><label>Email</label><input type="email" class="input" value="{{ sc_email }}" onChange="{{ setsc_email }}" placeholder="hello@…"></div>
+              <div class="field"><label>Phone</label><input type="tel" class="input" value="{{ sc_phone }}" onChange="{{ setsc_phone }}" placeholder="+1 …"></div>
+              <div class="field"><label>Instagram</label><input type="text" class="input" value="{{ sc_instagram }}" onChange="{{ setsc_instagram }}" placeholder="@handle"></div>
+              <div class="field"><label>TikTok</label><input type="text" class="input" value="{{ sc_tiktok }}" onChange="{{ setsc_tiktok }}" placeholder="@handle"></div>
+              <div class="field"><label>Pinterest</label><input type="text" class="input" value="{{ sc_pinterest }}" onChange="{{ setsc_pinterest }}" placeholder="@handle"></div>
+              <div class="field"><label>Facebook</label><input type="text" class="input" value="{{ sc_facebook }}" onChange="{{ setsc_facebook }}" placeholder="Page name or link"></div>
+              <div class="field"><label>LinkedIn</label><input type="text" class="input" value="{{ sc_linkedin }}" onChange="{{ setsc_linkedin }}" placeholder="Profile or page link"></div>
+              <div class="field"><label>Houzz</label><input type="text" class="input" value="{{ sc_houzz }}" onChange="{{ setsc_houzz }}" placeholder="Profile link"></div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 14px; margin-top: 22px;">
+              <button type="button" onClick="{{ saveStudioContact }}" class="btn btn-primary">{{ studioContactSaveLabel }}</button>
+              <sc-if value="{{ studioContactNotice }}" hint-placeholder-val="{{ false }}"><div style="font-size: 13.5px; color: var(--color-accent-800);">{{ studioContactNotice }}</div></sc-if>
+            </div>
           </div>
         </div>
       </sc-if>
@@ -2624,8 +2659,12 @@ const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review
 // reaches this file — the version badge in the top bar and the Studio →
 // Changelog page both read straight from this, nothing else to update.
 // Versioning starts at 1.1; anything before that lives only in git log.
-const APP_VERSION = '3.14';
+const APP_VERSION = '3.15';
 const CHANGELOG = [
+  { version: '3.15', date: '2026-10-17', changes: [
+    'Studio → Studio contact: a place for the studio's email, phone, website, Instagram, TikTok, Pinterest, Facebook, LinkedIn and Houzz. Client exports read it for their closing page; blank fields are simply left off, so it can be filled in over time.',
+    'Flipbook video (preview, not in the menus yet): flipbook.html?project=<id>&phase=concept shows a project as an open book that turns its own pages — cover, direction and palette, then each space (moodboards, then ultra-realistic renderings), then the studio contact page. This is the prototype for the coming "Export Flipbook Video" button.',
+  ] },
   { version: '3.14', date: '2026-10-17', changes: [
     'Design & sourcing: each space now has ↑ / ↓ to change the order of spaces and a Delete space button (asks first). Order and deletion apply to the whole project — Concept, renderings and furniture — and are saved straight away.',
     'Design & sourcing: the image type dropdown under Renderings & video now includes Moodboard, so images copied from Concept keep their label.',
@@ -3262,12 +3301,18 @@ class Component extends DCLogic {
         catch (e) { this.setState({ tradePrograms: [], tradeNotice: 'Could not load trade programs — ' + ((e && e.code) || (e && e.message) || e) }); }
       },
       goChangelog: () => this.setState({ view: 'changelog' }),
+      goStudioContact: async () => {
+        this.setState({ view: 'studio-contact', studioContact: null, studioContactNotice: '' });
+        try { this.setState({ studioContact: await api.getStudioContact() }); }
+        catch (e) { this.setState({ studioContact: api.STUDIO_CONTACT_DEFAULT(), studioContactNotice: 'Could not load — ' + ((e && e.code) || (e && e.message) || e) }); }
+      },
       appVersion: 'v' + APP_VERSION,
       showDash: s.view === 'dash', showProj: s.view === 'proj' && !!s.proj,
       showCatalog: s.view === 'catalog', showStudio: s.view === 'studio' && admin, showTeam: s.view === 'team' && admin,
       showRates: s.view === 'rates' && admin,
       showTradePrograms: s.view === 'trade-programs' && admin,
       showChangelog: s.view === 'changelog' && admin,
+      showStudioContact: s.view === 'studio-contact' && admin,
       changelog: CHANGELOG.map((rel) => ({ version: 'v' + rel.version, date: rel.date, changes: rel.changes })),
       confirmOpen: !!s.confirm,
       confirmTitle: s.confirm ? s.confirm.title : '',
@@ -3387,6 +3432,27 @@ class Component extends DCLogic {
         },
       });
     }
+    if (v.showStudioContact) {
+      const contact = s.studioContact || api.STUDIO_CONTACT_DEFAULT();
+      for (const key of Object.keys(api.STUDIO_CONTACT_DEFAULT())) {
+        v['sc_' + key] = contact[key] || '';
+        v['setsc_' + key] = (e) => this.setState({ studioContact: { ...(this.state.studioContact || contact), [key]: e.target.value } });
+      }
+      v.studioContactSaveLabel = s.studioContactSaving ? 'Saving…' : 'Save studio contact';
+      v.studioContactNotice = s.studioContactNotice || '';
+      v.saveStudioContact = async () => {
+        if (this.state.studioContactSaving) return;
+        this.setState({ studioContactSaving: true, studioContactNotice: '' });
+        try {
+          const saved = await api.saveStudioContact(this.state.studioContact || contact);
+          this.setState({ studioContact: saved, studioContactSaving: false, studioContactNotice: 'Saved.' });
+          setTimeout(() => this.setState({ studioContactNotice: '' }), 1600);
+        } catch (e) {
+          this.setState({ studioContactSaving: false, studioContactNotice: 'Could not save — ' + ((e && e.code) || (e && e.message) || e) });
+        }
+      };
+    }
+
     if (v.showTradePrograms) {
       const programs = s.tradePrograms || [];
       const blankTrade = () => ({
