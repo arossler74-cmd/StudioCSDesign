@@ -610,7 +610,7 @@ export async function saveTradePrograms(programs) {
 export function STUDIO_CONTACT_DEFAULT() {
   return {
     studioName: 'Cybelle Sampaio Studio', tagline: 'Design & Decoration', location: 'Orange County, CA',
-    website: 'studiocsdesign.com', email: '', phone: '',
+    website: 'studiocsdesign.com', email: 'cybellesampaio@hotmail.com', phone: '(314) 640-9048',
     instagram: '', tiktok: '', pinterest: '', facebook: '', linkedin: '', houzz: '',
   };
 }

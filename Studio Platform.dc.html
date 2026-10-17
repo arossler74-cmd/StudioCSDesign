@@ -2659,8 +2659,13 @@ const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review
 // reaches this file — the version badge in the top bar and the Studio →
 // Changelog page both read straight from this, nothing else to update.
 // Versioning starts at 1.1; anything before that lives only in git log.
-const APP_VERSION = '3.15';
+const APP_VERSION = '3.16';
 const CHANGELOG = [
+  { version: '3.16', date: '2026-10-17', changes: [
+    'Furniture lists and the investment table now show whole dollars — no cents — everywhere in the platform (the exports already did).',
+    'Studio contact starts with the studio email and phone (cybellesampaio@hotmail.com, (314) 640-9048) and studiocsdesign.com; change them any time in Studio → Studio contact.',
+    'Flipbook is now interactive, like a Flipsnack catalogue: flipbook.html?project=<id>&phase=concept opens the project as a book the client turns — click or tap a side, arrow keys, or drag a page by its corner; a slider and Fullscreen at the bottom. On a computer, tablet or sideways phone it is an open book (cover closed on its own, moodboards and renderings across the whole spread); on an upright phone each page fills the screen and curls away. Each space opens with its own chapter page. Not linked from the menus yet.',
+  ] },
   { version: '3.15', date: '2026-10-17', changes: [
     'Studio → Studio contact: a place for the studio\'s email, phone, website, Instagram, TikTok, Pinterest, Facebook, LinkedIn and Houzz. Client exports read it for their closing page; blank fields are simply left off, so it can be filled in over time.',
     'Flipbook video (preview, not in the menus yet): flipbook.html?project=<id>&phase=concept shows a project as an open book that turns its own pages — cover, direction and palette, then each space (moodboards, then ultra-realistic renderings), then the studio contact page. This is the prototype for the coming "Export Flipbook Video" button.',
@@ -3076,7 +3081,7 @@ class Component extends DCLogic {
     if (!p || !ST[status]) return;
     await this.persist({ phases: this.phasesWithStatus(p.phases, key, status) });
   }
-  money(v) { return (v === null || v === undefined || v === '') ? '—' : '$' + Number(v).toLocaleString('en-US'); }
+  money(v) { return (v === null || v === undefined || v === '' || isNaN(Number(v))) ? '—' : '$' + Math.round(Number(v)).toLocaleString('en-US'); }
   cat(id) { return (this.state.catalog || []).find((c) => c.id === id) || null; }
 
   // Furniture picking is shared between the standalone Selection tab and the

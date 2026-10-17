@@ -11,8 +11,9 @@ firebase-config.js         your keys (gitignored)
 firestore.rules            security rules
 86 Residence - Simplified Proposal Generator.dc.html   → Concept phase deliverable
 86 Residence Design Proposal.dc.html                   → Design/Sourcing deliverable
-flipbook.js / flipbook.html  the flipbook video: project → spreads → render(t). Every frame is a pure
-                           function of t, so the browser preview and the frame-by-frame video render match
+flipbook.js / flipbook.html  the interactive flipbook: project → content units → pages (open book on
+                           landscape screens, one page at a time on upright phones); click, keys or drag to turn
+flipbook-video.js          the same book as a timed render(t), for exporting an MP4 frame by frame
 assets/fonts.css, fonts/   local Cormorant Garamond + Jost, so a headless render never falls back
 ```
 
