@@ -1,3 +1,4 @@
+import { resolvePiece, priceExclusions, ON_REQUEST_LABEL } from './pieces.js';
 // Client report generator.
 //
 // Turns a project plus one phase into a standalone HTML file the client can be
@@ -121,7 +122,7 @@ function imageList(project, phaseKey, hidden, byId) {
     // not in this list.
     if (phaseKey === 'design' && !hidden.designMood) for (const m of r.designMedia || []) if (m.url && m.type !== 'video') out.push(m.url);
     if ((phaseKey === 'design' || phaseKey === 'styling') && !hidden.sourcing && byId) {
-      for (const sel of r.selected || []) { const c = byId[sel.refId]; if (c && c.image) out.push(c.image); }
+      for (const sel of r.selected || []) { const c = byId[sel.refId] ? resolvePiece(byId[sel.refId], sel) : null; if (c && c.image) out.push(c.image); }
     }
   }
   return [...new Set(out.filter(Boolean))];
@@ -499,8 +500,9 @@ function sourcingSection(p, byId, img) {
   const pieceAttr = (c) => esc(JSON.stringify({
     name: c.name || '', image: img[c.image] || c.image || '', retailer: c.retailer || '',
     finish: [c.finish, c.color].filter(Boolean).join(' · '), dimensions: c.dimensions || '',
-    price: money(c.price, p.currency), url: c.url || '',
+    price: c.priceOnRequest ? ON_REQUEST_LABEL : money(c.price, p.currency), url: c.url || '',
   }));
+  let anyOnRequest = false;
   let grand = 0;
   const summary = [];
   const blocks = rooms.map((r) => {
@@ -508,17 +510,20 @@ function sourcingSection(p, byId, img) {
     let cards = '';
     let rows = '';
     for (const sel of r.selected || []) {
-      const c = byId[sel.refId];
-      if (!c) continue;
-      const qty = Number(sel.qty || 1);
-      const line = c.price == null ? null : Number(c.price) * qty;
+      if (!byId[sel.refId]) continue;
+      // The piece as this project uses it — its own edits over the catalog.
+      const c = resolvePiece(byId[sel.refId], sel);
+      const qty = c.qty;
+      const line = c.priceOnRequest ? null : c.price * qty;
       if (line != null && !isNaN(line)) sub += line;
+      if (c.priceOnRequest) anyOnRequest = true;
+      const each = c.priceOnRequest ? ON_REQUEST_LABEL : money(c.price, p.currency);
       cards += `<div class="card sourcing-card" data-piece="${pieceAttr(c)}">
         <div class="sourcing-card-img">${img[c.image] || c.image ? `<img src="${esc(img[c.image] || c.image)}" alt="${esc(c.name || '')}">` : ''}</div>
         <div class="sourcing-card-copy">
           <div class="sourcing-card-name">${esc(c.name || '')}</div>
           <div class="sourcing-card-meta">${esc([c.retailer, c.finish, c.color].filter(Boolean).join(' · '))}</div>
-          <div class="sourcing-card-price">${esc(money(c.price, p.currency))}${qty > 1 ? ' · qty ' + qty : ''}</div>
+          <div class="sourcing-card-price">${esc(each)}${qty > 1 ? ' · qty ' + qty : ''}</div>
         </div>
       </div>`;
       rows += `<tr>
@@ -527,8 +532,8 @@ function sourcingSection(p, byId, img) {
           <div style="color:var(--mute);font-size:12.5px">${esc([c.retailer, c.finish, c.color].filter(Boolean).join(' · '))}</div>
           ${c.dimensions ? `<div style="color:var(--faint);font-size:12px">${esc(c.dimensions)}</div>` : ''}</td>
         <td class="num">${qty}</td>
-        <td class="num">${esc(money(c.price, p.currency))}</td>
-        <td class="num">${esc(line == null ? '' : money(line, p.currency))}</td>
+        <td class="num">${esc(each)}</td>
+        <td class="num">${esc(line == null ? '—' : money(line, p.currency))}</td>
       </tr>`;
     }
     grand += sub;
@@ -555,6 +560,7 @@ function sourcingSection(p, byId, img) {
       <div style="font-size:17px">Total</div>
       <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:34px;color:var(--accent-dark)">${esc(money(grand, p.currency))}</div>
     </div>
+    <p style="margin:16px 0 0;font-size:13px;line-height:1.6;color:var(--mute)">${esc(priceExclusions(anyOnRequest))}</p>
   </div>
 </div></section>`;
 }

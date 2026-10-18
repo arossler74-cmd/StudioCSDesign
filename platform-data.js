@@ -2,6 +2,9 @@
 // Firebase (Auth + Firestore + Storage) when firebase-config.js has real keys; localStorage otherwise.
 // Same API either way, so the app never branches.
 
+import { resolvePiece } from './pieces.js';
+export { resolvePiece, priceExclusions, ON_REQUEST_LABEL, CUSTOM_FIELDS } from './pieces.js';
+
 const ADMIN_BOOTSTRAP = ['arossler74@gmail.com', 'cybellesampaio77@gmail.com'];
 const LS = 'cs-platform-v5';
 const SEED_VERSION = 6;
@@ -783,14 +786,16 @@ async function publishShare(project, share) {
   // about agreeing a feeling, not a number, and this doc is world-readable
   // by anyone holding the token, so what it doesn't need, it doesn't get.
   const showPrice = isDesign;
+  // The piece as this project uses it — its own name/finish/colour/price
+  // edits over the catalog record (see pieces.js).
   const toItem = (e) => {
-    const c = find(e.refId);
+    const c = resolvePiece(find(e.refId), e);
     const item = {
       id: e.refId, name: c.name || '', image: c.image || '', retailer: c.retailer || '',
       dimensions: c.dimensions || '', finish: c.finish || '', color: c.color || '', url: c.url || '',
-      qty: Number(e.qty) || 1,
+      qty: c.qty,
     };
-    if (showPrice) item.price = c.price == null ? null : Number(c.price);
+    if (showPrice) { item.price = c.price; item.priceOnRequest = c.priceOnRequest; }
     return item;
   };
   const ph = project.phases || {};

@@ -412,6 +412,7 @@
             <div style="font-family: var(--font-heading); font-size: 18px; color: var(--color-accent-900);">Total investment</div>
             <div style="font-family: var(--font-heading); font-size: 28px; color: var(--color-accent-900);">{{ shareGrandTotal }}</div>
           </div>
+          <div style="max-width: 420px; margin-top: 10px; font-size: 12.5px; line-height: 1.6; color: var(--color-neutral-600);">{{ sharePriceNote }}</div>
         </sc-if>
       </div></sc-if>
 
@@ -770,7 +771,8 @@
                     </sc-for>
                   </div>
                 </div>
-                <div class="field"><label>Retail price (USD)</label><input class="input" value="{{ e_price }}" onChange="{{ set_price }}" placeholder="0.00" style="{{ e_priceStyle }}"></div>
+                <div class="field"><label>Retail price (USD)</label><input class="input" value="{{ e_price }}" onChange="{{ set_price }}" placeholder="0.00" style="{{ e_priceStyle }}">
+                  <label style="display: flex; align-items: center; gap: 7px; margin-top: 7px; font-size: 12.5px; color: var(--color-neutral-700); cursor: pointer; text-transform: none; letter-spacing: 0;"><input type="checkbox" checked="{{ e_onRequest }}" onChange="{{ toggle_onRequest }}">Price on request</label></div>
                 <div class="field" style="grid-column: span 3;"><label>Product URL</label>
                   <div style="display: flex; gap: 10px;">
                     <input class="input" value="{{ e_url }}" onChange="{{ set_url }}" placeholder="https://" style="flex: 1;">
@@ -1869,18 +1871,23 @@
                         <div data-row-id="{{ it.rowId }}" style="border-radius: var(--radius-md); overflow: hidden; background: var(--color-neutral-100); display: flex; flex-direction: column;">
                           <div onPointerDown="{{ it.dragStart }}" style="aspect-ratio: 1 / 1; position: relative; cursor: grab; touch-action: none;">
                             <img src="assets/piece-placeholder.png" data-img="{{ it.image }}" alt="" style="width: 100%; height: 100%; object-fit: cover; pointer-events: none;">
+                            <sc-if value="{{ it.qtyBadge }}" hint-placeholder-val="{{ false }}">
+                              <div style="position: absolute; top: 8px; left: 8px; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; background: rgba(251, 247, 241, .92); color: var(--color-accent-900);">{{ it.qtyBadge }}</div>
+                            </sc-if>
                             <sc-if value="{{ it.verdict }}" hint-placeholder-val="{{ false }}">
                               <div style="position: absolute; top: 8px; right: 8px; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; background: {{ it.verdictBg }}; color: #fff;">{{ it.verdict }}</div>
                             </sc-if>
                           </div>
                           <div style="padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 6px; flex: 1;">
                             <div style="font-size: 12.5px; font-weight: 600; line-height: 1.25;">{{ it.name }}</div>
+                            <sc-if value="{{ it.edited }}" hint-placeholder-val="{{ false }}"><div style="font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--color-accent-700);">Edited for this project</div></sc-if>
                             <div style="font-size: 11.5px; color: var(--color-neutral-600);">{{ it.retailer }}</div>
                             <sc-if value="{{ showPrice }}" hint-placeholder-val="{{ false }}">
                               <div style="font-size: 12px; font-weight: 600; color: var(--color-accent-800);">{{ it.price }}</div>
                             </sc-if>
                             <div style="flex: 1;"></div>
                             <div style="display: flex; gap: 6px;">
+                              <button type="button" onClick="{{ it.edit }}" class="btn btn-ghost" style="font-size: 11.5px; padding: 3px 9px;">Edit</button>
                               <button type="button" onClick="{{ it.toAlt }}" class="btn btn-ghost" style="font-size: 11.5px; padding: 3px 9px;">To substitutes</button>
                               <button type="button" onClick="{{ it.remove }}" class="btn btn-ghost" style="font-size: 11.5px; padding: 3px 9px;">×</button>
                             </div>
@@ -1903,6 +1910,7 @@
                             <div style="flex: 1;"></div>
                             <div style="display: flex; gap: 6px;">
                               <button type="button" onClick="{{ it.use }}" class="btn btn-ghost" style="font-size: 11.5px; padding: 3px 9px;">Use it</button>
+                              <button type="button" onClick="{{ it.edit }}" class="btn btn-ghost" style="font-size: 11.5px; padding: 3px 9px;">Edit</button>
                               <button type="button" onClick="{{ it.remove }}" class="btn btn-ghost" style="font-size: 11.5px; padding: 3px 9px;">×</button>
                             </div>
                           </div>
@@ -1973,6 +1981,7 @@
                       <div style="font-family: var(--font-heading); font-size: 18px; color: var(--color-accent-900);">Total</div>
                       <div style="font-family: var(--font-heading); font-size: 30px; color: var(--color-accent-900);">{{ investmentGrandTotal }}</div>
                     </div>
+                    <div style="margin-top: 12px; font-size: 12.5px; line-height: 1.6; color: var(--color-neutral-600);">{{ investmentNote }}</div>
                   </div>
                 </sc-if>
               </div>
@@ -2044,18 +2053,23 @@
                         <div data-row-id="{{ it.rowId }}" style="border-radius: var(--radius-md); overflow: hidden; background: var(--color-neutral-100); display: flex; flex-direction: column;">
                           <div onPointerDown="{{ it.dragStart }}" style="aspect-ratio: 1 / 1; position: relative; cursor: grab; touch-action: none;">
                             <img src="assets/piece-placeholder.png" data-img="{{ it.image }}" alt="" style="width: 100%; height: 100%; object-fit: cover; pointer-events: none;">
+                            <sc-if value="{{ it.qtyBadge }}" hint-placeholder-val="{{ false }}">
+                              <div style="position: absolute; top: 8px; left: 8px; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; background: rgba(251, 247, 241, .92); color: var(--color-accent-900);">{{ it.qtyBadge }}</div>
+                            </sc-if>
                             <sc-if value="{{ it.verdict }}" hint-placeholder-val="{{ false }}">
                               <div style="position: absolute; top: 8px; right: 8px; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; background: {{ it.verdictBg }}; color: #fff;">{{ it.verdict }}</div>
                             </sc-if>
                           </div>
                           <div style="padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 6px; flex: 1;">
                             <div style="font-size: 12.5px; font-weight: 600; line-height: 1.25;">{{ it.name }}</div>
+                            <sc-if value="{{ it.edited }}" hint-placeholder-val="{{ false }}"><div style="font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--color-accent-700);">Edited for this project</div></sc-if>
                             <div style="font-size: 11.5px; color: var(--color-neutral-600);">{{ it.retailer }}</div>
                             <sc-if value="{{ showPrice }}" hint-placeholder-val="{{ false }}">
                               <div style="font-size: 12px; font-weight: 600; color: var(--color-accent-800);">{{ it.price }}</div>
                             </sc-if>
                             <div style="flex: 1;"></div>
                             <div style="display: flex; gap: 6px;">
+                              <button type="button" onClick="{{ it.edit }}" class="btn btn-ghost" style="font-size: 11.5px; padding: 3px 9px;">Edit</button>
                               <button type="button" onClick="{{ it.toAlt }}" class="btn btn-ghost" style="font-size: 11.5px; padding: 3px 9px;">To alternatives</button>
                               <button type="button" onClick="{{ it.remove }}" class="btn btn-ghost" style="font-size: 11.5px; padding: 3px 9px;">×</button>
                             </div>
@@ -2078,6 +2092,7 @@
                             <div style="flex: 1;"></div>
                             <div style="display: flex; gap: 6px;">
                               <button type="button" onClick="{{ it.use }}" class="btn btn-ghost" style="font-size: 11.5px; padding: 3px 9px;">Use it</button>
+                              <button type="button" onClick="{{ it.edit }}" class="btn btn-ghost" style="font-size: 11.5px; padding: 3px 9px;">Edit</button>
                               <button type="button" onClick="{{ it.remove }}" class="btn btn-ghost" style="font-size: 11.5px; padding: 3px 9px;">×</button>
                             </div>
                           </div>
@@ -2638,6 +2653,47 @@
         </div>
       </sc-if>
 
+      <sc-if value="{{ pieceEditOpen }}">
+        <div class="dialog-backdrop" onClick="{{ pieceEditCancel }}" style="animation: csFade .16s var(--ease-spring) backwards; z-index: 190;">
+          <div class="dialog" onClick="{{ pieceEditStop }}" style="animation: csPop .2s var(--ease-spring) both; max-width: 620px; width: calc(100vw - 32px); max-height: calc(100vh - 48px); overflow: auto;">
+            <div style="display: flex; gap: 16px; align-items: center; margin-bottom: 14px;">
+              <img src="assets/piece-placeholder.png" data-img="{{ pe_image }}" alt="" style="width: 72px; height: 72px; object-fit: cover; border-radius: 10px; flex: none; background: var(--color-neutral-100);">
+              <div>
+                <div class="dialog-title" style="margin: 0;">{{ pe_title }}</div>
+                <div style="font-size: 13px; color: var(--color-neutral-600); margin-top: 3px;">Changes apply to this project only — the catalog piece stays as it is. Leave a field blank to use the catalog value.</div>
+              </div>
+            </div>
+            <div class="cs-details-grid" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;">
+              <div class="field"><label>Quantity</label>
+                <div style="display: flex; gap: 6px; align-items: center;">
+                  <button type="button" onClick="{{ pe_minus }}" class="btn btn-secondary" style="padding: 6px 12px;" aria-label="Fewer">−</button>
+                  <input class="input" inputmode="numeric" value="{{ pe_qty }}" onChange="{{ setpe_qty }}" style="text-align: center; max-width: 80px;">
+                  <button type="button" onClick="{{ pe_plus }}" class="btn btn-secondary" style="padding: 6px 12px;" aria-label="More">+</button>
+                </div>
+              </div>
+              <div class="field"><label>Unit price (USD)</label><input class="input" value="{{ pe_price }}" onChange="{{ setpe_price }}" placeholder="{{ pe_pricePh }}"></div>
+              <div class="field"><label>Price on request</label>
+                <select class="input" value="{{ pe_onRequest }}" onChange="{{ setpe_onRequest }}"><option value="">{{ pe_onRequestDefault }}</option><option value="yes">Yes — price on request</option><option value="no">No — use the price</option></select>
+              </div>
+              <div class="field"><label>Line total</label><div style="padding: 9px 2px; font-weight: 600; color: var(--color-accent-900);">{{ pe_line }} <span style="font-weight: 400; color: var(--color-neutral-600); font-size: 12.5px;">{{ pe_unit }}</span></div></div>
+              <div class="field" style="grid-column: span 2;"><label>Name</label><input class="input" value="{{ pe_name }}" onChange="{{ setpe_name }}" placeholder="{{ pe_namePh }}"></div>
+              <div class="field"><label>Finish / material</label><input class="input" value="{{ pe_finish }}" onChange="{{ setpe_finish }}" placeholder="{{ pe_finishPh }}"></div>
+              <div class="field"><label>Color</label><input class="input" value="{{ pe_color }}" onChange="{{ setpe_color }}" placeholder="{{ pe_colorPh }}"></div>
+              <div class="field"><label>Retailer</label><input class="input" value="{{ pe_retailer }}" onChange="{{ setpe_retailer }}" placeholder="{{ pe_retailerPh }}"></div>
+              <div class="field"><label>Dimensions</label><input class="input" value="{{ pe_dimensions }}" onChange="{{ setpe_dimensions }}" placeholder="{{ pe_dimensionsPh }}"></div>
+              <div class="field" style="grid-column: span 2;"><label>Notes</label><textarea class="input" rows="2" value="{{ pe_notes }}" onChange="{{ setpe_notes }}" placeholder="{{ pe_notesPh }}" style="resize: vertical; font-family: var(--font-body);"></textarea></div>
+            </div>
+            <div class="dialog-actions" style="justify-content: space-between;">
+              <button type="button" onClick="{{ pieceEditReset }}" class="btn btn-ghost">Reset to catalog</button>
+              <div style="display: flex; gap: 8px;">
+                <button type="button" onClick="{{ pieceEditCancel }}" class="btn btn-ghost">Cancel</button>
+                <button type="button" onClick="{{ pieceEditSave }}" class="btn btn-primary">Save for this project</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
       <sc-if value="{{ confirmOpen }}">
         <div class="dialog-backdrop" onClick="{{ confirmCancel }}" style="animation: csFade .16s var(--ease-spring) backwards; z-index: 200;">
           <div class="dialog" onClick="{{ confirmStop }}" style="animation: csPop .2s var(--ease-spring) both;">
@@ -2668,8 +2724,13 @@ const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review
 // reaches this file — the version badge in the top bar and the Studio →
 // Changelog page both read straight from this, nothing else to update.
 // Versioning starts at 1.1; anything before that lives only in git log.
-const APP_VERSION = '3.17';
+const APP_VERSION = '3.18';
 const CHANGELOG = [
+  { version: '3.18', date: '2026-10-18', changes: [
+    'Furniture in a project can now be edited for that project only: Edit on any piece (Design & sourcing and Selection) opens quantity, unit price, name, finish, colour, retailer, dimensions and notes. Quantity × unit price updates the line and room totals automatically. The catalog piece itself never changes — blank fields keep the catalog value, and Reset to catalog clears the edits. Edited pieces are marked “Edited for this project”.',
+    'Price on request: a catalog piece can be marked “Price on request” (or have no price at all), and a project can switch it on or off for one piece. Such pieces show “Price on request”, are listed but not added into any total.',
+    'Every investment total — in the app, the exported presentation and the client link — now ends with: prices shown do not include shipping, white-glove delivery or taxes; when any piece is priced on request, that is named too.',
+  ] },
   { version: '3.17', date: '2026-10-17', changes: [
     'Concept and Design & sourcing: a Flipbook button next to Export HTML / Export PDF opens that phase as the interactive flipbook in a new tab.',
   ] },
@@ -3116,12 +3177,18 @@ class Component extends DCLogic {
       const nextList = order.map((idx) => list[idx]);
       await this.setRooms(rooms.map((r) => r.id === room.id ? { ...r, [bucket]: nextList } : r));
     };
+    const api = this.state.api;
     return list.map((entry, idx) => {
-      const c = this.cat(entry.refId) || { name: 'Removed from catalog', retailer: '', image: '' };
+      // The piece as this project uses it: catalog record + this project's
+      // own edits (pieces.js). Editing here never touches the catalog.
+      const c = api.resolvePiece(this.cat(entry.refId), entry);
       const verdict = this.verdictOf(room.id, entry.refId);
       return {
         rowId: bucket + '-' + idx, groupList: room.id + '-' + bucket,
-        name: c.name, retailer: c.retailer || '', image: c.image || PLACEHOLDER, price: this.money(c.price),
+        name: c.name, retailer: [c.retailer, c.finish, c.color].filter(Boolean).join(' · '), image: c.image || PLACEHOLDER,
+        price: (c.priceOnRequest ? api.ON_REQUEST_LABEL : this.money(c.price)) + (c.qty > 1 ? ' · qty ' + c.qty : ''),
+        qtyBadge: c.qty > 1 ? '×' + c.qty : '', edited: c.edited,
+        edit: () => this.openPieceEdit(room.id, bucket, idx),
         verdict: verdict === 'up' ? 'Approved' : verdict === 'down' ? 'Rejected' : '',
         verdictBg: verdict === 'up' ? 'var(--color-accent-2)' : 'var(--color-accent-700)',
         dragStart: (e) => this.startReorderDrag(e, bucket + '-' + idx, groupIds, persistOrder),
@@ -3148,20 +3215,85 @@ class Component extends DCLogic {
   // export will price out. Substitutes are never priced in here — only
   // pieces actually in the room count toward the total, same as the export.
   investmentRoomVal(room) {
-    let subtotalRaw = 0;
+    const api = this.state.api;
+    let subtotalRaw = 0, onRequest = false;
     const rows = (room.selected || []).map((entry) => {
-      const c = this.cat(entry.refId) || { name: 'Removed from catalog' };
-      const qty = Number(entry.qty || 1);
-      const line = c.price == null ? null : Number(c.price) * qty;
+      const c = api.resolvePiece(this.cat(entry.refId), entry);
+      const qty = c.qty;
+      const line = c.priceOnRequest ? null : c.price * qty;
       if (line != null && !isNaN(line)) subtotalRaw += line;
+      if (c.priceOnRequest) onRequest = true;
       return {
         name: c.name || '', image: c.image || PLACEHOLDER, url: c.url || '',
         meta: [c.retailer, c.finish, c.color].filter(Boolean).join(' · '),
         dimensions: c.dimensions || '—',
-        qty, unit: this.money(c.price), line: line == null ? '—' : this.money(line),
+        qty, unit: c.priceOnRequest ? api.ON_REQUEST_LABEL : this.money(c.price), line: line == null ? '—' : this.money(line),
       };
     });
-    return { investmentRows: rows, investmentSubtotal: this.money(subtotalRaw), investmentSubtotalRaw: subtotalRaw };
+    return { investmentRows: rows, investmentSubtotal: this.money(subtotalRaw), investmentSubtotalRaw: subtotalRaw, investmentOnRequest: onRequest };
+  }
+
+  // Edit a piece for this project only: quantity, plus any name / finish /
+  // colour / price change, stored on the room entry as `custom` (pieces.js).
+  // Blank fields fall back to the catalog, so "Reset" is just clearing them.
+  openPieceEdit(roomId, bucket, idx) {
+    const room = this.rooms().find((r) => r.id === roomId);
+    const entry = room && (room[bucket] || [])[idx];
+    if (!entry) return;
+    const o = entry.custom || {};
+    const draft = { qty: String(Math.max(1, Number(entry.qty) || 1)) };
+    for (const k of this.state.api.CUSTOM_FIELDS) draft[k] = o[k] == null ? '' : String(o[k]);
+    draft.priceOnRequest = o.priceOnRequest == null ? '' : (o.priceOnRequest ? 'yes' : 'no');
+    this.setState({ pieceEdit: { roomId, bucket, idx, refId: entry.refId, draft } });
+  }
+  pieceEditVals() {
+    const s = this.state, api = s.api, pe = s.pieceEdit;
+    if (!pe || !api) return { pieceEditOpen: false };
+    const c = this.cat(pe.refId) || { name: 'Removed from catalog' };
+    const d = pe.draft;
+    const set = (k) => (e) => this.setState({ pieceEdit: { ...this.state.pieceEdit, draft: { ...this.state.pieceEdit.draft, [k]: e.target.value } } });
+    const custom = {};
+    for (const k of api.CUSTOM_FIELDS) if (k !== 'priceOnRequest' && String(d[k] || '').trim() !== '') custom[k] = k === 'price' ? Number(String(d[k]).replace(/[^0-9.]/g, '')) : String(d[k]).trim();
+    if (d.priceOnRequest === 'yes') custom.priceOnRequest = true;
+    if (d.priceOnRequest === 'no') custom.priceOnRequest = false;
+    const qty = Math.max(1, Math.round(Number(d.qty) || 1));
+    const piece = api.resolvePiece(c, { refId: pe.refId, qty, custom });
+    const ph = (k) => (c[k] == null || c[k] === '' ? '' : String(c[k]));
+    const save = async () => {
+      const rooms = this.rooms().map((r) => {
+        if (r.id !== pe.roomId) return r;
+        const list = (r[pe.bucket] || []).slice();
+        if (!list[pe.idx] || list[pe.idx].refId !== pe.refId) return r;
+        const next = { refId: pe.refId, qty };
+        if (Object.keys(custom).length) next.custom = custom;
+        list[pe.idx] = next;
+        return { ...r, [pe.bucket]: list };
+      });
+      this.setState({ pieceEdit: null });
+      await this.setRooms(rooms);
+    };
+    const step = (delta) => () => this.setState({ pieceEdit: { ...pe, draft: { ...d, qty: String(Math.max(1, qty + delta)) } } });
+    return {
+      pieceEditOpen: true,
+      pe_title: c.name || 'Piece', pe_image: piece.image || PLACEHOLDER,
+      pe_qty: d.qty, setpe_qty: set('qty'), pe_minus: step(-1), pe_plus: step(1),
+      pe_name: d.name, setpe_name: set('name'), pe_namePh: ph('name'),
+      pe_retailer: d.retailer, setpe_retailer: set('retailer'), pe_retailerPh: ph('retailer'),
+      pe_finish: d.finish, setpe_finish: set('finish'), pe_finishPh: ph('finish') || 'e.g. Bouclé',
+      pe_color: d.color, setpe_color: set('color'), pe_colorPh: ph('color') || 'e.g. Ivory',
+      pe_dimensions: d.dimensions, setpe_dimensions: set('dimensions'), pe_dimensionsPh: ph('dimensions'),
+      pe_price: d.price, setpe_price: set('price'), pe_pricePh: c.price == null || c.price === '' ? 'No catalog price' : this.money(c.price),
+      pe_notes: d.notes, setpe_notes: set('notes'), pe_notesPh: ph('notes') || 'Notes for this project',
+      pe_onRequest: d.priceOnRequest, setpe_onRequest: set('priceOnRequest'),
+      pe_onRequestDefault: 'Same as catalog (' + (c.priceOnRequest || c.price == null || c.price === '' ? 'on request' : 'priced') + ')',
+      pe_unit: piece.priceOnRequest ? '' : (qty > 1 ? qty + ' × ' + this.money(piece.price) : ''),
+      pe_line: piece.priceOnRequest ? api.ON_REQUEST_LABEL : this.money(piece.price * qty),
+      pe_isSub: pe.bucket === 'alternatives',
+      pieceEditCancel: () => this.setState({ pieceEdit: null }),
+      pieceEditStop: (e) => e.stopPropagation(),
+      pieceEditReset: () => this.setState({ pieceEdit: { ...pe, draft: Object.fromEntries(Object.keys(d).map((k) => [k, k === 'qty' ? d.qty : ''])) } }),
+      pieceEditSave: save,
+    };
   }
   pickPanelVals(rooms) {
     const s = this.state, api = s.api;
@@ -3331,6 +3463,7 @@ class Component extends DCLogic {
       showChangelog: s.view === 'changelog' && admin,
       showStudioContact: s.view === 'studio-contact' && admin,
       changelog: CHANGELOG.map((rel) => ({ version: 'v' + rel.version, date: rel.date, changes: rel.changes })),
+      ...this.pieceEditVals(),
       confirmOpen: !!s.confirm,
       confirmTitle: s.confirm ? s.confirm.title : '',
       confirmBody: s.confirm ? s.confirm.body : '',
@@ -4003,7 +4136,7 @@ class Component extends DCLogic {
       roomPills: roomsOf(c), tagPills: (c.tags || []),
       spec: [c.dimensions, c.color].filter(Boolean).join(' · ') || ' ',
       image: c.image || PLACEHOLDER,
-      price: this.money(c.price),
+      price: c.priceOnRequest || c.price == null || c.price === '' ? 'Price on request' : this.money(c.price),
       canDrag, isNew: !!c.isNew,
       dragStart: (e) => { if (canDrag) this.startReorderDrag(e, c.id, groupIds, persist); },
       canEdit: admin,
@@ -4168,7 +4301,9 @@ class Component extends DCLogic {
           pick: (e) => { e.preventDefault(); this.commitTag(label); },
         })),
         set_name: set('name'), set_type: set('type'),
-        set_price: set('price'), set_url: set('url'), set_dimensions: set('dimensions'), set_finish: set('finish'),
+        set_price: set('price'), set_url: set('url'),
+        e_onRequest: !!f.priceOnRequest,
+        toggle_onRequest: (e) => this.setState({ form: { ...this.state.form, priceOnRequest: !!e.target.checked } }), set_dimensions: set('dimensions'), set_finish: set('finish'),
         set_color: set('color'), set_notes: set('notes'),
         canDelete: !!f.id,
         fetchLabel: s.fetching ? 'Fetching…' : 'Fetch details',
@@ -4205,6 +4340,7 @@ class Component extends DCLogic {
           const rec = { ...f2,
             retailer: findCanonical(f2.retailer, stores) || f2.retailer,
             price: f2.price === '' ? null : Number(String(f2.price).replace(/[^0-9.]/g, '')),
+            priceOnRequest: !!f2.priceOnRequest,
             tags: Array.isArray(f2.tags) ? f2.tags : String(f2.tags || '').split(',').map((x) => x.trim()).filter(Boolean),
             // Opening and saving an imported piece is the review — it stops being "New".
             rooms, room: rooms[0] || '', isNew: false };
@@ -4860,6 +4996,7 @@ class Component extends DCLogic {
       });
       v.hasInvestment = v.designRooms.some((r) => r.investmentRows.length > 0);
       v.investmentGrandTotal = this.money(v.designRooms.reduce((t, r) => t + r.investmentSubtotalRaw, 0));
+      v.investmentNote = api.priceExclusions(v.designRooms.some((r) => r.investmentOnRequest));
       v.investmentSummary = v.designRooms.filter((r) => r.investmentRows.length > 0).map((r) => ({
         name: r.name, count: r.investmentRows.reduce((t, x) => t + x.qty, 0), subtotal: r.investmentSubtotal,
       }));
@@ -5541,9 +5678,9 @@ class Component extends DCLogic {
       return {
         name: c.name || 'Piece', image: c.image || PLACEHOLDER,
         meta: [c.retailer, c.dimensions].filter(Boolean).join(' · '),
-        priceLabel: opts.showPrice ? money(c.price) : '',
+        priceLabel: opts.showPrice ? (c.priceOnRequest || c.price == null || c.price === '' ? 'Price on request' : money(c.price)) : '',
         actionLabel: opts.actionLabel, toggleAction: opts.toggleAction,
-        viewDetails: () => this.setState({ sharePiece: { name: c.name || 'Piece', image: c.image || PLACEHOLDER, retailer: c.retailer || '', finish: [c.finish, c.color].filter(Boolean).join(' · '), dimensions: c.dimensions || '', price: opts.showPrice ? money(c.price) : '', url: c.url || '' } }),
+        viewDetails: () => this.setState({ sharePiece: { name: c.name || 'Piece', image: c.image || PLACEHOLDER, retailer: c.retailer || '', finish: [c.finish, c.color].filter(Boolean).join(' · '), dimensions: c.dimensions || '', price: opts.showPrice ? (c.priceOnRequest || c.price == null || c.price === '' ? 'Price on request' : money(c.price)) : '', url: c.url || '' } }),
         comment: cur.comment || '',
         setComment: (e) => set({ comment: e.target.value }),
         up: () => set({ verdict: on('up') ? null : 'up' }),
@@ -5556,38 +5693,41 @@ class Component extends DCLogic {
         verdictRing: on('up') ? 'var(--color-accent-2)' : on('down') ? 'var(--color-accent)' : 'transparent',
       };
     };
+    let anyOnRequest = false;
     const shareRooms = (project.rooms || []).map((room) => {
       let sub = 0;
       const investmentRows = [];
       const selectedGrid = [];
       const substituteGrid = [];
+      // A piece priced on request still gets its line — named, counted —
+      // but adds nothing to the total, and flags the note under it.
+      const addRow = (c) => {
+        const qty = Number(c.qty) || 1;
+        const onRequest = !!c.priceOnRequest || c.price == null || c.price === '' || isNaN(Number(c.price));
+        const lineNum = onRequest ? 0 : Number(c.price) * qty;
+        if (onRequest) anyOnRequest = true; else sub += lineNum;
+        investmentRows.push({ name: c.name || 'Piece', url: c.url || '', meta: [c.retailer, c.finish, c.color, c.dimensions].filter(Boolean).join(' · '), qty,
+          unit: onRequest ? 'Price on request' : money(c.price), line: onRequest ? '—' : money(lineNum), lineNum });
+      };
 
-      (isPublic ? (room.items || []) : (room.selected || []).map((e) => ({ ...find(e.refId), id: e.refId, qty: Number(e.qty) || 1 }))).forEach((c) => {
+      (isPublic ? (room.items || []) : (room.selected || []).map((e) => api.resolvePiece(find(e.refId), e))).forEach((c) => {
         const removeKey = room.id + '|remove|' + c.id;
         const removed = !!(trial[removeKey] && trial[removeKey].on);
         const toggleAction = () => this.setState({ shareTrial: { ...trial, [removeKey]: { on: !removed, roomId: room.id, itemId: c.id, action: 'remove' } } });
         const card = buildCard(c, { roomId: room.id, bucket: 'sel', showPrice: showInvestment, actionLabel: removed ? 'Bring it back' : 'Move out', toggleAction });
         if (removed) { substituteGrid.push(card); return; }
         selectedGrid.push(card);
-        const qty = Number(c.qty) || 1, priceNum = Number(c.price), lineNum = priceNum * qty;
-        if (showInvestment && !isNaN(priceNum)) {
-          sub += lineNum;
-          investmentRows.push({ name: c.name || 'Piece', url: c.url || '', meta: [c.retailer, c.dimensions].filter(Boolean).join(' · '), qty, unit: money(c.price), line: money(lineNum), lineNum });
-        }
+        if (showInvestment) addRow(c);
       });
 
-      (!showInvestment ? [] : (isPublic ? (room.alternatives || []) : (room.alternatives || []).map((e) => ({ ...find(e.refId), id: e.refId, qty: Number(e.qty) || 1 })))).forEach((c) => {
+      (!showInvestment ? [] : (isPublic ? (room.alternatives || []) : (room.alternatives || []).map((e) => api.resolvePiece(find(e.refId), e)))).forEach((c) => {
         const addKey = room.id + '|add|' + c.id;
         const added = !!(trial[addKey] && trial[addKey].on);
         const toggleAction = () => this.setState({ shareTrial: { ...trial, [addKey]: { on: !added, roomId: room.id, itemId: c.id, action: 'add' } } });
         const card = buildCard(c, { roomId: room.id, bucket: 'alt', showPrice: true, actionLabel: added ? 'Move out' : 'Bring it in', toggleAction });
         if (!added) { substituteGrid.push(card); return; }
         selectedGrid.push(card);
-        const qty = Number(c.qty) || 1, priceNum = Number(c.price), lineNum = priceNum * qty;
-        if (!isNaN(priceNum)) {
-          sub += lineNum;
-          investmentRows.push({ name: c.name || 'Piece', url: c.url || '', meta: [c.retailer, c.dimensions].filter(Boolean).join(' · '), qty, unit: money(c.price), line: money(lineNum), lineNum });
-        }
+        addRow(c);
       });
       // Highest-value line first — the studio and client both care most about
       // where the budget is actually going, and a moved-out/brought-in piece
@@ -5602,6 +5742,7 @@ class Component extends DCLogic {
       };
     });
     const shareGrandTotal = showInvestment ? money(shareRooms.reduce((t, r) => t + r.roomSubRaw, 0)) : '';
+    const sharePriceNote = showInvestment ? api.priceExclusions(anyOnRequest) : '';
 
     return {
       shareClient: share.clientName, shareProject: project.name, sharePhaseLabel: phaseInfo.label, shareIntro: phaseInfo.intro,
@@ -5668,7 +5809,7 @@ class Component extends DCLogic {
         : touched ? touched + ' change' + (touched === 1 ? '' : 's') + ' marked' : 'Mark only the pieces you have an opinion about.',
       showInvestment,
       shareRooms,
-      shareGrandTotal,
+      shareGrandTotal, sharePriceNote,
       shareSubmit: async () => {
         let proj = project;
         // Every review this submission writes shares this exact stamp, so the

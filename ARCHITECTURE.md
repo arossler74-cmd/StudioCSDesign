@@ -33,7 +33,7 @@ users/{uid}            email, name, role: 'admin'|'designer'|'client', status, c
 invites/{id}           email, role, name, status, createdAt        — role is inherited on first sign-in
 
 catalog/{id}           name, type, room, retailer, url, image,
-                       dimensions, finish, color, price (USD), notes, tags[], isNew?, createdAt, updatedAt
+                       dimensions, finish, color, price (USD), priceOnRequest?, notes, tags[], isNew?, createdAt, updatedAt
 
 projects/{id}
   name, client, location, cover, status, currency: 'USD'
@@ -58,7 +58,10 @@ projects/{id}
   rooms:   [{ id, name, goal, brief,
               conceptMedia: [{ id, type: 'moodboard'|'floorplan'|'sketchup'|'rendering', title, url }],
               designMedia:  [{ id, type: 'rendering'|'sketchup'|'floorplan'|'video', title, url }],
-              selected: [{refId, qty}], alternatives: [{refId, qty}] }]
+              selected: [{refId, qty, custom?}], alternatives: [{refId, qty, custom?}] }]
+              — custom: this project's own edits to a catalog piece (name, retailer, finish, color,
+              dimensions, notes, url, image, price, priceOnRequest); blank = catalog value. Merged by
+              pieces.js resolvePiece() everywhere a piece is shown or priced — the catalog is never written
               — designPoints/designMaterials/designFloorPlans/designMedia start as a one-time "Copy
               from Concept" in the Design & Sourcing tab, then diverge freely; never live-linked.
               tagline/client/location/address/addressCity/scope/scopeNote/stage/stageNote/intro/
