@@ -1872,7 +1872,7 @@
                     <div data-group-list="{{ room.id }}-selected" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; margin-bottom: 24px;">
                       <sc-for list="{{ room.selected }}" as="it" hint-placeholder-count="4">
                         <div data-row-id="{{ it.rowId }}" style="border-radius: var(--radius-md); overflow: hidden; background: var(--color-neutral-100); display: flex; flex-direction: column;">
-                          <div onPointerDown="{{ it.dragStart }}" style="aspect-ratio: 1 / 1; position: relative; cursor: grab; touch-action: none;">
+                          <div onPointerDown="{{ it.dragStart }}" style="aspect-ratio: 1 / 1; position: relative; cursor: grab; touch-action: none; flex: none; min-height: 0; overflow: hidden;">
                             <img src="assets/piece-placeholder.png" data-img="{{ it.image }}" alt="" style="width: 100%; height: 100%; object-fit: cover; pointer-events: none;">
                             <sc-if value="{{ it.qtyBadge }}" hint-placeholder-val="{{ false }}">
                               <div style="position: absolute; top: 8px; left: 8px; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; background: rgba(251, 247, 241, .92); color: var(--color-accent-900);">{{ it.qtyBadge }}</div>
@@ -1885,10 +1885,10 @@
                             <div style="font-size: 12.5px; font-weight: 600; line-height: 1.25;">{{ it.name }}</div>
                             <sc-if value="{{ it.edited }}" hint-placeholder-val="{{ false }}"><div style="font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--color-accent-700);">Edited for this project</div></sc-if>
                             <div style="font-size: 11.5px; color: var(--color-neutral-600);">{{ it.retailer }}</div>
-                            <sc-if value="{{ showPrice }}" hint-placeholder-val="{{ false }}">
-                              <div style="font-size: 12px; font-weight: 600; color: var(--color-accent-800);">{{ it.price }}</div>
-                            </sc-if>
                             <div style="flex: 1;"></div>
+                            <sc-if value="{{ showPrice }}" hint-placeholder-val="{{ false }}">
+                              <div style="font-size: 12.5px; font-weight: 600; color: var(--color-accent-800); padding-top: 6px; border-top: 1px solid var(--color-neutral-200);">{{ it.price }}</div>
+                            </sc-if>
                             <div style="display: flex; gap: 6px;">
                               <button type="button" onClick="{{ it.edit }}" class="btn btn-ghost" style="font-size: 11.5px; padding: 3px 9px;">Edit</button>
                               <button type="button" onClick="{{ it.toAlt }}" class="btn btn-ghost" style="font-size: 11.5px; padding: 3px 9px;">To substitutes</button>
@@ -1908,7 +1908,7 @@
                     <div data-group-list="{{ room.id }}-alternatives" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px;">
                       <sc-for list="{{ room.alternatives }}" as="it" hint-placeholder-count="5">
                         <div data-row-id="{{ it.rowId }}" style="border-radius: var(--radius-md); overflow: hidden; background: var(--color-neutral-100); display: flex; flex-direction: column; opacity: .92;">
-                          <div onPointerDown="{{ it.dragStart }}" style="aspect-ratio: 1 / 1; cursor: grab; touch-action: none;"><img src="assets/piece-placeholder.png" data-img="{{ it.image }}" alt="" style="width: 100%; height: 100%; object-fit: cover; pointer-events: none;"></div>
+                          <div onPointerDown="{{ it.dragStart }}" style="aspect-ratio: 1 / 1; cursor: grab; touch-action: none; flex: none; min-height: 0; overflow: hidden;"><img src="assets/piece-placeholder.png" data-img="{{ it.image }}" alt="" style="width: 100%; height: 100%; object-fit: cover; pointer-events: none;"></div>
                           <div style="padding: 9px 11px 11px; display: flex; flex-direction: column; gap: 5px; flex: 1;">
                             <div style="font-size: 12px; font-weight: 600; line-height: 1.25;">{{ it.name }}</div>
                             <div style="font-size: 11px; color: var(--color-neutral-600);">{{ it.retailer }}</div>
@@ -2059,7 +2059,7 @@
                     <div data-group-list="{{ room.id }}-selected" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; margin-bottom: 24px;">
                       <sc-for list="{{ room.selected }}" as="it" hint-placeholder-count="4">
                         <div data-row-id="{{ it.rowId }}" style="border-radius: var(--radius-md); overflow: hidden; background: var(--color-neutral-100); display: flex; flex-direction: column;">
-                          <div onPointerDown="{{ it.dragStart }}" style="aspect-ratio: 1 / 1; position: relative; cursor: grab; touch-action: none;">
+                          <div onPointerDown="{{ it.dragStart }}" style="aspect-ratio: 1 / 1; position: relative; cursor: grab; touch-action: none; flex: none; min-height: 0; overflow: hidden;">
                             <img src="assets/piece-placeholder.png" data-img="{{ it.image }}" alt="" style="width: 100%; height: 100%; object-fit: cover; pointer-events: none;">
                             <sc-if value="{{ it.qtyBadge }}" hint-placeholder-val="{{ false }}">
                               <div style="position: absolute; top: 8px; left: 8px; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; background: rgba(251, 247, 241, .92); color: var(--color-accent-900);">{{ it.qtyBadge }}</div>
@@ -2072,10 +2072,10 @@
                             <div style="font-size: 12.5px; font-weight: 600; line-height: 1.25;">{{ it.name }}</div>
                             <sc-if value="{{ it.edited }}" hint-placeholder-val="{{ false }}"><div style="font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--color-accent-700);">Edited for this project</div></sc-if>
                             <div style="font-size: 11.5px; color: var(--color-neutral-600);">{{ it.retailer }}</div>
-                            <sc-if value="{{ showPrice }}" hint-placeholder-val="{{ false }}">
-                              <div style="font-size: 12px; font-weight: 600; color: var(--color-accent-800);">{{ it.price }}</div>
-                            </sc-if>
                             <div style="flex: 1;"></div>
+                            <sc-if value="{{ showPrice }}" hint-placeholder-val="{{ false }}">
+                              <div style="font-size: 12.5px; font-weight: 600; color: var(--color-accent-800); padding-top: 6px; border-top: 1px solid var(--color-neutral-200);">{{ it.price }}</div>
+                            </sc-if>
                             <div style="display: flex; gap: 6px;">
                               <button type="button" onClick="{{ it.edit }}" class="btn btn-ghost" style="font-size: 11.5px; padding: 3px 9px;">Edit</button>
                               <button type="button" onClick="{{ it.toAlt }}" class="btn btn-ghost" style="font-size: 11.5px; padding: 3px 9px;">To alternatives</button>
@@ -2095,7 +2095,7 @@
                     <div data-group-list="{{ room.id }}-alternatives" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px;">
                       <sc-for list="{{ room.alternatives }}" as="it" hint-placeholder-count="5">
                         <div data-row-id="{{ it.rowId }}" style="border-radius: var(--radius-md); overflow: hidden; background: var(--color-neutral-100); display: flex; flex-direction: column; opacity: .92;">
-                          <div onPointerDown="{{ it.dragStart }}" style="aspect-ratio: 1 / 1; cursor: grab; touch-action: none;"><img src="assets/piece-placeholder.png" data-img="{{ it.image }}" alt="" style="width: 100%; height: 100%; object-fit: cover; pointer-events: none;"></div>
+                          <div onPointerDown="{{ it.dragStart }}" style="aspect-ratio: 1 / 1; cursor: grab; touch-action: none; flex: none; min-height: 0; overflow: hidden;"><img src="assets/piece-placeholder.png" data-img="{{ it.image }}" alt="" style="width: 100%; height: 100%; object-fit: cover; pointer-events: none;"></div>
                           <div style="padding: 9px 11px 11px; display: flex; flex-direction: column; gap: 5px; flex: 1;">
                             <div style="font-size: 12px; font-weight: 600; line-height: 1.25;">{{ it.name }}</div>
                             <div style="font-size: 11px; color: var(--color-neutral-600);">{{ it.retailer }}</div>
@@ -2734,8 +2734,11 @@ const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review
 // reaches this file — the version badge in the top bar and the Studio →
 // Changelog page both read straight from this, nothing else to update.
 // Versioning starts at 1.1; anything before that lives only in git log.
-const APP_VERSION = '3.19';
+const APP_VERSION = '3.20';
 const CHANGELOG = [
+  { version: '3.20', date: '2026-10-18', changes: [
+    'Piece cards (Design & sourcing and Selection): the price now always sits at the bottom of the card, so prices line up across a row, and with more than one it reads unit × quantity = total (e.g. $560 × 10 = $5,600). Every card’s photo is the same square size, whatever the shape of the image.',
+  ] },
   { version: '3.19', date: '2026-10-18', changes: [
     'Design & sourcing and Selection: each room has a Sort menu for its pieces and for its substitutes — name A–Z / Z–A, price low–high / high–low (using the project’s own name and price edits; pieces priced on request go last). Sorting saves the order, so the export and the client link follow it; dragging still fine-tunes it.',
     'Add from catalog: sort the catalog by name or price, and each piece now shows its price.',
@@ -3200,7 +3203,9 @@ class Component extends DCLogic {
       return {
         rowId: bucket + '-' + idx, groupList: room.id + '-' + bucket,
         name: c.name, retailer: [c.retailer, c.finish, c.color].filter(Boolean).join(' · '), image: c.image || PLACEHOLDER,
-        price: (c.priceOnRequest ? api.ON_REQUEST_LABEL : this.money(c.price)) + (c.qty > 1 ? ' · qty ' + c.qty : ''),
+        // Unit × quantity = line total when there's more than one.
+        price: c.priceOnRequest ? api.ON_REQUEST_LABEL + (c.qty > 1 ? ' · qty ' + c.qty : '')
+          : c.qty > 1 ? this.money(c.price) + ' × ' + c.qty + ' = ' + this.money(c.price * c.qty) : this.money(c.price),
         qtyBadge: c.qty > 1 ? '×' + c.qty : '', edited: c.edited,
         edit: () => this.openPieceEdit(room.id, bucket, idx),
         verdict: verdict === 'up' ? 'Approved' : verdict === 'down' ? 'Rejected' : '',
