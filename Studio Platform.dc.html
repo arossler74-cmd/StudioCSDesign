@@ -1836,7 +1836,7 @@
                         <option value="">All types</option>
                         <sc-for list="{{ pickTypeOptions }}" as="o" hint-placeholder-count="6"><option value="{{ o }}">{{ o }}</option></sc-for>
                       </select>
-                      <input class="input" value="{{ pickQ }}" onChange="{{ setPickQ }}" placeholder="Search the catalog" style="max-width: 320px;">
+                      <select class="input" value="{{ pickSort }}" onChange="{{ setPickSort }}" aria-label="Sort the catalog" style="max-width: 190px;"><option value="">Catalog order</option><option value="name-asc">Name A–Z</option><option value="name-desc">Name Z–A</option><option value="price-asc">Price: low to high</option><option value="price-desc">Price: high to low</option></select><input class="input" value="{{ pickQ }}" onChange="{{ setPickQ }}" placeholder="Search the catalog" style="max-width: 320px;">
                       <button type="button" onClick="{{ closePick }}" class="btn btn-ghost">Close</button>
                     </div>
                     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; max-height: 380px; overflow: auto;">
@@ -1846,6 +1846,7 @@
                           <div style="padding: 9px 11px 11px;">
                             <div style="font-size: 12.5px; font-weight: 600; line-height: 1.25;">{{ c.name }}</div>
                             <div style="font-size: 11.5px; color: var(--color-neutral-600);">{{ c.retailer }}</div>
+                            <div style="font-size: 12px; font-weight: 600; color: var(--color-accent-800); margin-top: 3px;">{{ c.price }}</div>
                           </div>
                         </div>
                       </sc-for>
@@ -1865,6 +1866,8 @@
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
                       <div style="font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-accent-700);">In the room</div>
                       <button type="button" onClick="{{ room.addSelected }}" class="btn btn-ghost" style="font-size: 13px; padding: 3px 10px;">+ Add from catalog</button>
+                      <div style="flex: 1;"></div>
+                      <select class="input" value="" onChange="{{ room.sortSelected }}" aria-label="Sort the pieces in this room" style="max-width: 190px; font-size: 12.5px; padding: 5px 10px;"><option value="">Sort…</option><option value="name-asc">Name A–Z</option><option value="name-desc">Name Z–A</option><option value="price-asc">Price: low to high</option><option value="price-desc">Price: high to low</option></select>
                     </div>
                     <div data-group-list="{{ room.id }}-selected" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; margin-bottom: 24px;">
                       <sc-for list="{{ room.selected }}" as="it" hint-placeholder-count="4">
@@ -1899,6 +1902,8 @@
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
                       <div style="font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-600);">Substitutes</div>
                       <button type="button" onClick="{{ room.addAlt }}" class="btn btn-ghost" style="font-size: 13px; padding: 3px 10px;">+ Add from catalog</button>
+                      <div style="flex: 1;"></div>
+                      <select class="input" value="" onChange="{{ room.sortAlternatives }}" aria-label="Sort the substitutes" style="max-width: 190px; font-size: 12.5px; padding: 5px 10px;"><option value="">Sort…</option><option value="name-asc">Name A–Z</option><option value="name-desc">Name Z–A</option><option value="price-asc">Price: low to high</option><option value="price-desc">Price: high to low</option></select>
                     </div>
                     <div data-group-list="{{ room.id }}-alternatives" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px;">
                       <sc-for list="{{ room.alternatives }}" as="it" hint-placeholder-count="5">
@@ -2017,7 +2022,7 @@
                       <option value="">All types</option>
                       <sc-for list="{{ pickTypeOptions }}" as="o" hint-placeholder-count="6"><option value="{{ o }}">{{ o }}</option></sc-for>
                     </select>
-                    <input class="input" value="{{ pickQ }}" onChange="{{ setPickQ }}" placeholder="Search the catalog" style="max-width: 320px;">
+                    <select class="input" value="{{ pickSort }}" onChange="{{ setPickSort }}" aria-label="Sort the catalog" style="max-width: 190px;"><option value="">Catalog order</option><option value="name-asc">Name A–Z</option><option value="name-desc">Name Z–A</option><option value="price-asc">Price: low to high</option><option value="price-desc">Price: high to low</option></select><input class="input" value="{{ pickQ }}" onChange="{{ setPickQ }}" placeholder="Search the catalog" style="max-width: 320px;">
                     <button type="button" onClick="{{ closePick }}" class="btn btn-ghost">Close</button>
                   </div>
                   <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; max-height: 380px; overflow: auto;">
@@ -2027,6 +2032,7 @@
                         <div style="padding: 9px 11px 11px;">
                           <div style="font-size: 12.5px; font-weight: 600; line-height: 1.25;">{{ c.name }}</div>
                           <div style="font-size: 11.5px; color: var(--color-neutral-600);">{{ c.retailer }}</div>
+                          <div style="font-size: 12px; font-weight: 600; color: var(--color-accent-800); margin-top: 3px;">{{ c.price }}</div>
                         </div>
                       </div>
                     </sc-for>
@@ -2047,6 +2053,8 @@
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
                       <div style="font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-accent-700);">In the layout</div>
                       <button type="button" onClick="{{ room.addSelected }}" class="btn btn-ghost" style="font-size: 13px; padding: 3px 10px;">+ Add from catalog</button>
+                      <div style="flex: 1;"></div>
+                      <select class="input" value="" onChange="{{ room.sortSelected }}" aria-label="Sort the pieces in this room" style="max-width: 190px; font-size: 12.5px; padding: 5px 10px;"><option value="">Sort…</option><option value="name-asc">Name A–Z</option><option value="name-desc">Name Z–A</option><option value="price-asc">Price: low to high</option><option value="price-desc">Price: high to low</option></select>
                     </div>
                     <div data-group-list="{{ room.id }}-selected" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; margin-bottom: 24px;">
                       <sc-for list="{{ room.selected }}" as="it" hint-placeholder-count="4">
@@ -2081,6 +2089,8 @@
                     <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
                       <div style="font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-600);">Alternatives</div>
                       <button type="button" onClick="{{ room.addAlt }}" class="btn btn-ghost" style="font-size: 13px; padding: 3px 10px;">+ Add from catalog</button>
+                      <div style="flex: 1;"></div>
+                      <select class="input" value="" onChange="{{ room.sortAlternatives }}" aria-label="Sort the substitutes" style="max-width: 190px; font-size: 12.5px; padding: 5px 10px;"><option value="">Sort…</option><option value="name-asc">Name A–Z</option><option value="name-desc">Name Z–A</option><option value="price-asc">Price: low to high</option><option value="price-desc">Price: high to low</option></select>
                     </div>
                     <div data-group-list="{{ room.id }}-alternatives" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px;">
                       <sc-for list="{{ room.alternatives }}" as="it" hint-placeholder-count="5">
@@ -2724,8 +2734,12 @@ const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review
 // reaches this file — the version badge in the top bar and the Studio →
 // Changelog page both read straight from this, nothing else to update.
 // Versioning starts at 1.1; anything before that lives only in git log.
-const APP_VERSION = '3.18';
+const APP_VERSION = '3.19';
 const CHANGELOG = [
+  { version: '3.19', date: '2026-10-18', changes: [
+    'Design & sourcing and Selection: each room has a Sort menu for its pieces and for its substitutes — name A–Z / Z–A, price low–high / high–low (using the project’s own name and price edits; pieces priced on request go last). Sorting saves the order, so the export and the client link follow it; dragging still fine-tunes it.',
+    'Add from catalog: sort the catalog by name or price, and each piece now shows its price.',
+  ] },
   { version: '3.18', date: '2026-10-18', changes: [
     'Furniture in a project can now be edited for that project only: Edit on any piece (Design & sourcing and Selection) opens quantity, unit price, name, finish, colour, retailer, dimensions and notes. Quantity × unit price updates the line and room totals automatically. The catalog piece itself never changes — blank fields keep the catalog value, and Reset to catalog clears the edits. Edited pieces are marked “Edited for this project”.',
     'Price on request: a catalog piece can be marked “Price on request” (or have no price at all), and a project can switch it on or off for one piece. Such pieces show “Price on request”, are listed but not added into any total.',
@@ -3206,7 +3220,32 @@ class Component extends DCLogic {
       addAlt: () => this.setState({ pick: { roomId: room.id, bucket: 'alternatives' }, pickQ: '', pickType: '' }),
       selected: this.furnitureBucket(room, 'selected', rooms),
       alternatives: this.furnitureBucket(room, 'alternatives', rooms),
+      // Sorting rewrites the room's own order (saved, so the export and the
+      // client link follow it); dragging still fine-tunes it afterwards.
+      sortSelected: (e) => this.sortBucket(room, 'selected', e.target.value, rooms),
+      sortAlternatives: (e) => this.sortBucket(room, 'alternatives', e.target.value, rooms),
     };
+  }
+  // Name A–Z / Z–A, or unit price low–high / high–low, using the piece as
+  // this project has it (its own name/price edits). Pieces priced on request
+  // always go last, whichever way prices run.
+  sortPieces(list, how, toPiece) {
+    const [key, dir] = String(how || '').split('-');
+    if (!key) return list;
+    const sign = dir === 'desc' ? -1 : 1;
+    return list.map((x) => ({ x, p: toPiece(x) })).sort((a, b) => {
+      if (key === 'price') {
+        if (a.p.priceOnRequest !== b.p.priceOnRequest) return a.p.priceOnRequest ? 1 : -1;
+        if (!a.p.priceOnRequest && a.p.price !== b.p.price) return (a.p.price - b.p.price) * sign;
+      }
+      return String(a.p.name || '').localeCompare(String(b.p.name || ''), undefined, { sensitivity: 'base' }) * (key === 'name' ? sign : 1);
+    }).map((o) => o.x);
+  }
+  async sortBucket(room, bucket, how, rooms) {
+    if (!how) return;
+    const api = this.state.api;
+    const sorted = this.sortPieces(room[bucket] || [], how, (entry) => api.resolvePiece(this.cat(entry.refId), entry));
+    await this.setRooms(rooms.map((r) => (r.id === room.id ? { ...r, [bucket]: sorted } : r)));
   }
 
   // The investment table — same line-item math report.js's sourcingSection
@@ -3309,11 +3348,15 @@ class Component extends DCLogic {
       out.setPickType = (e) => this.setState({ pickType: e.target.value });
       out.pickTypeOptions = (api && api.ITEM_TYPES) || [];
       out.closePick = () => this.setState({ pick: null, pickQ: '', pickType: '' });
-      out.pickList = (s.catalog || [])
+      out.pickSort = s.pickSort || '';
+      out.setPickSort = (e) => this.setState({ pickSort: e.target.value });
+      const found = (s.catalog || [])
         .filter((c) => !type || c.type === type)
-        .filter((c) => !q || [c.name, c.retailer, c.type, roomsOf(c).join(' ')].join(' ').toLowerCase().includes(q))
+        .filter((c) => !q || [c.name, c.retailer, c.type, roomsOf(c).join(' ')].join(' ').toLowerCase().includes(q));
+      out.pickList = this.sortPieces(found, s.pickSort, (c) => api.resolvePiece(c, { refId: c.id }))
         .map((c) => ({
           name: c.name, retailer: c.retailer || '', image: c.image || PLACEHOLDER,
+          price: c.priceOnRequest || c.price == null || c.price === '' ? 'Price on request' : this.money(c.price),
           add: async () => {
             const next = rooms.map((r) => r.id === s.pick.roomId ? { ...r, [s.pick.bucket]: [...(r[s.pick.bucket] || []), { refId: c.id, qty: 1 }] } : r);
             await this.setRooms(next);
