@@ -8,6 +8,7 @@
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <script src="./support.js"></script>
+<script src="./section-nav.js" defer></script>
 </head>
 <body>
 <x-dc>
@@ -1225,7 +1226,7 @@
               </sc-if>
               <div style="font-size: 12.5px; color: var(--color-neutral-600); margin-bottom: 18px;">Not ready to send a section — materials, the palette, anything below? Use "Hide from export" at the top of it. The content stays put; Export HTML / Export PDF just leaves it out until you unhide and save again.</div>
 
-              <div class="card" style="padding: 24px 26px; margin-bottom: 22px;">
+              <div data-nav="Introduction" class="card" style="padding: 24px 26px; margin-bottom: 22px;">
                 <div style="font-family: var(--font-heading); font-size: 22px; color: var(--color-accent-900); margin-bottom: 4px;">Presentation introduction</div>
                 <div style="font-size: 13.5px; color: var(--color-neutral-600); margin-bottom: 18px;">The complete opening page from the original proposal.</div>
                 <div class="cs-details-grid" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px;">
@@ -1246,7 +1247,7 @@
                 </div>
               </div>
 
-              <div class="card" style="padding: 24px 26px; margin-bottom: 22px; opacity: {{ secStudio.opacity }};">
+              <div data-nav="Studio introduction" data-nav-state="{{ secStudio.nav }}" class="card" style="padding: 24px 26px; margin-bottom: 22px; opacity: {{ secStudio.opacity }};">
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 4px;">
                   <div style="font-family: var(--font-heading); font-size: 22px; color: var(--color-accent-900);">Studio introduction</div>
                   <div style="flex: 1;"></div>
@@ -1286,7 +1287,7 @@
                 </div>
               </div>
 
-              <div class="card" style="padding: 18px 26px; margin-bottom: 22px; display: flex; align-items: center; gap: 12px; opacity: {{ secProcess.opacity }};">
+              <div data-nav="How we work" data-nav-state="{{ secProcess.nav }}" class="card" style="padding: 18px 26px; margin-bottom: 22px; display: flex; align-items: center; gap: 12px; opacity: {{ secProcess.opacity }};">
                 <div>
                   <div style="font-family: var(--font-heading); font-size: 20px; color: var(--color-accent-900);">How we work</div>
                   <div style="font-size: 12.5px; color: var(--color-neutral-600); margin-top: 2px;">The four-step process explainer — the same on every project, not edited here.</div>
@@ -1306,7 +1307,7 @@
                 </sc-if>
               </div>
 
-              <div class="card" style="padding: 24px 26px; margin-bottom: 22px; opacity: {{ secDirection.opacity }};">
+              <div data-nav="Direction" data-nav-state="{{ secDirection.nav }}" class="card" style="padding: 24px 26px; margin-bottom: 22px; opacity: {{ secDirection.opacity }};">
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 4px;">
                   <div style="font-family: var(--font-heading); font-size: 20px; color: var(--color-accent-900);">Direction</div>
                   <div style="flex: 1;"></div>
@@ -1327,7 +1328,7 @@
                 <textarea class="input" rows="4" value="{{ conceptNote }}" onChange="{{ setConceptNote }}" placeholder="A home that lives the way you do…" style="resize: vertical; font-family: var(--font-body);"></textarea>
               </div>
 
-              <div class="card" style="padding: 24px 26px; margin-bottom: 22px; opacity: {{ secGoals.opacity }};">
+              <div data-nav="Goals" data-nav-state="{{ secGoals.nav }}" class="card" style="padding: 24px 26px; margin-bottom: 22px; opacity: {{ secGoals.opacity }};">
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
                   <div style="font-family: var(--font-heading); font-size: 20px; color: var(--color-accent-900);">Goals</div>
                   <div style="flex: 1;"></div>
@@ -1358,7 +1359,7 @@
                 </div>
               </div>
 
-              <div class="card" style="padding: 24px 26px; margin-bottom: 22px; opacity: {{ secDirection.opacity }};">
+              <div data-nav="Concept direction" data-nav-state="{{ secDirection.nav }}" class="card" style="padding: 24px 26px; margin-bottom: 22px; opacity: {{ secDirection.opacity }};">
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
                   <div style="font-family: var(--font-heading); font-size: 20px; color: var(--color-accent-900);">Concept direction</div>
                   <div style="flex: 1;"></div>
@@ -1389,7 +1390,7 @@
                 </div>
               </div>
 
-              <div class="card" style="padding: 24px 26px; margin-bottom: 22px; opacity: {{ secPalette.opacity }};">
+              <div data-nav="Palette" data-nav-state="{{ secPalette.nav }}" class="card" style="padding: 24px 26px; margin-bottom: 22px; opacity: {{ secPalette.opacity }};">
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
                   <div style="font-family: var(--font-heading); font-size: 20px; color: var(--color-accent-900);">Palette</div>
                   <div style="flex: 1;"></div>
@@ -1423,7 +1424,7 @@
                 </div>
               </div>
 
-              <div class="card" style="padding: 24px 26px; margin-bottom: 22px; opacity: {{ secMaterials.opacity }};">
+              <div data-nav="Materials" data-nav-state="{{ secMaterials.nav }}" class="card" style="padding: 24px 26px; margin-bottom: 22px; opacity: {{ secMaterials.opacity }};">
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
                   <div style="font-family: var(--font-heading); font-size: 20px; color: var(--color-accent-900);">Materials</div>
                   <div style="flex: 1;"></div>
@@ -1456,7 +1457,7 @@
                 </div>
               </div>
 
-              <div class="card" style="padding: 24px 26px; margin-bottom: 22px; opacity: {{ secPlan.opacity }};">
+              <div data-nav="Floor plans" data-nav-state="{{ secPlan.nav }}" class="card" style="padding: 24px 26px; margin-bottom: 22px; opacity: {{ secPlan.opacity }};">
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 4px;"><div style="font-family: var(--font-heading); font-size: 22px; color: var(--color-accent-900);">Floor plans</div><div style="flex: 1;"></div>
                   <sc-if value="{{ !secPlan.hidden }}">
                     <button type="button" onClick="{{ secPlan.toggle }}" class="btn btn-ghost" style="font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px; color: var(--color-neutral-600); flex: none;">
@@ -1484,7 +1485,7 @@
                 </div>
               </div>
 
-              <div style="display: flex; flex-direction: column; gap: 20px; margin-bottom: 22px; opacity: {{ secMood.opacity }};">
+              <div data-nav="Spaces" data-nav-state="{{ secMood.nav }}" style="display: flex; flex-direction: column; gap: 20px; margin-bottom: 22px; opacity: {{ secMood.opacity }};">
                 <div style="display: flex; align-items: center; gap: 12px;"><div style="font-family: var(--font-heading); font-size: 24px; color: var(--color-accent-900);">Spaces</div><div style="flex: 1;"></div>
                   <sc-if value="{{ !secMood.hidden }}">
                     <button type="button" onClick="{{ secMood.toggle }}" class="btn btn-ghost" style="font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px; color: var(--color-neutral-600); flex: none;">
@@ -1500,7 +1501,7 @@
                   </sc-if>
                   <button type="button" onClick="{{ addConceptRoom }}" class="btn btn-secondary">+ Add space</button></div>
                 <sc-for list="{{ conceptRooms }}" as="room" hint-placeholder-count="2">
-                  <div class="card" style="padding: 24px 26px;">
+                  <div data-nav="{{ room.name }}" data-nav-sub class="card" style="padding: 24px 26px;">
                     <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 12px;"><input class="input" value="{{ room.name }}" onChange="{{ room.setName }}" placeholder="Space name" style="font-family: var(--font-heading); font-size: 20px;"><button type="button" onClick="{{ room.remove }}" class="btn btn-ghost">Delete space</button></div>
                     <label style="font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--color-neutral-600);">Goal for this space</label>
                     <textarea class="input" rows="2" value="{{ room.goal }}" onChange="{{ room.setGoal }}" placeholder="What we want to achieve in this space" style="resize: vertical; font-family: var(--font-body); margin: 7px 0 10px;"></textarea>
@@ -1546,7 +1547,7 @@
               </sc-if>
               <div style="font-size: 12.5px; color: var(--color-neutral-600); margin-bottom: 18px;">"Copy from Concept" is a one-time copy, not a live link — editing here never changes Concept's own report. Hide any section from Export HTML / Export PDF the same way as Concept.</div>
 
-              <div class="card" style="padding: 24px 26px; margin-bottom: 22px;">
+              <div data-nav="Introduction" class="card" style="padding: 24px 26px; margin-bottom: 22px;">
                 <div style="font-family: var(--font-heading); font-size: 22px; color: var(--color-accent-900); margin-bottom: 4px;">Presentation introduction</div>
                 <div style="font-size: 13.5px; color: var(--color-neutral-600); margin-bottom: 18px;">The same opening page Concept uses — one project, one hero image, one headline. Editing it here changes it everywhere.</div>
                 <div class="cs-details-grid" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px;">
@@ -1567,7 +1568,7 @@
                 </div>
               </div>
 
-              <div class="card" style="padding: 24px 26px; margin-bottom: 22px; opacity: {{ secDesignStudio.opacity }};">
+              <div data-nav="Studio introduction" data-nav-state="{{ secDesignStudio.nav }}" class="card" style="padding: 24px 26px; margin-bottom: 22px; opacity: {{ secDesignStudio.opacity }};">
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 4px;">
                   <div style="font-family: var(--font-heading); font-size: 22px; color: var(--color-accent-900);">Studio introduction</div>
                   <div style="flex: 1;"></div>
@@ -1607,7 +1608,7 @@
                 </div>
               </div>
 
-              <div class="card" style="padding: 24px 26px; margin-bottom: 22px; opacity: {{ secDesignDirection.opacity }};">
+              <div data-nav="Design concept" data-nav-state="{{ secDesignDirection.nav }}" class="card" style="padding: 24px 26px; margin-bottom: 22px; opacity: {{ secDesignDirection.opacity }};">
                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px; flex-wrap: wrap;">
                   <div style="font-family: var(--font-heading); font-size: 20px; color: var(--color-accent-900);">Design concept</div>
                   <div style="flex: 1;"></div>
@@ -1632,7 +1633,7 @@
                 <textarea class="input" rows="4" value="{{ designNote }}" onChange="{{ setDesignNote }}" placeholder="Copy from Concept, then refine…" style="resize: vertical; font-family: var(--font-body);"></textarea>
               </div>
 
-              <div class="card" style="padding: 24px 26px; margin-bottom: 22px; opacity: {{ secDesignDirection.opacity }};">
+              <div data-nav="Design direction" data-nav-state="{{ secDesignDirection.nav }}" class="card" style="padding: 24px 26px; margin-bottom: 22px; opacity: {{ secDesignDirection.opacity }};">
                 <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
                   <div style="font-family: var(--font-heading); font-size: 20px; color: var(--color-accent-900);">Design direction</div>
                   <div style="flex: 1;"></div>
@@ -1663,7 +1664,7 @@
                 </div>
               </div>
 
-              <div class="card" style="padding: 24px 26px; margin-bottom: 22px; opacity: {{ secDesignMaterials.opacity }};">
+              <div data-nav="Materials" data-nav-state="{{ secDesignMaterials.nav }}" class="card" style="padding: 24px 26px; margin-bottom: 22px; opacity: {{ secDesignMaterials.opacity }};">
                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;">
                   <div style="font-family: var(--font-heading); font-size: 20px; color: var(--color-accent-900);">Materials</div>
                   <div style="flex: 1;"></div>
@@ -1700,7 +1701,7 @@
                 </div>
               </div>
 
-              <div class="card" style="padding: 24px 26px; margin-bottom: 22px; opacity: {{ secDesignPlan.opacity }};">
+              <div data-nav="Floor plans" data-nav-state="{{ secDesignPlan.nav }}" class="card" style="padding: 24px 26px; margin-bottom: 22px; opacity: {{ secDesignPlan.opacity }};">
                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px; flex-wrap: wrap;">
                   <div style="font-family: var(--font-heading); font-size: 22px; color: var(--color-accent-900);">Floor plans</div>
                   <div style="flex: 1;"></div>
@@ -1735,7 +1736,7 @@
                 </div>
               </div>
 
-              <div style="display: flex; flex-direction: column; gap: 20px; margin-bottom: 22px; opacity: {{ secDesignMood.opacity }};">
+              <div data-nav="Spaces" data-nav-state="{{ secDesignMood.nav }}" style="display: flex; flex-direction: column; gap: 20px; margin-bottom: 22px; opacity: {{ secDesignMood.opacity }};">
                 <div style="display: flex; align-items: center; gap: 12px;">
                   <div style="font-family: var(--font-heading); font-size: 24px; color: var(--color-accent-900);">Spaces</div>
                   <div style="color: var(--color-neutral-600); font-size: 13px;">Renderings and walkthrough video, per room</div>
@@ -1754,7 +1755,7 @@
                   </sc-if>
                 </div>
                 <sc-for list="{{ designRooms }}" as="room" hint-placeholder-count="2">
-                  <div class="card" style="padding: 24px 26px;">
+                  <div data-nav="{{ room.name }}" data-nav-sub class="card" style="padding: 24px 26px;">
                     <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 12px; flex-wrap: wrap;">
                       <div style="font-family: var(--font-heading); font-size: 20px; color: var(--color-accent-900);">{{ room.name }}</div>
                       <div style="flex: 1;"></div>
@@ -1808,7 +1809,7 @@
                 </sc-for>
               </div>
 
-              <div style="display: flex; flex-direction: column; gap: 20px; margin-bottom: 22px; opacity: {{ secSourcing.opacity }};">
+              <div data-nav="Furniture & investment" data-nav-state="{{ secSourcing.nav }}" style="display: flex; flex-direction: column; gap: 20px; margin-bottom: 22px; opacity: {{ secSourcing.opacity }};">
                 <div style="display: flex; align-items: center; gap: 12px;">
                   <div style="font-family: var(--font-heading); font-size: 24px; color: var(--color-accent-900);">Furniture &amp; investment</div>
                   <div style="color: var(--color-neutral-600); font-size: 13px;">Pieces come from the shared catalog — this builds the investment table in the export</div>
@@ -1855,7 +1856,7 @@
                 </sc-if>
 
                 <sc-for list="{{ designRooms }}" as="room" hint-placeholder-count="2">
-                  <div class="card" style="padding: 24px 26px;">
+                  <div data-nav="{{ room.name }}" data-nav-sub data-nav-amt="{{ room.investmentSubtotal }}" class="card" style="padding: 24px 26px;">
                     <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 18px;">
                       <div style="font-family: var(--font-heading); font-size: 22px; color: var(--color-accent-900);">{{ room.name }}</div>
                       <div style="flex: 1;"></div>
@@ -1964,7 +1965,7 @@
                 </sc-for>
 
                 <sc-if value="{{ hasInvestment }}" hint-placeholder-val="{{ false }}">
-                  <div class="card" style="padding: 22px 26px;">
+                  <div data-nav="Total investment" data-nav-amt="{{ investmentGrandTotal }}" class="card" style="padding: 22px 26px;">
                     <div style="font-family: var(--font-heading); font-size: 22px; color: var(--color-accent-900); margin-bottom: 12px;">Total investment</div>
                     <table style="width: 100%; border-collapse: collapse; font-size: 13.5px;">
                       <thead><tr>
@@ -2734,8 +2735,11 @@ const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review
 // reaches this file — the version badge in the top bar and the Studio →
 // Changelog page both read straight from this, nothing else to update.
 // Versioning starts at 1.1; anything before that lives only in git log.
-const APP_VERSION = '3.20';
+const APP_VERSION = '3.21';
 const CHANGELOG = [
+  { version: '3.21', date: '2026-10-18', changes: [
+    'Concept and Design & sourcing: a round button at the bottom right shows which section you are in and how far down the page you are. Tap it for the list of every section and space (with each room’s subtotal and the total investment) and jump straight there. Sections hidden from the export show an eye-off icon.',
+  ] },
   { version: '3.20', date: '2026-10-18', changes: [
     'Piece cards (Design & sourcing and Selection): the price now always sits at the bottom of the card, so prices line up across a row, and with more than one it reads unit × quantity = total (e.g. $560 × 10 = $5,600). Every card’s photo is the same square size, whatever the shape of the image.',
   ] },
@@ -4649,7 +4653,7 @@ class Component extends DCLogic {
       const toggleHidden = (key) => () => setDraft({ hidden: { ...draft.hidden, [key]: !draft.hidden[key] } });
       const sectionToggle = (key) => {
         const on = !!draft.hidden[key];
-        return { hidden: on, opacity: on ? '0.55' : '1', toggle: toggleHidden(key) };
+        return { hidden: on, opacity: on ? '0.55' : '1', nav: on ? 'hidden' : 'shown', toggle: toggleHidden(key) };
       };
       v.secStudio = sectionToggle('studio');
       v.secProcess = sectionToggle('process');
@@ -4873,7 +4877,7 @@ class Component extends DCLogic {
       const toggleHidden = (key) => () => setDraft({ hidden: { ...draft.hidden, [key]: !draft.hidden[key] } });
       const sectionToggle = (key) => {
         const on = !!draft.hidden[key];
-        return { hidden: on, opacity: on ? '0.55' : '1', toggle: toggleHidden(key) };
+        return { hidden: on, opacity: on ? '0.55' : '1', nav: on ? 'hidden' : 'shown', toggle: toggleHidden(key) };
       };
       v.secDesignDirection = sectionToggle('designDirection');
       v.secDesignMaterials = sectionToggle('designMaterials');
