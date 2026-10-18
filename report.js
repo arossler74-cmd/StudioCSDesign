@@ -1,4 +1,4 @@
-import { resolvePiece, priceExclusions, ON_REQUEST_LABEL } from './pieces.js';
+import { resolvePiece, priceExclusions, priceTag, ESTIMATE_MARK, ESTIMATE_NOTE } from './pieces.js';
 // Client report generator.
 //
 // Turns a project plus one phase into a standalone HTML file the client can be
@@ -500,13 +500,13 @@ function sourcingSection(p, byId, img) {
   const pieceAttr = (c) => esc(JSON.stringify({
     name: c.name || '', image: img[c.image] || c.image || '', retailer: c.retailer || '',
     finish: [c.finish, c.color].filter(Boolean).join(' · '), dimensions: c.dimensions || '',
-    price: c.priceOnRequest ? ON_REQUEST_LABEL : money(c.price, p.currency), url: c.url || '',
+    price: priceTag(c, (v) => money(v, p.currency)), url: c.url || '',
   }));
-  let anyOnRequest = false;
+  let anyOnRequest = false, anyEstimate = false;
   let grand = 0;
   const summary = [];
   const blocks = rooms.map((r) => {
-    let sub = 0;
+    let sub = 0, est = false;
     let cards = '';
     let rows = '';
     for (const sel of r.selected || []) {
@@ -517,7 +517,9 @@ function sourcingSection(p, byId, img) {
       const line = c.priceOnRequest ? null : c.price * qty;
       if (line != null && !isNaN(line)) sub += line;
       if (c.priceOnRequest) anyOnRequest = true;
-      const each = c.priceOnRequest ? ON_REQUEST_LABEL : money(c.price, p.currency);
+      if (c.priceEstimated) est = anyEstimate = true;
+      const mark = c.priceEstimated ? ESTIMATE_MARK : '';
+      const each = priceTag(c, (v) => money(v, p.currency));
       cards += `<div class="card sourcing-card" data-piece="${pieceAttr(c)}">
         <div class="sourcing-card-img">${img[c.image] || c.image ? `<img src="${esc(img[c.image] || c.image)}" alt="${esc(c.name || '')}">` : ''}</div>
         <div class="sourcing-card-copy">
@@ -533,11 +535,11 @@ function sourcingSection(p, byId, img) {
           ${c.dimensions ? `<div style="color:var(--faint);font-size:12px">${esc(c.dimensions)}</div>` : ''}</td>
         <td class="num">${qty}</td>
         <td class="num">${esc(each)}</td>
-        <td class="num">${esc(line == null ? '—' : money(line, p.currency))}</td>
+        <td class="num">${esc(line == null ? '—' : money(line, p.currency) + mark)}</td>
       </tr>`;
     }
     grand += sub;
-    if ((r.selected || []).length) summary.push({ name: r.name, count: (r.selected || []).reduce((t, x) => t + Number(x.qty || 1), 0), sub });
+    if ((r.selected || []).length) summary.push({ name: r.name, count: (r.selected || []).reduce((t, x) => t + Number(x.qty || 1), 0), sub, est });
     return `<div class="room">
       <h3>${esc(r.name)}</h3>
       <div class="sourcing-grid">${cards}</div>
@@ -545,8 +547,9 @@ function sourcingSection(p, byId, img) {
         <th class="num">Qty</th><th class="num">Each</th><th class="num">Total</th></tr></thead>
         <tbody>${rows}</tbody>
         <tfoot><tr><td colspan="4" class="num">${esc(r.name)} subtotal</td>
-          <td class="num">${esc(money(sub, p.currency))}</td></tr></tfoot>
-      </table></div>`;
+          <td class="num">${esc(money(sub, p.currency) + (est ? ESTIMATE_MARK : ''))}</td></tr></tfoot>
+      </table>
+      ${est ? `<p style="margin:8px 0 0;font-size:12.5px;color:var(--mute)">${esc(ESTIMATE_NOTE)}</p>` : ''}</div>`;
   }).join('');
   return `
 <section><div class="wrap">
@@ -555,12 +558,12 @@ function sourcingSection(p, byId, img) {
   <div class="card" style="margin-top:30px">
     <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:26px;color:var(--accent-dark);margin-bottom:12px">Total investment</div>
     ${summary.length > 1 ? `<table><thead><tr><th>Space</th><th class="num">Pieces</th><th class="num">Subtotal</th></tr></thead>
-      <tbody>${summary.map((x) => `<tr><td>${esc(x.name)}</td><td class="num">${x.count}</td><td class="num">${esc(money(x.sub, p.currency))}</td></tr>`).join('')}</tbody></table>` : ''}
+      <tbody>${summary.map((x) => `<tr><td>${esc(x.name)}</td><td class="num">${x.count}</td><td class="num">${esc(money(x.sub, p.currency) + (x.est ? ESTIMATE_MARK : ''))}</td></tr>`).join('')}</tbody></table>` : ''}
     <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:${summary.length > 1 ? '14px' : '0'}">
       <div style="font-size:17px">Total</div>
-      <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:34px;color:var(--accent-dark)">${esc(money(grand, p.currency))}</div>
+      <div style="font-family:'Cormorant Garamond',Georgia,serif;font-size:34px;color:var(--accent-dark)">${esc(money(grand, p.currency) + (anyEstimate ? ESTIMATE_MARK : ''))}</div>
     </div>
-    <p style="margin:16px 0 0;font-size:13px;line-height:1.6;color:var(--mute)">${esc(priceExclusions(anyOnRequest))}</p>
+    <p style="margin:16px 0 0;font-size:13px;line-height:1.6;color:var(--mute)">${esc(priceExclusions(anyOnRequest, anyEstimate))}</p>
   </div>
 </div></section>`;
 }

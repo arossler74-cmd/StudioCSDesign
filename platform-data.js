@@ -3,7 +3,7 @@
 // Same API either way, so the app never branches.
 
 import { resolvePiece } from './pieces.js';
-export { resolvePiece, priceExclusions, ON_REQUEST_LABEL, CUSTOM_FIELDS } from './pieces.js';
+export { resolvePiece, priceExclusions, priceTag, ON_REQUEST_LABEL, ESTIMATE_MARK, ESTIMATE_LABEL, ESTIMATE_NOTE, CUSTOM_FIELDS } from './pieces.js';
 
 const ADMIN_BOOTSTRAP = ['arossler74@gmail.com', 'cybellesampaio77@gmail.com'];
 const LS = 'cs-platform-v5';
@@ -795,7 +795,7 @@ async function publishShare(project, share) {
       dimensions: c.dimensions || '', finish: c.finish || '', color: c.color || '', url: c.url || '',
       qty: c.qty,
     };
-    if (showPrice) { item.price = c.price; item.priceOnRequest = c.priceOnRequest; }
+    if (showPrice) { item.price = c.price; item.priceOnRequest = c.priceOnRequest; item.priceEstimated = c.priceEstimated; }
     return item;
   };
   const ph = project.phases || {};

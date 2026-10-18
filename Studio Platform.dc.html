@@ -403,6 +403,7 @@
                     <td style="padding: 10px; text-align: right; font-weight: 600; border-top: 2px solid var(--color-neutral-200);">{{ room.roomTotal }}</td>
                   </tr></tfoot>
                 </table>
+                <sc-if value="{{ room.roomEstimateNote }}" hint-placeholder-val="{{ false }}"><div style="margin-top: 8px; font-size: 12.5px; color: var(--color-neutral-600);">{{ room.roomEstimateNote }}</div></sc-if>
               </div>
             </sc-if>
           </div>
@@ -773,7 +774,7 @@
                   </div>
                 </div>
                 <div class="field"><label>Retail price (USD)</label><input class="input" value="{{ e_price }}" onChange="{{ set_price }}" placeholder="0.00" style="{{ e_priceStyle }}">
-                  <label style="display: flex; align-items: center; gap: 7px; margin-top: 7px; font-size: 12.5px; color: var(--color-neutral-700); cursor: pointer; text-transform: none; letter-spacing: 0;"><input type="checkbox" checked="{{ e_onRequest }}" onChange="{{ toggle_onRequest }}">Price on request</label></div>
+                  <label style="display: flex; align-items: center; gap: 7px; margin-top: 7px; font-size: 12.5px; color: var(--color-neutral-700); cursor: pointer; text-transform: none; letter-spacing: 0;"><input type="checkbox" checked="{{ e_onRequest }}" onChange="{{ toggle_onRequest }}">Estimated price — final price on request</label></div>
                 <div class="field" style="grid-column: span 3;"><label>Product URL</label>
                   <div style="display: flex; gap: 10px;">
                     <input class="input" value="{{ e_url }}" onChange="{{ set_url }}" placeholder="https://" style="flex: 1;">
@@ -1959,6 +1960,7 @@
                             <td style="padding: 10px; text-align: right; font-weight: 600; border-top: 2px solid var(--color-neutral-200);">{{ room.investmentSubtotal }}</td>
                           </tr></tfoot>
                         </table>
+                        <sc-if value="{{ room.investmentEstimate }}" hint-placeholder-val="{{ false }}"><div style="margin-top: 8px; font-size: 12.5px; color: var(--color-neutral-600);">{{ room.investmentEstimateNote }}</div></sc-if>
                       </div>
                     </sc-if>
                   </div>
@@ -2683,8 +2685,8 @@
                 </div>
               </div>
               <div class="field"><label>Unit price (USD)</label><input class="input" value="{{ pe_price }}" onChange="{{ setpe_price }}" placeholder="{{ pe_pricePh }}"></div>
-              <div class="field"><label>Price on request</label>
-                <select class="input" value="{{ pe_onRequest }}" onChange="{{ setpe_onRequest }}"><option value="">{{ pe_onRequestDefault }}</option><option value="yes">Yes — price on request</option><option value="no">No — use the price</option></select>
+              <div class="field"><label>Estimated price?</label>
+                <select class="input" value="{{ pe_onRequest }}" onChange="{{ setpe_onRequest }}"><option value="">{{ pe_onRequestDefault }}</option><option value="yes">Yes — estimate (*)</option><option value="no">No — firm price</option></select>
               </div>
               <div class="field"><label>Line total</label><div style="padding: 9px 2px; font-weight: 600; color: var(--color-accent-900);">{{ pe_line }} <span style="font-weight: 400; color: var(--color-neutral-600); font-size: 12.5px;">{{ pe_unit }}</span></div></div>
               <div class="field" style="grid-column: span 2;"><label>Name</label><input class="input" value="{{ pe_name }}" onChange="{{ setpe_name }}" placeholder="{{ pe_namePh }}"></div>
@@ -2735,8 +2737,11 @@ const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review
 // reaches this file — the version badge in the top bar and the Studio →
 // Changelog page both read straight from this, nothing else to update.
 // Versioning starts at 1.1; anything before that lives only in git log.
-const APP_VERSION = '3.21';
+const APP_VERSION = '3.22';
 const CHANGELOG = [
+  { version: '3.22', date: '2026-10-18', changes: [
+    'Estimated prices: “Price on request” (catalog and per-project edit) is now “Estimated price — final price on request”. Enter your best estimate: it counts in the room subtotals and the total investment, and shows with an asterisk (e.g. $1,200*) on cards, schedules, the export and the client link. Each schedule with an estimate and the total investment carry the note “* Estimated price — final price on request.” A piece with no price at all still shows “Price on request” and is left out of the totals.',
+  ] },
   { version: '3.21', date: '2026-10-18', changes: [
     'Concept and Design & sourcing: a round button at the bottom right shows which section you are in and how far down the page you are. Tap it for the list of every section and space (with each room’s subtotal and the total investment) and jump straight there. Sections hidden from the export show an eye-off icon.',
   ] },
@@ -3209,7 +3214,7 @@ class Component extends DCLogic {
         name: c.name, retailer: [c.retailer, c.finish, c.color].filter(Boolean).join(' · '), image: c.image || PLACEHOLDER,
         // Unit × quantity = line total when there's more than one.
         price: c.priceOnRequest ? api.ON_REQUEST_LABEL + (c.qty > 1 ? ' · qty ' + c.qty : '')
-          : c.qty > 1 ? this.money(c.price) + ' × ' + c.qty + ' = ' + this.money(c.price * c.qty) : this.money(c.price),
+          : (c.qty > 1 ? this.money(c.price) + ' × ' + c.qty + ' = ' + this.money(c.price * c.qty) : this.money(c.price)) + (c.priceEstimated ? api.ESTIMATE_MARK : ''),
         qtyBadge: c.qty > 1 ? '×' + c.qty : '', edited: c.edited,
         edit: () => this.openPieceEdit(room.id, bucket, idx),
         verdict: verdict === 'up' ? 'Approved' : verdict === 'down' ? 'Rejected' : '',
@@ -3264,21 +3269,24 @@ class Component extends DCLogic {
   // pieces actually in the room count toward the total, same as the export.
   investmentRoomVal(room) {
     const api = this.state.api;
-    let subtotalRaw = 0, onRequest = false;
+    let subtotalRaw = 0, onRequest = false, estimate = false;
     const rows = (room.selected || []).map((entry) => {
       const c = api.resolvePiece(this.cat(entry.refId), entry);
       const qty = c.qty;
       const line = c.priceOnRequest ? null : c.price * qty;
+      const mark = c.priceEstimated ? api.ESTIMATE_MARK : '';
       if (line != null && !isNaN(line)) subtotalRaw += line;
       if (c.priceOnRequest) onRequest = true;
+      if (c.priceEstimated) estimate = true;
       return {
         name: c.name || '', image: c.image || PLACEHOLDER, url: c.url || '',
         meta: [c.retailer, c.finish, c.color].filter(Boolean).join(' · '),
         dimensions: c.dimensions || '—',
-        qty, unit: c.priceOnRequest ? api.ON_REQUEST_LABEL : this.money(c.price), line: line == null ? '—' : this.money(line),
+        qty, unit: api.priceTag(c, (x) => this.money(x)), line: line == null ? '—' : this.money(line) + mark,
       };
     });
-    return { investmentRows: rows, investmentSubtotal: this.money(subtotalRaw), investmentSubtotalRaw: subtotalRaw, investmentOnRequest: onRequest };
+    return { investmentRows: rows, investmentSubtotal: this.money(subtotalRaw) + (estimate ? api.ESTIMATE_MARK : ''), investmentSubtotalRaw: subtotalRaw,
+      investmentOnRequest: onRequest, investmentEstimate: estimate, investmentEstimateNote: estimate ? api.ESTIMATE_NOTE : '' };
   }
 
   // Edit a piece for this project only: quantity, plus any name / finish /
@@ -3333,9 +3341,9 @@ class Component extends DCLogic {
       pe_price: d.price, setpe_price: set('price'), pe_pricePh: c.price == null || c.price === '' ? 'No catalog price' : this.money(c.price),
       pe_notes: d.notes, setpe_notes: set('notes'), pe_notesPh: ph('notes') || 'Notes for this project',
       pe_onRequest: d.priceOnRequest, setpe_onRequest: set('priceOnRequest'),
-      pe_onRequestDefault: 'Same as catalog (' + (c.priceOnRequest || c.price == null || c.price === '' ? 'on request' : 'priced') + ')',
-      pe_unit: piece.priceOnRequest ? '' : (qty > 1 ? qty + ' × ' + this.money(piece.price) : ''),
-      pe_line: piece.priceOnRequest ? api.ON_REQUEST_LABEL : this.money(piece.price * qty),
+      pe_onRequestDefault: 'Same as catalog (' + (c.price == null || c.price === '' ? 'no price yet' : c.priceOnRequest ? 'estimate' : 'firm price') + ')',
+      pe_unit: piece.priceOnRequest ? '' : [qty > 1 ? qty + ' × ' + api.priceTag(piece, (x) => this.money(x)) : '', piece.priceEstimated ? api.ESTIMATE_NOTE : ''].filter(Boolean).join(' · '),
+      pe_line: piece.priceOnRequest ? api.ON_REQUEST_LABEL : this.money(piece.price * qty) + (piece.priceEstimated ? api.ESTIMATE_MARK : ''),
       pe_isSub: pe.bucket === 'alternatives',
       pieceEditCancel: () => this.setState({ pieceEdit: null }),
       pieceEditStop: (e) => e.stopPropagation(),
@@ -3365,7 +3373,7 @@ class Component extends DCLogic {
       out.pickList = this.sortPieces(found, s.pickSort, (c) => api.resolvePiece(c, { refId: c.id }))
         .map((c) => ({
           name: c.name, retailer: c.retailer || '', image: c.image || PLACEHOLDER,
-          price: c.priceOnRequest || c.price == null || c.price === '' ? 'Price on request' : this.money(c.price),
+          price: api.priceTag(api.resolvePiece(c, { refId: c.id }), (x) => this.money(x)),
           add: async () => {
             const next = rooms.map((r) => r.id === s.pick.roomId ? { ...r, [s.pick.bucket]: [...(r[s.pick.bucket] || []), { refId: c.id, qty: 1 }] } : r);
             await this.setRooms(next);
@@ -4188,7 +4196,7 @@ class Component extends DCLogic {
       roomPills: roomsOf(c), tagPills: (c.tags || []),
       spec: [c.dimensions, c.color].filter(Boolean).join(' · ') || ' ',
       image: c.image || PLACEHOLDER,
-      price: c.priceOnRequest || c.price == null || c.price === '' ? 'Price on request' : this.money(c.price),
+      price: c.price == null || c.price === '' ? 'Price on request' : this.money(c.price) + (c.priceOnRequest ? '*' : ''),
       canDrag, isNew: !!c.isNew,
       dragStart: (e) => { if (canDrag) this.startReorderDrag(e, c.id, groupIds, persist); },
       canEdit: admin,
@@ -5047,8 +5055,9 @@ class Component extends DCLogic {
         };
       });
       v.hasInvestment = v.designRooms.some((r) => r.investmentRows.length > 0);
-      v.investmentGrandTotal = this.money(v.designRooms.reduce((t, r) => t + r.investmentSubtotalRaw, 0));
-      v.investmentNote = api.priceExclusions(v.designRooms.some((r) => r.investmentOnRequest));
+      const anyEstimate = v.designRooms.some((r) => r.investmentEstimate);
+      v.investmentGrandTotal = this.money(v.designRooms.reduce((t, r) => t + r.investmentSubtotalRaw, 0)) + (anyEstimate ? api.ESTIMATE_MARK : '');
+      v.investmentNote = api.priceExclusions(v.designRooms.some((r) => r.investmentOnRequest), anyEstimate);
       v.investmentSummary = v.designRooms.filter((r) => r.investmentRows.length > 0).map((r) => ({
         name: r.name, count: r.investmentRows.reduce((t, x) => t + x.qty, 0), subtotal: r.investmentSubtotal,
       }));
@@ -5730,7 +5739,7 @@ class Component extends DCLogic {
       return {
         name: c.name || 'Piece', image: c.image || PLACEHOLDER,
         meta: [c.retailer, c.dimensions].filter(Boolean).join(' · '),
-        priceLabel: opts.showPrice ? (c.priceOnRequest || c.price == null || c.price === '' ? 'Price on request' : money(c.price)) : '',
+        priceLabel: opts.showPrice ? api.priceTag(c, money) : '',
         actionLabel: opts.actionLabel, toggleAction: opts.toggleAction,
         viewDetails: () => this.setState({ sharePiece: { name: c.name || 'Piece', image: c.image || PLACEHOLDER, retailer: c.retailer || '', finish: [c.finish, c.color].filter(Boolean).join(' · '), dimensions: c.dimensions || '', price: opts.showPrice ? (c.priceOnRequest || c.price == null || c.price === '' ? 'Price on request' : money(c.price)) : '', url: c.url || '' } }),
         comment: cur.comment || '',
@@ -5745,9 +5754,9 @@ class Component extends DCLogic {
         verdictRing: on('up') ? 'var(--color-accent-2)' : on('down') ? 'var(--color-accent)' : 'transparent',
       };
     };
-    let anyOnRequest = false;
+    let anyOnRequest = false, anyEstimate = false;
     const shareRooms = (project.rooms || []).map((room) => {
-      let sub = 0;
+      let sub = 0, est = false;
       const investmentRows = [];
       const selectedGrid = [];
       const substituteGrid = [];
@@ -5755,11 +5764,15 @@ class Component extends DCLogic {
       // but adds nothing to the total, and flags the note under it.
       const addRow = (c) => {
         const qty = Number(c.qty) || 1;
-        const onRequest = !!c.priceOnRequest || c.price == null || c.price === '' || isNaN(Number(c.price));
+        // Older links stored "on request" with no number; an estimate has one.
+        const onRequest = c.price == null || c.price === '' || isNaN(Number(c.price));
+        const estimated = !onRequest && !!c.priceEstimated;
+        const mark = estimated ? api.ESTIMATE_MARK : '';
         const lineNum = onRequest ? 0 : Number(c.price) * qty;
         if (onRequest) anyOnRequest = true; else sub += lineNum;
+        if (estimated) est = anyEstimate = true;
         investmentRows.push({ name: c.name || 'Piece', url: c.url || '', meta: [c.retailer, c.finish, c.color, c.dimensions].filter(Boolean).join(' · '), qty,
-          unit: onRequest ? 'Price on request' : money(c.price), line: onRequest ? '—' : money(lineNum), lineNum });
+          unit: onRequest ? api.ON_REQUEST_LABEL : money(c.price) + mark, line: onRequest ? '—' : money(lineNum) + mark, lineNum });
       };
 
       (isPublic ? (room.items || []) : (room.selected || []).map((e) => api.resolvePiece(find(e.refId), e))).forEach((c) => {
@@ -5790,11 +5803,12 @@ class Component extends DCLogic {
       return {
         name: room.name, items, alternatives, hasAlternatives: alternatives.length > 0,
         investmentRows, hasInvestmentRows: investmentRows.length > 0,
-        roomSubRaw: sub, roomTotal: showInvestment ? money(sub) : '',
+        roomSubRaw: sub, roomTotal: showInvestment ? money(sub) + (est ? api.ESTIMATE_MARK : '') : '',
+        roomEstimateNote: showInvestment && est ? api.ESTIMATE_NOTE : '',
       };
     });
-    const shareGrandTotal = showInvestment ? money(shareRooms.reduce((t, r) => t + r.roomSubRaw, 0)) : '';
-    const sharePriceNote = showInvestment ? api.priceExclusions(anyOnRequest) : '';
+    const shareGrandTotal = showInvestment ? money(shareRooms.reduce((t, r) => t + r.roomSubRaw, 0)) + (anyEstimate ? api.ESTIMATE_MARK : '') : '';
+    const sharePriceNote = showInvestment ? api.priceExclusions(anyOnRequest, anyEstimate) : '';
 
     return {
       shareClient: share.clientName, shareProject: project.name, sharePhaseLabel: phaseInfo.label, shareIntro: phaseInfo.intro,
