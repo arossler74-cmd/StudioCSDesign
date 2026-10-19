@@ -2294,7 +2294,7 @@
                           <sc-if value="{{ f.isVideo }}" hint-placeholder-val="{{ false }}"><video src="{{ f.url }}" muted preload="metadata" style="width: 100%; height: 100%; object-fit: cover;"></video></sc-if>
                           <sc-if value="{{ f.isOther }}" hint-placeholder-val="{{ false }}"><span>{{ f.ext }}</span></sc-if>
                         </a>
-                        <input class="input" defaultValue="{{ f.name }}" onBlur="{{ f.rename }}" title="Rename" style="font-size: 12.5px; padding: 6px 8px;">
+                        <input class="input" value="{{ f.nameDraft }}" onChange="{{ f.typeName }}" onBlur="{{ f.rename }}" title="Rename" style="font-size: 12.5px; padding: 6px 8px;">
                         <div style="font-size: 11.5px; color: var(--color-neutral-500);">{{ f.meta }}</div>
                         <sc-if value="{{ f.note }}" hint-placeholder-val="{{ false }}"><div style="font-size: 11.5px; color: var(--color-neutral-600);">{{ f.note }}</div></sc-if>
                         <div style="display: flex; gap: 6px; align-items: center;">
@@ -2737,8 +2737,13 @@ const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review
 // reaches this file — the version badge in the top bar and the Studio →
 // Changelog page both read straight from this, nothing else to update.
 // Versioning starts at 1.1; anything before that lives only in git log.
-const APP_VERSION = '3.22';
+const APP_VERSION = '3.23';
 const CHANGELOG = [
+  { version: '3.23', date: '2026-10-18', changes: [
+    'Flipbook: renderings are shown whole instead of cropped to fill the pages, so the studio logo baked into a rendering is never cut off.',
+    'Flipbook: the button saves any unsaved changes first and builds a fresh book every time, so newly added renderings always appear.',
+    'Project files: fixed file names jumping between files — after renaming one file and then switching folders or uploading, its name could be copied onto another file.',
+  ] },
   { version: '3.22', date: '2026-10-18', changes: [
     'Estimated prices: “Price on request” (catalog and per-project edit) is now “Estimated price — final price on request”. Enter your best estimate: it counts in the room subtotals and the total investment, and shows with an asterisk (e.g. $1,200*) on cards, schedules, the export and the client link. Each schedule with an estimate and the total investment carry the note “* Estimated price — final price on request.” A piece with no price at all still shows “Price on request” and is left out of the totals.',
   ] },
@@ -4586,7 +4591,18 @@ class Component extends DCLogic {
         // The interactive flipbook of this phase, in its own tab — the same
         // book the client will turn (flipbook.html reads the live project).
         canFlipbook: s.tab === 'concept' || s.tab === 'design',
-        openFlipbook: () => window.open('flipbook.html?project=' + encodeURIComponent(p.id) + '&phase=' + (s.tab === 'design' ? 'design' : 'concept'), '_blank'),
+        // Unsaved edits (new renderings, moodboards) are saved first, so the
+        // book is always built from what is on screen. The tab opens straight
+        // away (before the save) so the browser does not block it as a popup.
+        openFlipbook: async () => {
+          const isDesign = s.tab === 'design';
+          const url = 'flipbook.html?project=' + encodeURIComponent(p.id) + '&phase=' + (isDesign ? 'design' : 'concept') + '&t=' + Date.now();
+          const w = window.open('', '_blank');
+          if (w) try { w.document.write('<p style="font:300 15px Jost,sans-serif;color:#6A6154;text-align:center;margin-top:40vh">Opening the book…</p>'); } catch (e) {}
+          const save = isDesign ? v.saveDesign : v.saveConcept;
+          if (save && this.state[isDesign ? 'design' : 'concept']) await save();
+          if (w) w.location.href = url; else window.open(url, '_blank');
+        },
         exportNote: s.exportNote || '',
         exportHtml: async () => {
           if (this.state.exporting) return;
@@ -5551,7 +5567,20 @@ class Component extends DCLogic {
       repoMoveOptions: this.repoFolders(),
       repoFiles: items.filter((it) => it.folder === folder).slice().reverse().map((f) => ({
         ...this.repoFileVal(f), folder: f.folder,
-        rename: (e) => { const name = e.target.value.trim(); if (name && name !== f.name) this.repoUpdate(f.id, { name }); },
+        // Controlled per file id: an uncontrolled input was reused by
+        // position when the list changed (folder switch, new upload), so a
+        // typed name stayed on screen under another file and was saved to it.
+        nameDraft: (s.repoNames || {})[f.id] != null ? s.repoNames[f.id] : (f.name || ''),
+        typeName: (e) => this.setState({ repoNames: { ...(this.state.repoNames || {}), [f.id]: e.target.value } }),
+        rename: () => {
+          const drafts = { ...(this.state.repoNames || {}) };
+          const typed = drafts[f.id];
+          if (typed == null) return;
+          delete drafts[f.id];
+          this.setState({ repoNames: drafts });
+          const name = String(typed).trim();
+          if (name && name !== f.name) this.repoUpdate(f.id, { name });
+        },
         move: (e) => this.repoUpdate(f.id, { folder: e.target.value }),
         remove: () => this.repoRemove(f),
       })),

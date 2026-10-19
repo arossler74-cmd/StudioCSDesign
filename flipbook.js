@@ -146,6 +146,7 @@ const CSS = `
 .fb-flap-in::before{content:'';position:absolute;inset:0;background-image:var(--fb-paper);opacity:.55;mix-blend-mode:multiply}
 .fb-photo{position:absolute;overflow:hidden}
 .fb-photo img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+.fb-photo.fit img{object-fit:contain}
 .fb-board{position:absolute;display:flex;align-items:center;justify-content:center;mix-blend-mode:multiply}
 .fb-board img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;display:block;pointer-events:none}
 .fb-kicker{font-weight:500;text-transform:uppercase;letter-spacing:.3em;color:#A98A5F;font-size:max(calc(var(--u)*1.5),10.5px)}
@@ -228,7 +229,9 @@ function pageHtml(pg, book, W, single) {
       // A landscape image across both pages: each half draws the same
       // spread-wide picture, shifted, so the gutter splits it cleanly.
       const left = pg.half === 'l' ? 0 : -W;
-      if (u.kind === 'photo') return pic(u.image, `left:${left}px;top:0;width:${2 * W}px;height:100%`);
+      // Renderings are shown whole (contain), never cropped: many carry the
+      // studio's logo near an edge.
+      if (u.kind === 'photo') return pic(u.image, `left:${left}px;top:0;width:${2 * W}px;height:100%`, 'fb-photo fit');
       return `${pic(u.image, `left:calc(${left}px + var(--u)*4);top:calc(var(--u)*5);width:calc(${2 * W}px - var(--u)*8);bottom:calc(var(--u)*8.5)`, 'fb-board')}
         ${pg.half === 'l' ? `<div class="fb-kicker" style="position:absolute;left:${M};bottom:calc(var(--u)*3.8);color:#9A8C7C;font-size:max(calc(var(--u)*1.25),9.5px)">${esc(u.room)} · Moodboard</div>` : ''}`;
     }
@@ -240,7 +243,7 @@ function pageHtml(pg, book, W, single) {
         ${pic(u.image, 'left:calc(var(--u)*2.5);right:calc(var(--u)*2.5);top:calc(var(--u)*14);bottom:calc(var(--u)*14)', 'fb-board')}${folio('r')}`;
 
     case 'vertical':
-      return pic(u.image, 'inset:0');
+      return pic(u.image, 'inset:0', 'fb-photo fit');
 
     case 'caption':
       return `<div style="${pad};bottom:calc(var(--u)*22)">
