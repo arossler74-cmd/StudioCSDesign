@@ -6,8 +6,8 @@
 // page at a time that curls away.
 //
 // Content: cover, direction + palette, then each space (a chapter opening,
-// its moodboards, then its ultra-realistic renderings), then the studio's
-// contact page. Floor plans, SketchUp, 2D layouts, prices and tables never
+// its moodboards, then its SketchUp and ultra-realistic renderings), then the
+// studio's contact page. Floor plans, 2D layouts, prices and tables never
 // appear.
 //
 // Drawing is a pure function of (spread, corner position): draw() can put
@@ -40,14 +40,16 @@ function loadSize(url) {
 }
 
 /** Which images a space contributes, in carousel order: its moodboards, then
- *  its ultra-realistic renderings. Design falls back to Concept's moodboards
+ *  its SketchUp and ultra-realistic renderings. Design falls back to Concept's moodboards
  *  when it has none of its own. */
 function roomImages(room, phase) {
   const concept = room.conceptMedia || (room.moodboard || []).map((url) => ({ type: 'moodboard', url, title: '' }));
   const own = phase === 'design' ? (room.designMedia || []) : concept;
   let boards = own.filter((m) => m.type === 'moodboard' && m.url);
   if (phase === 'design' && !boards.length) boards = concept.filter((m) => m.type === 'moodboard' && m.url);
-  const renders = own.filter((m) => m.type === 'rendering' && m.url);
+  // SketchUp renderings sit with the ultra-realistic ones, in the order the
+  // studio arranged them.
+  const renders = own.filter((m) => (m.type === 'rendering' || m.type === 'sketchup') && m.url);
   return { boards, renders };
 }
 

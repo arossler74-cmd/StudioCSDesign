@@ -478,7 +478,7 @@ ${imageTags}
 </html>`;
 }
 
-exports.shareLink = onRequest({ region: 'us-west1', timeoutSeconds: 10, memory: '128MiB' }, async (req, res) => {
+exports.shareLink = onRequest({ region: 'us-west1', timeoutSeconds: 10, memory: '256MiB' }, async (req, res) => {
   res.set('Cache-Control', 'public, max-age=60');
   res.set('Content-Type', 'text/html; charset=utf-8');
   const token = decodeURIComponent((String(req.path || '').match(/\/s\/([^/]+)/i) || [])[1] || String(req.query.token || ''));

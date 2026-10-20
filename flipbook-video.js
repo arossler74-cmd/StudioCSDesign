@@ -53,7 +53,7 @@ function loadSize(url) {
 }
 
 /** Which images a space contributes, in carousel order: its moodboards, then
- *  its ultra-realistic renderings. Floor plans, SketchUp views, 2D layouts and
+ *  its SketchUp and ultra-realistic renderings. Floor plans, 2D layouts and
  *  video never appear. Design falls back to Concept's moodboards when it has
  *  none of its own. */
 function roomImages(room, phase) {
@@ -61,7 +61,9 @@ function roomImages(room, phase) {
   const own = phase === 'design' ? (room.designMedia || []) : concept;
   let boards = own.filter((m) => m.type === 'moodboard' && m.url);
   if (phase === 'design' && !boards.length) boards = concept.filter((m) => m.type === 'moodboard' && m.url);
-  const renders = own.filter((m) => m.type === 'rendering' && m.url);
+  // SketchUp renderings sit with the ultra-realistic ones, in the order the
+  // studio arranged them.
+  const renders = own.filter((m) => (m.type === 'rendering' || m.type === 'sketchup') && m.url);
   return { boards, renders };
 }
 

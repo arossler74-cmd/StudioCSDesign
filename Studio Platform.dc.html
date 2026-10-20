@@ -2761,8 +2761,12 @@ const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review
 // reaches this file — the version badge in the top bar and the Studio →
 // Changelog page both read straight from this, nothing else to update.
 // Versioning starts at 1.1; anything before that lives only in git log.
-const APP_VERSION = '3.24';
+const APP_VERSION = '3.25';
 const CHANGELOG = [
+  { version: '3.25', date: '2026-10-19', changes: [
+    'Flipbook: SketchUp renderings appear again, alongside the ultra-realistic renderings of each space, in the order they are arranged.',
+    'Client review links (share.studiocsdesign.com) were showing "Service Unavailable": the server page behind them ran out of memory on start-up. Its memory is raised — this part takes effect once the Cloud Function is redeployed.',
+  ] },
   { version: '3.24', date: '2026-10-19', changes: [
     'Client review link (Design & sourcing): the Total investment card at the end now has the space-by-space summary table — space, pieces, subtotal — like the exported report, with the asterisk on estimated prices and the price notes underneath.',
     'Flipbook can now be shared without signing in: every Concept or Design & sourcing link in Sharing has a "Copy flipbook link" button. Anyone with that link can turn the book; revoking the share link turns the flipbook off too. The closing page uses the studio contact details (refreshed whenever the project is saved).',
