@@ -2,10 +2,13 @@ const { onRequest } = require('firebase-functions/v2/https');
 const { logger } = require('firebase-functions');
 const { defineSecret } = require('firebase-functions/params');
 const { initializeApp } = require('firebase-admin/app');
-const { getAuth } = require('firebase-admin/auth');
 const { getFirestore } = require('firebase-admin/firestore');
 const dns = require('node:dns').promises;
-const Anthropic = require('@anthropic-ai/sdk').default;
+// Every function shares this file, so whatever loads at the top loads on
+// every cold start — including shareLink's, which only reads Firestore and
+// runs in a small instance. The Anthropic SDK and admin Auth are required
+// where they're used instead, so they never count against shareLink.
+const getAuth = () => require('firebase-admin/auth').getAuth();
 
 initializeApp();
 
@@ -51,6 +54,7 @@ async function requireStudioUser(req) {
 function claude() {
   const apiKey = anthropicApiKey.value();
   if (!apiKey) throw new HttpError(503, 'The AI key is not configured on the server.');
+  const Anthropic = require('@anthropic-ai/sdk').default;
   return new Anthropic({ apiKey });
 }
 
