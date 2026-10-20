@@ -154,7 +154,7 @@ const CSS = `
 .fb-kicker{font-weight:500;text-transform:uppercase;letter-spacing:.3em;color:#A98A5F;font-size:max(calc(var(--u)*1.5),10.5px)}
 .fb-serif{font-family:'Cormorant Garamond',Georgia,serif;font-weight:300;color:#3B342C}
 .fb-body{font-weight:300;color:#6A6154;font-size:max(calc(var(--u)*2.1),13px);line-height:1.6}
-.fb-cap{color:#6A6154;font-size:max(calc(var(--u)*1.25),9.5px);background:rgba(251,247,241,.88);padding:calc(var(--u)*.7) calc(var(--u)*1.3);border-radius:999px;max-width:70%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fb-cap{color:#6A6154;font-size:max(calc(var(--u)*1.25),9.5px);max-width:84%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .fb-folio{position:absolute;bottom:calc(var(--u)*4.4);font-size:max(calc(var(--u)*1.15),9px);letter-spacing:.28em;text-transform:uppercase;color:#B3A695}
 .fb-ui{position:absolute;inset:0;pointer-events:none;z-index:10}
 .fb-arrow{position:absolute;top:calc(50% - ${BAR / 2}px);transform:translateY(-50%);width:56px;height:100px;border:0;background:none;color:#6A6154;cursor:pointer;pointer-events:auto;opacity:.75;transition:opacity .2s}
@@ -183,9 +183,13 @@ function pageHtml(pg, book, W, single) {
   const folio = (side) => side === 'l'
     ? `<div class="fb-folio" style="left:${M}">Cybelle Sampaio Studio</div>`
     : `<div class="fb-folio" style="right:${M}">${esc(book.projectName)} · ${esc(book.phaseLabel)}</div>`;
-  // Each image's name — its space, then the title it was given in the
-  // platform — on a paper label, so it reads over a full-bleed rendering too.
-  const capText = (u) => [u.room, u.image.title || (u.kind === 'board' ? 'Moodboard' : '')].filter(Boolean).join(' · ');
+  // Each image's name — the title it was given in the platform (which
+  // usually names the space already), or just its space when untitled —
+  // in the paper band under the picture.
+  const capText = (u) => u.image.title || [u.room, u.kind === 'board' ? 'Moodboard' : ''].filter(Boolean).join(' · ');
+  // Renderings keep a paper band above and below, the same as moodboards,
+  // so the caption always sits on the page rather than over the picture.
+  const band = 'top:calc(var(--u)*5);bottom:calc(var(--u)*8.5)';
   const cap = (u, side = 'l') => capText(u) ? `<div class="fb-kicker fb-cap" style="position:absolute;${side === 'l' ? 'left' : 'right'}:${M};bottom:calc(var(--u)*3.2)">${esc(capText(u))}</div>` : '';
   const pic = (im, box, cls = 'fb-photo') => `<div class="${cls}" style="${box}"><img src="${esc(im.url)}" alt="" draggable="false"></div>`;
 
@@ -238,7 +242,7 @@ function pageHtml(pg, book, W, single) {
       const left = pg.half === 'l' ? 0 : -W;
       // Renderings are shown whole (contain), never cropped: many carry the
       // studio's logo near an edge.
-      if (u.kind === 'photo') return pic(u.image, `left:${left}px;top:0;width:${2 * W}px;height:100%`, 'fb-photo fit') + (pg.half === 'l' ? cap(u) : '');
+      if (u.kind === 'photo') return pic(u.image, `left:${left}px;width:${2 * W}px;${band}`, 'fb-photo fit') + (pg.half === 'l' ? cap(u) : '');
       return `${pic(u.image, `left:calc(${left}px + var(--u)*4);top:calc(var(--u)*5);width:calc(${2 * W}px - var(--u)*8);bottom:calc(var(--u)*8.5)`, 'fb-board')}
         ${pg.half === 'l' ? cap(u) : ''}`;
     }
@@ -250,7 +254,7 @@ function pageHtml(pg, book, W, single) {
         ${pic(u.image, 'left:calc(var(--u)*2.5);right:calc(var(--u)*2.5);top:calc(var(--u)*14);bottom:calc(var(--u)*14)', 'fb-board')}${folio('r')}`;
 
     case 'vertical':
-      return pic(u.image, 'inset:0', 'fb-photo fit') + (pg.cap ? cap(u) : '');
+      return pic(u.image, `left:0;right:0;${band}`, 'fb-photo fit') + (pg.cap ? cap(u) : '');
 
     case 'caption':
       return `<div style="${pad};bottom:calc(var(--u)*22)">

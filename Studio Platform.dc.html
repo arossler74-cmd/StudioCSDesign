@@ -2761,8 +2761,12 @@ const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review
 // reaches this file — the version badge in the top bar and the Studio →
 // Changelog page both read straight from this, nothing else to update.
 // Versioning starts at 1.1; anything before that lives only in git log.
-const APP_VERSION = '3.26';
+const APP_VERSION = '3.27';
 const CHANGELOG = [
+  { version: '3.27', date: '2026-10-19', changes: [
+    'Flipbook: the label under each image is just its title (no more space name repeated in front of it); untitled images still show their space.',
+    'Flipbook: renderings that used to fill the whole page now keep a paper band above and below, like the moodboards, and the label sits in that band.',
+  ] },
   { version: '3.26', date: '2026-10-19', changes: [
     'Flipbook: every moodboard and rendering now carries its name — the space and the image title given in the platform — on a small label at the bottom of the page.',
     'Client review links: the server page behind share.studiocsdesign.com no longer loads the AI tools on start-up, so it fits in its memory again and deploys quickly.',
