@@ -2761,8 +2761,12 @@ const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review
 // reaches this file — the version badge in the top bar and the Studio →
 // Changelog page both read straight from this, nothing else to update.
 // Versioning starts at 1.1; anything before that lives only in git log.
-const APP_VERSION = '3.27';
+const APP_VERSION = '3.28';
 const CHANGELOG = [
+  { version: '3.28', date: '2026-10-19', changes: [
+    'Flipbook links now go out from share.studiocsdesign.com/f/… like the review links, so WhatsApp, iMessage and email show a preview card (photo, client and project) instead of a bare link.',
+    'Link previews: a project without a hero photo uses its first moodboard or rendering for the card, so it is never blank.',
+  ] },
   { version: '3.27', date: '2026-10-19', changes: [
     'Flipbook: the label under each image is just its title (no more space name repeated in front of it); untitled images still show their space.',
     'Flipbook: renderings that used to fill the whole page now keep a paper band above and below, like the moodboards, and the label sits in that band.',

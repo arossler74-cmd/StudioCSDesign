@@ -485,7 +485,11 @@ ${imageTags}
 exports.shareLink = onRequest({ region: 'us-west1', timeoutSeconds: 10, memory: '256MiB' }, async (req, res) => {
   res.set('Cache-Control', 'public, max-age=60');
   res.set('Content-Type', 'text/html; charset=utf-8');
-  const token = decodeURIComponent((String(req.path || '').match(/\/s\/([^/]+)/i) || [])[1] || String(req.query.token || ''));
+  // /s/{token} is the client's review; /f/{token} is the same share as the
+  // flipbook. Both get the same preview card, then go on to their own page.
+  const route = String(req.path || '').match(/\/(s|f)\/([^/]+)/i) || [];
+  const isFlipbook = String(route[1] || '').toLowerCase() === 'f';
+  const token = decodeURIComponent(route[2] || String(req.query.token || ''));
   const fallback = () => res.status(200).send(shareLinkPage({
     title: 'Studio CS Design',
     description: 'A private design review from Studio CS Design.',
@@ -497,11 +501,17 @@ exports.shareLink = onRequest({ region: 'us-west1', timeoutSeconds: 10, memory: 
     const snap = await getFirestore().doc('shares/' + token).get();
     if (!snap.exists) return fallback();
     const d = snap.data() || {};
-    const title = ['Studio CS', d.clientName, d.projectName].filter(Boolean).join(' | ') || 'Studio CS Design';
-    const description = d.tagline || 'A private design review, prepared by Studio CS Design.';
-    return res.status(200).send(shareLinkPage({
-      title, description, image: d.hero || '', redirectTo: SITE_URL + '/#share=' + encodeURIComponent(token)
-    }));
+    const title = ['Studio CS', d.clientName, d.projectName].filter(Boolean).join(' | ') + (isFlipbook ? ' · Flipbook' : '') || 'Studio CS Design';
+    const description = d.tagline || (isFlipbook ? 'A design flipbook, prepared by Studio CS Design.' : 'A private design review, prepared by Studio CS Design.');
+    // No hero photo set: the first moodboard or rendering stands in, so the
+    // card is never blank.
+    const media = (d.rooms || []).flatMap((r) => [...(r.designMedia || []), ...(r.conceptMedia || [])]);
+    const firstImage = (media.find((m) => m && m.url && m.type !== 'video') || {}).url
+      || ((d.rooms || []).flatMap((r) => r.moodboard || [])[0]) || '';
+    const redirectTo = isFlipbook
+      ? SITE_URL + '/flipbook.html?share=' + encodeURIComponent(token)
+      : SITE_URL + '/#share=' + encodeURIComponent(token);
+    return res.status(200).send(shareLinkPage({ title, description, image: d.hero || firstImage, redirectTo }));
   } catch (error) {
     logger.warn('shareLink failed', { message: error && error.message });
     return fallback();

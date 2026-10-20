@@ -14,7 +14,8 @@
   "hosting": {
     "public": "hosting-share",
     "rewrites": [
-      { "source": "/s/**", "function": { "functionId": "shareLink", "region": "us-west1" } }
+      { "source": "/s/**", "function": { "functionId": "shareLink", "region": "us-west1" } },
+      { "source": "/f/**", "function": { "functionId": "shareLink", "region": "us-west1" } }
     ]
   }
 }

@@ -752,8 +752,9 @@ export function shareUrl(token) {
 
 // The same link's presentation as the interactive flipbook. Public like the
 // review itself: flipbook.html reads the shares/{token} mirror, no sign-in.
+// Goes out through the share domain too (/f/), for the same preview card.
 export function flipbookUrl(token) {
-  return 'https://platform.studiocsdesign.com/flipbook.html?share=' + encodeURIComponent(token);
+  return 'https://share.studiocsdesign.com/f/' + encodeURIComponent(token);
 }
 
 function phaseOf(share) {
