@@ -750,6 +750,12 @@ export function shareUrl(token) {
   return 'https://share.studiocsdesign.com/s/' + token;
 }
 
+// The same link's presentation as the interactive flipbook. Public like the
+// review itself: flipbook.html reads the shares/{token} mirror, no sign-in.
+export function flipbookUrl(token) {
+  return 'https://platform.studiocsdesign.com/flipbook.html?share=' + encodeURIComponent(token);
+}
+
 function phaseOf(share) {
   if (share.phase) return share.phase;
   return (share.phases || []).includes('design') ? 'design' : 'concept';
@@ -816,8 +822,10 @@ async function publishShare(project, share) {
     // The rest is phase-specific, mirroring exactly what that phase's report
     // section reads from — no point sending a Design link the Concept
     // palette, or vice versa.
+    // Concept's direction rides along on a Design link too: the flipbook's
+    // opening headline reads it for either phase.
     projectPhases: isDesign
-      ? { design: { concept: (ph.design || {}).concept || '' } }
+      ? { design: { concept: (ph.design || {}).concept || '' }, concept: { concept: (ph.concept || {}).concept || (ph.concept || {}).note || '' } }
       : { concept: { concept: (ph.concept || {}).concept || (ph.concept || {}).note || '' } },
     conceptPoints: isDesign ? [] : (project.conceptPoints || []),
     palette: isDesign ? [] : (project.palette || []),
@@ -826,6 +834,9 @@ async function publishShare(project, share) {
     designPoints: isDesign ? (project.designPoints || []) : [],
     designMaterials: isDesign ? (project.designMaterials || []) : [],
     designFloorPlans: isDesign ? (project.designFloorPlans || []) : [],
+    // The flipbook's closing page. settings/ is studio-only, so a visitor
+    // with just the token gets the contact details from here instead.
+    contact: showDocument ? await getStudioContact().catch(() => STUDIO_CONTACT_DEFAULT()) : null,
     rooms: (project.rooms || []).map((r) => ({
       id: r.id, name: r.name, goal: r.goal || '', brief: r.brief || '', cad: r.cad || '',
       conceptMedia: isDesign ? [] : (r.conceptMedia || []),
@@ -890,6 +901,7 @@ export async function findByShare(token) {
         designPoints: d.designPoints || [], designMaterials: d.designMaterials || [], designFloorPlans: d.designFloorPlans || [],
       },
       doc: d.doc || null,
+      contact: d.contact || null,
     };
   }
   for (const p of readLS().projects) {

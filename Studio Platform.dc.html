@@ -410,11 +410,32 @@
         </sc-for>
 
         <sc-if value="{{ showInvestment }}" hint-placeholder-val="{{ false }}">
-          <div class="card" style="padding: 20px 24px; display: flex; justify-content: space-between; align-items: baseline; max-width: 420px;">
-            <div style="font-family: var(--font-heading); font-size: 18px; color: var(--color-accent-900);">Total investment</div>
-            <div style="font-family: var(--font-heading); font-size: 28px; color: var(--color-accent-900);">{{ shareGrandTotal }}</div>
+          <div class="card cs-client-section" style="padding: 20px 24px; max-width: 560px;">
+            <sc-if value="{{ hasShareSummary }}" hint-placeholder-val="{{ true }}">
+              <div style="font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--color-accent-700); margin-bottom: 10px;">Investment summary</div>
+              <table style="width: 100%; border-collapse: collapse; font-size: 13.5px; margin-bottom: 14px;">
+                <thead><tr>
+                  <th style="text-align: left; font-weight: 500; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-600); padding: 8px 10px; border-bottom: 1px solid var(--color-neutral-200);">Space</th>
+                  <th style="text-align: right; font-weight: 500; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-600); padding: 8px 10px; border-bottom: 1px solid var(--color-neutral-200);">Pieces</th>
+                  <th style="text-align: right; font-weight: 500; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--color-neutral-600); padding: 8px 10px; border-bottom: 1px solid var(--color-neutral-200);">Subtotal</th>
+                </tr></thead>
+                <tbody>
+                  <sc-for list="{{ shareSummary }}" as="row" hint-placeholder-count="3">
+                    <tr>
+                      <td style="padding: 9px 10px; border-bottom: 1px solid var(--color-neutral-100);">{{ row.name }}</td>
+                      <td style="padding: 9px 10px; border-bottom: 1px solid var(--color-neutral-100); text-align: right;">{{ row.count }}</td>
+                      <td style="padding: 9px 10px; border-bottom: 1px solid var(--color-neutral-100); text-align: right; font-weight: 500;">{{ row.total }}</td>
+                    </tr>
+                  </sc-for>
+                </tbody>
+              </table>
+            </sc-if>
+            <div style="display: flex; justify-content: space-between; align-items: baseline;">
+              <div style="font-family: var(--font-heading); font-size: 18px; color: var(--color-accent-900);">Total investment</div>
+              <div style="font-family: var(--font-heading); font-size: 28px; color: var(--color-accent-900);">{{ shareGrandTotal }}</div>
+            </div>
           </div>
-          <div style="max-width: 420px; margin-top: 10px; font-size: 12.5px; line-height: 1.6; color: var(--color-neutral-600);">{{ sharePriceNote }}</div>
+          <div style="max-width: 560px; margin-top: 10px; font-size: 12.5px; line-height: 1.6; color: var(--color-neutral-600);">{{ sharePriceNote }}</div>
         </sc-if>
       </div></sc-if>
 
@@ -2255,6 +2276,9 @@
                     </div>
                     <span class="tag tag-outline">{{ s.scope }}</span>
                     <button type="button" onClick="{{ s.copy }}" class="btn btn-secondary" style="font-size: 13px;">{{ s.copyLabel }}</button>
+                    <sc-if value="{{ s.hasFlipbook }}" hint-placeholder-val="{{ true }}">
+                      <button type="button" onClick="{{ s.copyFlipbook }}" class="btn btn-secondary" style="font-size: 13px;" title="Opens without signing in — anyone with this link can turn the book">{{ s.flipbookLabel }}</button>
+                    </sc-if>
                     <button type="button" onClick="{{ s.revoke }}" class="btn btn-ghost" style="font-size: 13px;">Revoke</button>
                   </div>
                 </sc-for>
@@ -2737,8 +2761,12 @@ const ST = { 'not-started': 'Not started', 'in-progress': 'In progress', 'review
 // reaches this file — the version badge in the top bar and the Studio →
 // Changelog page both read straight from this, nothing else to update.
 // Versioning starts at 1.1; anything before that lives only in git log.
-const APP_VERSION = '3.23';
+const APP_VERSION = '3.24';
 const CHANGELOG = [
+  { version: '3.24', date: '2026-10-19', changes: [
+    'Client review link (Design & sourcing): the Total investment card at the end now has the space-by-space summary table — space, pieces, subtotal — like the exported report, with the asterisk on estimated prices and the price notes underneath.',
+    'Flipbook can now be shared without signing in: every Concept or Design & sourcing link in Sharing has a "Copy flipbook link" button. Anyone with that link can turn the book; revoking the share link turns the flipbook off too. The closing page uses the studio contact details (refreshed whenever the project is saved).',
+  ] },
   { version: '3.23', date: '2026-10-18', changes: [
     'Flipbook: renderings are shown whole instead of cropped to fill the pages, so the studio logo baked into a rendering is never cut off.',
     'Flipbook: the button saves any unsaved changes first and builds a fresh book every time, so newly added renderings always appear.',
@@ -5521,6 +5549,10 @@ class Component extends DCLogic {
         scope: ({ discovery: 'Discovery', concept: 'Concept', design: 'Design & sourcing', styling: 'Styling & reveal' })[sh.phase || (sh.phases || []).slice(-1)[0]] || 'Concept',
         copyLabel: s.copied === sh.token ? 'Copied' : 'Copy link',
         copy: async () => { try { await navigator.clipboard.writeText(api.shareUrl(sh.token)); } catch (e) {} this.setState({ copied: sh.token }); setTimeout(() => this.setState({ copied: '' }), 1600); },
+        // The same link's book, public like the review: no sign-in needed.
+        hasFlipbook: ['concept', 'design'].includes(sh.phase || (sh.phases || []).slice(-1)[0] || 'concept'),
+        flipbookLabel: s.copied === 'flip:' + sh.token ? 'Copied' : 'Copy flipbook link',
+        copyFlipbook: async () => { try { await navigator.clipboard.writeText(api.flipbookUrl(sh.token)); } catch (e) {} this.setState({ copied: 'flip:' + sh.token }); setTimeout(() => this.setState({ copied: '' }), 1600); },
         revoke: () => this.askConfirm({
           title: 'Revoke this link?',
           body: (sh.clientName ? 'The link shared with ' + sh.clientName : 'This client link') + ' will stop working immediately.',
@@ -5785,7 +5817,7 @@ class Component extends DCLogic {
     };
     let anyOnRequest = false, anyEstimate = false;
     const shareRooms = (project.rooms || []).map((room) => {
-      let sub = 0, est = false;
+      let sub = 0, est = false, pieces = 0;
       const investmentRows = [];
       const selectedGrid = [];
       const substituteGrid = [];
@@ -5798,6 +5830,7 @@ class Component extends DCLogic {
         const estimated = !onRequest && !!c.priceEstimated;
         const mark = estimated ? api.ESTIMATE_MARK : '';
         const lineNum = onRequest ? 0 : Number(c.price) * qty;
+        pieces += qty;
         if (onRequest) anyOnRequest = true; else sub += lineNum;
         if (estimated) est = anyEstimate = true;
         investmentRows.push({ name: c.name || 'Piece', url: c.url || '', meta: [c.retailer, c.finish, c.color, c.dimensions].filter(Boolean).join(' · '), qty,
@@ -5832,12 +5865,15 @@ class Component extends DCLogic {
       return {
         name: room.name, items, alternatives, hasAlternatives: alternatives.length > 0,
         investmentRows, hasInvestmentRows: investmentRows.length > 0,
-        roomSubRaw: sub, roomTotal: showInvestment ? money(sub) + (est ? api.ESTIMATE_MARK : '') : '',
+        roomSubRaw: sub, roomPieces: pieces, roomTotal: showInvestment ? money(sub) + (est ? api.ESTIMATE_MARK : '') : '',
         roomEstimateNote: showInvestment && est ? api.ESTIMATE_NOTE : '',
       };
     });
     const shareGrandTotal = showInvestment ? money(shareRooms.reduce((t, r) => t + r.roomSubRaw, 0)) + (anyEstimate ? api.ESTIMATE_MARK : '') : '';
     const sharePriceNote = showInvestment ? api.priceExclusions(anyOnRequest, anyEstimate) : '';
+    // The same space-by-space summary the exported report closes with, so
+    // the live link ends on the whole investment, not just one number.
+    const shareSummary = showInvestment ? shareRooms.filter((r) => r.hasInvestmentRows).map((r) => ({ name: r.name, count: r.roomPieces, total: r.roomTotal })) : [];
 
     return {
       shareClient: share.clientName, shareProject: project.name, sharePhaseLabel: phaseInfo.label, shareIntro: phaseInfo.intro,
@@ -5904,7 +5940,7 @@ class Component extends DCLogic {
         : touched ? touched + ' change' + (touched === 1 ? '' : 's') + ' marked' : 'Mark only the pieces you have an opinion about.',
       showInvestment,
       shareRooms,
-      shareGrandTotal, sharePriceNote,
+      shareGrandTotal, sharePriceNote, shareSummary, hasShareSummary: shareSummary.length > 0,
       shareSubmit: async () => {
         let proj = project;
         // Every review this submission writes shares this exact stamp, so the

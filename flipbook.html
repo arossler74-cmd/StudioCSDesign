@@ -17,8 +17,10 @@
 <script type="module">
 import { buildBook, createViewer } from './flipbook.js';
 
-// Data comes one of two ways: injected as window.__FLIP_DATA
-// ({ project, phase, contact }) — local tests — or, in a browser,
+// Data comes one of three ways: injected as window.__FLIP_DATA
+// ({ project, phase, contact }) — local tests; ?share=<token> — the public,
+// no-sign-in link a client is sent (read from the same shares/{token}
+// mirror as their review link, so it shows that link's phase); or
 // ?project=<id>&phase=concept|design, read live as the signed-in user.
 const q = new URLSearchParams(location.search);
 const msg = document.getElementById('msg');
@@ -27,6 +29,12 @@ async function loadData() {
   if (window.__FLIP_DATA) return window.__FLIP_DATA;
   const api = await import('./platform-data.js');
   await api.init();
+  const token = q.get('share');
+  if (token) {
+    const found = await api.findByShare(token);
+    if (!found) throw new Error('This link is no longer available.');
+    return { project: found.project, contact: found.contact || api.STUDIO_CONTACT_DEFAULT(), phase: found.share.phase === 'design' ? 'design' : 'concept' };
+  }
   const user = await new Promise((res) => api.onAuth((u) => res(u)));
   if (!user) throw new Error('Sign in to the studio platform in this browser first.');
   const project = await api.getProject(q.get('project') || '86-residence');
