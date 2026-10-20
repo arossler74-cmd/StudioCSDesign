@@ -99,7 +99,7 @@ export function paginate(book, mode) {
   const add = (kind, u, ui, extra) => pages.push({ kind, u, ui, ...extra });
   const units = book.units;
   if (mode === 'single') {
-    units.forEach((u, ui) => add(u.kind === 'board' || u.kind === 'photo' ? 'plate' : u.kind, u, ui));
+    units.forEach((u, ui) => add(u.kind === 'board' || u.kind === 'photo' ? 'plate' : u.kind, u, ui, { cap: true }));
     return pages;
   }
   // pages[0] is the cover (a right page); pages[2k-1] / pages[2k] are the
@@ -119,7 +119,7 @@ export function paginate(book, mode) {
       case 'board': case 'photo': toLeft(u, i); add('spread', u, i, { half: 'l' }); add('spread', u, i, { half: 'r' }); break;
       case 'vertical':
         toLeft(u, i);
-        if (units[i + 1] && units[i + 1].kind === 'vertical') { add('vertical', u, i); add('vertical', units[i + 1], i + 1); i++; }
+        if (units[i + 1] && units[i + 1].kind === 'vertical') { add('vertical', u, i, { cap: true }); add('vertical', units[i + 1], i + 1, { cap: true }); i++; }
         else { add('caption', u, i); add('vertical', u, i); }
         break;
       case 'back': toLeft(u, i); add('back', u, i); break;
@@ -154,6 +154,7 @@ const CSS = `
 .fb-kicker{font-weight:500;text-transform:uppercase;letter-spacing:.3em;color:#A98A5F;font-size:max(calc(var(--u)*1.5),10.5px)}
 .fb-serif{font-family:'Cormorant Garamond',Georgia,serif;font-weight:300;color:#3B342C}
 .fb-body{font-weight:300;color:#6A6154;font-size:max(calc(var(--u)*2.1),13px);line-height:1.6}
+.fb-cap{color:#6A6154;font-size:max(calc(var(--u)*1.25),9.5px);background:rgba(251,247,241,.88);padding:calc(var(--u)*.7) calc(var(--u)*1.3);border-radius:999px;max-width:70%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .fb-folio{position:absolute;bottom:calc(var(--u)*4.4);font-size:max(calc(var(--u)*1.15),9px);letter-spacing:.28em;text-transform:uppercase;color:#B3A695}
 .fb-ui{position:absolute;inset:0;pointer-events:none;z-index:10}
 .fb-arrow{position:absolute;top:calc(50% - ${BAR / 2}px);transform:translateY(-50%);width:56px;height:100px;border:0;background:none;color:#6A6154;cursor:pointer;pointer-events:auto;opacity:.75;transition:opacity .2s}
@@ -182,6 +183,10 @@ function pageHtml(pg, book, W, single) {
   const folio = (side) => side === 'l'
     ? `<div class="fb-folio" style="left:${M}">Cybelle Sampaio Studio</div>`
     : `<div class="fb-folio" style="right:${M}">${esc(book.projectName)} · ${esc(book.phaseLabel)}</div>`;
+  // Each image's name — its space, then the title it was given in the
+  // platform — on a paper label, so it reads over a full-bleed rendering too.
+  const capText = (u) => [u.room, u.image.title || (u.kind === 'board' ? 'Moodboard' : '')].filter(Boolean).join(' · ');
+  const cap = (u, side = 'l') => capText(u) ? `<div class="fb-kicker fb-cap" style="position:absolute;${side === 'l' ? 'left' : 'right'}:${M};bottom:calc(var(--u)*3.2)">${esc(capText(u))}</div>` : '';
   const pic = (im, box, cls = 'fb-photo') => `<div class="${cls}" style="${box}"><img src="${esc(im.url)}" alt="" draggable="false"></div>`;
 
   switch (pg.kind) {
@@ -233,19 +238,19 @@ function pageHtml(pg, book, W, single) {
       const left = pg.half === 'l' ? 0 : -W;
       // Renderings are shown whole (contain), never cropped: many carry the
       // studio's logo near an edge.
-      if (u.kind === 'photo') return pic(u.image, `left:${left}px;top:0;width:${2 * W}px;height:100%`, 'fb-photo fit');
+      if (u.kind === 'photo') return pic(u.image, `left:${left}px;top:0;width:${2 * W}px;height:100%`, 'fb-photo fit') + (pg.half === 'l' ? cap(u) : '');
       return `${pic(u.image, `left:calc(${left}px + var(--u)*4);top:calc(var(--u)*5);width:calc(${2 * W}px - var(--u)*8);bottom:calc(var(--u)*8.5)`, 'fb-board')}
-        ${pg.half === 'l' ? `<div class="fb-kicker" style="position:absolute;left:${M};bottom:calc(var(--u)*3.8);color:#9A8C7C;font-size:max(calc(var(--u)*1.25),9.5px)">${esc(u.room)} · Moodboard</div>` : ''}`;
+        ${pg.half === 'l' ? cap(u) : ''}`;
     }
 
     case 'plate':
       // Single-page layout of a landscape image: page-wide, on the paper,
       // its space named above. (Turn the phone sideways for the full spread.)
-      return `<div class="fb-kicker" style="${pad};top:calc(var(--u)*9)">${esc(u.room)}${u.kind === 'board' ? ' · Moodboard' : ''}</div>
+      return `<div class="fb-kicker" style="${pad};top:calc(var(--u)*9)">${esc(capText(u))}</div>
         ${pic(u.image, 'left:calc(var(--u)*2.5);right:calc(var(--u)*2.5);top:calc(var(--u)*14);bottom:calc(var(--u)*14)', 'fb-board')}${folio('r')}`;
 
     case 'vertical':
-      return pic(u.image, 'inset:0', 'fb-photo fit');
+      return pic(u.image, 'inset:0', 'fb-photo fit') + (pg.cap ? cap(u) : '');
 
     case 'caption':
       return `<div style="${pad};bottom:calc(var(--u)*22)">
